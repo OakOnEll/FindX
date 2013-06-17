@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:orientation="vertical" >
+
+    <TextView
+        android:id="@+id/level_finish_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Large Text"
+        android:textAppearance="?android:attr/textAppearanceLarge" android:layout_gravity="center_horizontal"/>
+
+    <RatingBar
+        android:id="@+id/rating"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal" android:numStars="3"/>
+
+    <LinearLayout
+        android:id="@+id/linearLayout1"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content" android:layout_gravity="center_horizontal" android:gravity="center_horizontal" android:weightSum="2">
+
+        <Button
+            android:id="@+id/retry"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/retry" android:layout_weight="1" android:layout_gravity="center_vertical" />
+
+        <Button
+            android:id="@+id/next_level"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/next_level" android:layout_weight="1" android:layout_gravity="center_vertical"/>
+
+    </LinearLayout>
+
+    <Button
+        android:id="@+id/share"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:text="@string/share" />
+
+    <Button
+        android:id="@+id/goto_main_menu"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/goto_main_menu" android:layout_gravity="center_horizontal"/>
+
+</LinearLayout>

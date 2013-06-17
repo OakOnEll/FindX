@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/move_root"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:orientation="horizontal"
+    android:weightSum="10"
+    >
+
+    <com.oakonell.findx.DelayedTextView
+        android:id="@+id/move_num"
+        android:layout_width="0dp"
+        android:width="20dp"
+        android:layout_height="fill_parent"
+        android:text="1"
+android:textSize="15dp"
+ 		android:layout_weight="1"
+        />
+
+    <com.oakonell.findx.DelayedTextView
+        android:id="@+id/operation"
+        android:layout_width="0dp"
+        android:layout_height="fill_parent"
+        android:layout_gravity="left"
+        android:text="Multiply by 5"
+        android:textSize="15dp" 
+         android:width="120dp" android:paddingLeft="5dp"
+          		android:layout_weight="3"
+         />
+
+    <com.oakonell.findx.DelayedTextView
+        android:id="@+id/equation"
+        android:layout_width="0dp"
+        android:layout_height="fill_parent"
+        android:layout_gravity="left"
+        android:text="-5 x + 23/9 = 2x - 12" 
+        android:textSize="15dp"
+        android:gravity="left"
+        android:paddingLeft="8dp"
+         		android:layout_weight="6"
+        />
+
+</LinearLayout>

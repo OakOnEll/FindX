@@ -1,0 +1,34 @@
+//  ***************** Launcher Icons
+//
+// File and path settings
+//
+FileSvg 'C:\Users\Rob\workspace-AndroidDev\Operations\rawResources\Android_algebra.svg'
+PathClear false
+FilePrefix 'ic_launcher_'
+FileFormat png
+FileName 'findx'
+
+// High resolution
+PathExport 'res/drawable-hdpi'
+ExportWidth 72
+ExportHeight 72
+Convert
+
+// Medium resolution
+PathExport 'res/drawable-mdpi'
+ExportWidth 48
+ExportHeight 48
+Convert
+
+// low resolution
+PathExport 'res/drawable-ldpi'
+ExportWidth 36
+ExportHeight 36
+Convert
+
+// High Res Application icon
+PathExport '/res'
+ExportWidth 512
+ExportHeight 512
+Convert
+

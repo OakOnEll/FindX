@@ -1,0 +1,71 @@
+
+rotate restarts music
+
+Doesn't continue pending puzzle?  
+
+add more levels
+First couple stages should follow simple algebra order?
+
+finish a custom level, different text? Include the custom level url?!
+
+share custom level
+  progress/task disappears when change orientation   
+   
+   
+   Sharing built level text in preferences
+ 
+ 
+some action buttons layout poorly and block the text on the button
+
+
+later
+-----
+share custom level
+  progress/task disappears when change orientation
+  can "go back" from "puzzle already optimal" "OK" dialog into odd searching dialog   
+
+  Enable add random moves only when applicable   
+on settings preferences, item to visit/rate app
+ 
+ 
+ 
+ Fixed
+ ----
+ stage doesn't unlock when previous finished?
+  -1x in expression display
+ android:layout_margin="4dp"
+   divide/multiply by zero
+   warn of optimizing "too" many moves puzzle
+  warn before save if not "optimized"
+  allow accepting early found solutions  
+  restart level from finish dialog, close dialog then erase (right now dialog stays up)
+  slow fade/erase animation for undo a move
+next level from finish dialog, close dialog then erase whole screen
+ erase for next level, as well?
+ don't erase background for next level  (layout complexity)
+  don't erase equation on restart
+    restart same level erase- don't erase the starting equation?
+ delay finish of level for writing animation.
+  short undo erase sound
+ longer restart erase sound
+  doesn't scroll on phone when new move added
+  restart didn't confirm?
+   disable restart when only one move and no undos used
+   don't animate erase on restart if no moves 
+ move saving broken?
+  eg, rotate phone, loses moves
+ about formatting
+ store solutions for all levels
+   (with junit tests to assure correct, and optimal if possible)
+   delete custom level... deletes wrong level?
+ back from loaded puzzle crashes
+ lock stages until previous
+ move level 1-12 to very end
+   enable/disable minimize moves based on model's optimized property
+    and/or  display optimized property in readonly textview
+   externally loaded levels are not editable/copyable (so as not to cheat at the solution...)
+    separate "imported" stage?  
+  add author to export/import
+     import fails to launch level
+    (something about the dbId versus the stage level id)   
+ 

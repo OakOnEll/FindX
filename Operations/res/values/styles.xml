@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="LevelCompleteDialog" parent="@android:style/Theme.Dialog">
+        <item name="android:windowTitleStyle">@style/LevelCompleteDialogTitle</item>
+    </style>
+
+    <style name="LevelCompleteDialogTitle" parent="@android:style/TextAppearance.DialogWindowTitle">
+        <item name="android:gravity">center_horizontal</item>
+    </style>
+
+    <style name="DialogWindowTitle">
+        <item name="android:maxLines">1</item>
+        <item name="android:textAppearance">@android:style/TextAppearance.Large</item>
+    </style>
+
+    <style name="FindXButton">
+        <item name="android:background">@drawable/rounded_corner</item>
+        <item name="android:textAppearance">?android:attr/textAppearanceMedium</item>        
+        <item name="android:layout_margin">4dp</item>
+        </style>
+        
+</resources>

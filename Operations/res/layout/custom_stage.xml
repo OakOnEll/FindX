@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.oakonell.utils.activity.dragndrop.DragLayer xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/drag_layer"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:id="@+id/linearLayout2"
+        android:layout_width="match_parent"
+        android:layout_height="fill_parent"
+        android:orientation="vertical" android:weightSum="10">
+
+        <LinearLayout
+            xmlns:android="http://schemas.android.com/apk/res/android"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical" android:background="@raw/pythagorias" android:layout_weight="9">
+
+            <LinearLayout
+                android:id="@+id/linearLayout1"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:weightSum="3" >
+
+                <ImageButton
+                    android:id="@+id/back"
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:layout_gravity="center_vertical|center_horizontal|center"
+                    android:layout_weight="1"
+                    android:src="@android:drawable/ic_media_rew" />
+
+                <TextView
+                    android:id="@+id/textView1"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical|center_horizontal"
+                    android:layout_weight="1"
+                    android:gravity="center_horizontal"
+                    android:text="@string/custom_level_select"
+                    android:textAppearance="?android:attr/textAppearanceLarge" />
+
+                <ImageView
+                    android:id="@+id/symmetric_image"
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:layout_gravity="center"
+                    android:layout_weight="1"
+                    android:src="@android:drawable/ic_media_rew"
+                    android:visibility="invisible" />
+            </LinearLayout>
+
+            <GridView
+                android:id="@+id/level_select"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:gravity="fill_vertical|fill_horizontal"
+                android:numColumns="3" >
+            </GridView>
+        </LinearLayout>
+
+         <LinearLayout
+            android:id="@+id/LinearLayout01"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="bottom"
+            android:weightSum="6" >
+
+            <com.oakonell.utils.activity.dragndrop.ImageDropTarget
+                android:id="@+id/build_custom"
+                android:layout_width="60dp"
+                android:layout_height="60dp"
+                android:layout_weight="3"
+                android:layout_gravity="center_vertical|center_horizontal"
+                android:src="@android:drawable/ic_menu_add"
+                android:text="@string/build_custom" />
+
+            <com.oakonell.utils.activity.dragndrop.ImageDropTarget
+                android:id="@+id/delete_level"
+                android:layout_width="60dp"
+                android:layout_height="60dp"
+                android:layout_gravity="center_vertical|center_horizontal"
+                android:layout_weight="1"
+                android:src="@android:drawable/ic_menu_delete" />
+
+            <com.oakonell.utils.activity.dragndrop.ImageDropTarget
+                android:id="@+id/edit_level"
+                android:layout_width="60dp"
+                android:layout_height="60dp"
+                android:layout_weight="1"
+                android:layout_gravity="center_vertical|center_horizontal"
+                android:src="@android:drawable/ic_menu_edit" />
+
+            <com.oakonell.utils.activity.dragndrop.ImageDropTarget
+                android:id="@+id/share_level"
+                android:layout_width="60dp"
+                android:layout_height="60dp"
+                android:layout_weight="1"
+                android:layout_gravity="center_vertical|center_horizontal"
+                android:src="@android:drawable/ic_menu_share" />
+        </LinearLayout>
+
+    </LinearLayout>
+
+             <TextView
+            android:id="@+id/delete_hint"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@android:color/black"
+            android:gravity="center_vertical|center_horizontal"
+            android:padding="15sp"
+            android:text="@string/delete"
+            android:textColor="#FFFF00"
+            android:visibility="invisible" android:layout_gravity="center_vertical|center_horizontal|center"/>
+
+        <TextView
+            android:id="@+id/edit_hint"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@android:color/black"
+            android:gravity="center_vertical|center_horizontal"
+            android:padding="15sp"
+            android:text="@string/edit"
+            android:textColor="#FFFF00"
+            android:visibility="invisible" android:layout_gravity="center_vertical|center_horizontal|center"/>
+
+        <TextView
+            android:id="@+id/share_hint"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@android:color/black"
+            android:gravity="center_vertical|center_horizontal"
+            android:padding="15sp"
+            android:text="@string/share"
+            android:textColor="#FFFF00"
+            android:visibility="invisible" android:layout_gravity="center_vertical|center_horizontal|center"/>
+
+        <TextView
+            android:id="@+id/copy_hint"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@android:color/black"
+            android:gravity="center_vertical|center_horizontal"
+            android:padding="15sp"
+            android:text="@string/copy"
+            android:textColor="#FFFF00"
+            android:visibility="invisible" android:layout_gravity="center_vertical|center_horizontal|center"/>
+        
+</com.oakonell.utils.activity.dragndrop.DragLayer>

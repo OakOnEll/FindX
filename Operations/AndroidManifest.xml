@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.oakonell.findx"
+    android:versionCode="4"
+    android:versionName="1.0" >
+
+    <uses-sdk android:minSdkVersion="4" />
+
+    <uses-permission android:name="android.permission.VIBRATE" />
+
+    <application
+        android:name=".FindXApp"
+        android:icon="@drawable/ic_launcher_findx"
+        android:label="@string/app_name" >
+        <activity
+            android:name=".ChooseStageActivity"
+            android:label="@string/app_name"
+            android:launchMode="singleInstance" >
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".StageActivity"
+            android:label="@string/app_name"
+            android:launchMode="singleInstance" >
+        </activity>
+        <activity android:name=".PuzzleActivity" >
+        </activity>
+        <activity android:name=".custom.CustomStageActivity" >
+        </activity>
+        <activity android:name=".custom.CustomPuzzleBuilderActivity" >
+        </activity>
+        <activity android:name=".settings.AboutFindXActivity" >
+        </activity>
+        <activity
+            android:name=".settings.FindXPreferences"
+            android:label="@string/app_name" >
+        </activity>
+        <activity
+            android:name=".custom.SharedLevelActivity"
+            android:noHistory="true" >
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" >
+                </action>
+
+                <category android:name="android.intent.category.DEFAULT" >
+                </category>
+                <category android:name="android.intent.category.BROWSABLE" >
+                </category>
+                <!-- android:pathPattern=".*LibriDroidId=" -->
+                <data
+                    android:host="www.oakonell.com"
+                    android:pathPrefix="/findx/share/"
+                    android:scheme="http" >
+                </data>
+            </intent-filter>
+        </activity>
+    </application>
+
+</manifest>

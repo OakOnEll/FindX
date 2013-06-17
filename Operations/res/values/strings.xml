@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">Find X</string>
+
+    <!-- settings -->
+    <string name="menu_settings">Settings</string>
+    <string name="pref_reset_preferences_key">reset_preferences</string>
+    <string name="pref_about_key">about</string>
+    <string name="pref_level_progress_category_key">pref_level_progress_category_key</string>
+    <string name="pref_reset_level_progress_key">pref_reset_level_progress_key</string>
+    <string name="pref_share_category_key">pref_share_category</string>
+    <string name="pref_default_share_level_finish_key">pref_default_share_level_finish_key</string>
+    <string name="pref_reset_preferences">Reset Preferences</string>
+    <string name="pref_about">About</string>
+    <string name="pref_level_progress_category">Level Progress</string>
+    <string name="pref_reset_level_progress_label">Reset Level Progress</string>
+    <string name="pref_confirm_reset_levels">Reset Level Progress?</string>
+    <string name="pref_share_category_title">Share</string>
+    <string name="level_finish_share_level_finish_title">Completed level %l in Find X</string>
+    <string name="pref_dlg_ttl_default_level_finish_share">Share Level Completion Text</string>
+    <string name="default_level_finish_share_message">I completed level %l \n%d\nin %m moves and %u undos!\n
+        In Find X for Android.\nhttps://play.google.com/store/apps/details?id=com.oakonell.findx</string>
+    <string name="pref_dlg_share_level_finish_msg" formatted="false">You can use parameters %t=title, %a=author, %u=url</string>
+    <string name="pref_default_share_level_finish_text">Share Level Completion</string>
+    <string name="default_custom_level_share_message" formatted="false">I am sharing a custom level by %a: %l\nFor the Find X Android game\n%u</string>
+    <string name="pref_dlg_custom_share_level_msg" formatted="false">You can use parameters %a=author, %l=level info, %u=url.</string>
+    <string name="pref_dlg_ttl_default_custom_level_share">Share Custom Level Text</string>
+    <string name="pref_default_share_custom_level_key">pref_default_share_custom_level_key</string>
+    <string name="pref_default_share_custom_level_text">Share custom level</string>
+    <string name="pref_dlg_share_author_msg">Your author tag/name for sharing levels</string>
+    <string name="pref_dlg_ttl_share_author">Authored by</string>
+    <string name="pref_share_author_key">pref_share_author_key</string>
+    <string name="pref_share_author">Authored by</string>
+    <string name="pref_sound_category_key">sound_category</string>
+    <string name="pref_sound_category_title">Sound</string>
+    <string name="pref_sound_fx_key">pref_sound_fx_key</string>
+    <string name="pref_sound_fx">Sound Effects</string>
+    <string name="pref_music_key">pref_music_key</string>
+    <string name="pref_music">Music</string>
+
+    <!-- Puzzle activity related strings -->
+    <string name="selectLevel">Select a Level</string>
+    <string name="retry">Retry</string>
+    <string name="give_up">Give Up</string>
+    <string name="minimum_moves">Minimum Moves</string>
+    <string name="level">Level</string>
+    <string name="next_level">Next Level</string>
+    <string name="goto_main_menu">Main Menu</string>
+    <string name="level_finished_title">Level Solved!</string>
+    <string name="restart">Restart</string>
+    <string name="share">Share</string>
+    <string name="undo">Undo</string>
+    <string name="move_num">#</string>
+    <string name="operation">Operation</string>
+    <string name="equation">Equation</string>
+    <string name="quit_level">Quit Level?</string>
+    <string name="restart_level">Restart Level?</string>
+    <string name="level_new_record">You beat your previous record</string>
+    <string name="level_record_tied">You tied your previous record!</string>
+    <string name="level_solved">Congratulations!</string>
+    <string name="stage1_title">Apprentice</string>
+    <string name="stage2_title">Journey-man</string>
+    <string name="stage3_title">Master</string>
+    <string name="custom_stage_title">Custom</string>
+
+    <!-- Custom level building related strings -->
+    <string name="custom_title_hint">Enter a title</string>
+    <string name="edit_operation">Edit Operation</string>
+    <string name="solution_x_label">"Solution: x = "</string>
+    <string name="save">Save</string>
+    <string name="cancel">Cancel</string>
+    <string name="custom">Custom levels</string>
+    <string name="ok">OK</string>
+    <string name="select_stage">Select a stage</string>
+    <string name="back">&lt;- Back</string>
+    <string name="custom_level_select">Select level</string>
+    <string name="build_custom">Build New Level</string>
+    <string name="title_required">Title is required</string>
+    <string name="confirm_delete_operation">Confirm Delete</string>
+    <string name="confirm_delete_operation_is_used">Operation \'%s\' is used in the moves. Deleting will remove any moves with this operation</string>
+    <string name="confirm_delete_level">Confirm Delete</string>
+    <string name="confirm_delete_level_text">Delete custom level \'%s\'?</string>
+    <string name="delete">Delete</string>
+    <string name="edit">Edit</string>
+    <string name="copy">Copy</string>
+    <string name="copy_prefix">Copy of </string>
+    <string name="confirm_lose_level_changes_title">Confirm Leave</string>
+    <string name="confirm_lose_level_changes">Exit level building? Any changes to the level will be lost.</string>
+    <string name="calc_min_moves">Minimize Moves</string>
+    <string name="already_minimum_moves_title">Already optimal</string>
+    <string name="already_minimum_moves">The puzzle is already optimally solved by the existing %d moves.</string>
+    <string name="better_solution_title">Better Solution</string>
+    <string name="better_solution">Found a better solution in %d moves. Replace current moves with better solution?</string>
+    <string name="searching">Searching...</string>
+    <string name="found_solution">Found a solution with %s moves!</string>
+    <string name="choose_new_operation">Choose new operation</string>
+    <string name="confirm_delete_move_title">Delete Move</string>
+    <string name="confirm_delete_move">Permanently delete move?</string>
+    <string name="move_menu_title">Move menu</string>
+    <string name="edit_move">Edit move</string>
+    <string name="delete_move">Delete move</string>
+    <string name="operation_menu_title">Operation menu</string>
+    <string name="edit_operation">Edit operation</string>
+    <string name="delete_operation">Delete operation</string>
+    <string name="import_level">Import</string>
+    <string name="operations">Operations</string>
+    <string name="num_moves">Number of Moves</string>
+    <string name="import_title">Import new custom level by</string>
+    <string name="add_random_moves">Add Random Moves</string>
+    <string name="add_random_op">\?</string>
+    <string name="add_random_moves_dlg_title">Add Random Moves</string>
+    <string name="how_many_random_moves">How many moves\?</string>
+    <string name="randomize">Randomize</string>
+    <string name="large_search_space_title">Large search space</string>
+    <string name="large_search_space">The search space is large- continue anyways?</string>
+    <string name="puzzle_solution_not_optimized_title">Not optimal solution</string>
+    <string name="puzzle_solution_not_optimized">The puzzle solution may not be optimal.</string>
+    <string name="optimize">Optimize</string>
+    <string name="cannot_be_zero">Cannot be zero</string>
+    <string name="authored_by">By</string>
+    <string name="cannot_edit_imported_levels">Cannot edit imported levels</string>
+    <string name="cannot_copy_imported_levels">Cannot copy imported levels</string>
+    <string name="share_custom_level_title">Sharing custom level %t</string>
+
+</resources>

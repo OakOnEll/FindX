@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.oakonell.findx.custom.CustomLevelGridCell xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical" android:gravity="fill_vertical|center_horizontal">
+
+    <TextView
+        android:id="@+id/level_id"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="TextView" android:layout_gravity="center_horizontal" android:layout_weight="1"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        />
+
+        <FrameLayout
+        android:id="@+id/frameLayout1"
+            android:layout_width="match_parent"
+            android:layout_height="fill_parent"
+            android:layout_weight="100"
+         >
+
+        <Button
+            android:id="@+id/level_name"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:minLines="2"
+            android:text="Button"
+            style="@style/FindXButton"
+			 />
+
+
+        <ImageView
+            android:id="@+id/lock"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/lock" android:paddingLeft="8dp" android:paddingTop="8dp"/>
+
+    </FrameLayout>
+    
+
+    <RatingBar
+        android:id="@+id/rating"
+        style = "?android:attr/ratingBarStyleSmall"        
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" android:numStars="3" android:clickable="false" android:isIndicator="true"
+        android:visibility="invisible" 
+        android:layout_weight="1"/>
+
+    <LinearLayout
+        android:id="@+id/author_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:gravity="center_horizontal" android:visibility="gone">
+
+        <TextView
+            android:id="@+id/byLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="1sp"
+        android:background="#555555"
+        android:textColor="#000000"
+            android:text="@string/authored_by" android:gravity="right" android:paddingRight="8sp" />
+
+        <TextView
+            android:id="@+id/author"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="1sp"
+        android:background="#555555"
+        android:textColor="#000000"
+            android:text="Author" />
+
+    </LinearLayout>
+
+</com.oakonell.findx.custom.CustomLevelGridCell>
