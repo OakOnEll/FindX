@@ -1,8 +1,11 @@
 package com.oakonell.findx;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
@@ -12,10 +15,6 @@ import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.actionbarsherlock.app.ActionBar;
-import com.actionbarsherlock.app.SherlockFragmentActivity;
-import com.actionbarsherlock.view.Menu;
-import com.actionbarsherlock.view.MenuItem;
 import com.oakonell.findx.custom.CustomStageActivity;
 import com.oakonell.findx.data.DataBaseHelper;
 import com.oakonell.findx.model.Levels;
@@ -23,7 +22,7 @@ import com.oakonell.findx.model.Puzzle;
 import com.oakonell.findx.model.Stage;
 import com.oakonell.utils.activity.AppLaunchUtils;
 
-public class ChooseStageActivity extends SherlockFragmentActivity {
+public class ChooseStageActivity extends Activity {
     private ArrayAdapter<Stage> adapter;
 
     @Override
@@ -34,12 +33,6 @@ public class ChooseStageActivity extends SherlockFragmentActivity {
             return;
         }
 
-		final ActionBar ab = getSupportActionBar();
-		ab.setDisplayHomeAsUpEnabled(false);
-		ab.setDisplayUseLogoEnabled(true);
-		ab.setDisplayShowTitleEnabled(true);
-
-        
         setContentView(R.layout.choose_stage);
 
         GridView stageSelect = (GridView) findViewById(R.id.stage_select);
@@ -93,7 +86,7 @@ public class ChooseStageActivity extends SherlockFragmentActivity {
                 startActivity(levelIntent);
             }
         });
-        AppLaunchUtils.appLaunched(this, null);
+        AppLaunchUtils.appLaunched(this);
         BackgroundMusicHelper.onActivtyCreate(this, R.raw.prelude_no_8_in_e_flat_minor_loop);
     }
 

@@ -126,9 +126,4 @@ public class CustomLevelGridCell extends LinearLayout implements DragSource, Dro
         return level;
     }
 
-	@Override
-	public void onDropCanceled(DragView view) {
-		// do nothing		
-	}
-
 }
