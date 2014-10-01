@@ -86,7 +86,7 @@ public class ChooseStageActivity extends Activity {
                 startActivity(levelIntent);
             }
         });
-        AppLaunchUtils.appLaunched(this);
+        AppLaunchUtils.appLaunched(this, null);
         BackgroundMusicHelper.onActivtyCreate(this, R.raw.prelude_no_8_in_e_flat_minor_loop);
     }
 

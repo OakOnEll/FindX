@@ -8,51 +8,33 @@ import android.preference.Preference.OnPreferenceClickListener;
 
 import com.oakonell.findx.R;
 import com.oakonell.findx.model.Level;
+import com.oakonell.utils.Utils;
 import com.oakonell.utils.preference.CommonPreferences;
+import com.oakonell.utils.preference.PrefsActivity;
 
-public class FindXPreferences extends CommonPreferences {
+public class FindXPreferences extends PrefsActivity {
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+	@Override
+	public void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		if (Utils.hasHoneycomb()) {
+			addPreV11Resources();
+		}
 
-        addPreferencesFromResource(R.xml.preferences);
 
-        postCreate(AboutFindXActivity.class);
 
-        Preference resetPref = findPreference(getString(R.string.pref_reset_level_progress_key));
-        resetPref.setOnPreferenceClickListener(new OnPreferenceClickListener() {
-            @Override
-            public boolean onPreferenceClick(Preference preference) {
-                resetLevels();
-                return true;
-            }
-        });
+	}
 
-    }
+	@Override
+	protected PreferenceConfigurer getPreV11PreferenceConfigurer() {
+		return configureMultiple(new CommonPreferences(this, getPrefFinder(),
+				AboutFindXActivity.class), new ResetPreferenceConfigurer(this,
+				getPrefFinder()));
+	}
 
-    protected void resetLevels() {
-        DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                switch (which) {
-                    case DialogInterface.BUTTON_POSITIVE:
-                        Level.resetLevelProgress();
-                        finish();
-                        break;
 
-                    case DialogInterface.BUTTON_NEGATIVE:
-                        break;
-                    default:
-                        throw new RuntimeException("Unexpected button was clicked");
-                }
-            }
-        };
-
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        String message = getResources().getString(R.string.pref_confirm_reset_levels);
-        builder.setMessage(message).setPositiveButton(android.R.string.yes, dialogClickListener)
-                .setNegativeButton(android.R.string.no, dialogClickListener).show();
-
-    }
+	@Override
+	protected int[] getPreV11PreferenceResources() {
+		return new int[] { R.xml.preferences };
+	}
 }
