@@ -122,5 +122,7 @@
     <string name="cannot_edit_imported_levels">Cannot edit imported levels</string>
     <string name="cannot_copy_imported_levels">Cannot copy imported levels</string>
     <string name="share_custom_level_title">Sharing custom level %t</string>
-
+    <string name="pref_other_category_key">other</string>
+    <string name="pref_other_category">Misc</string>
+    
 </resources>

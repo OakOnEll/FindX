@@ -1,10 +1,7 @@
 package com.oakonell.findx;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
@@ -15,136 +12,151 @@ import android.widget.ImageView;
 import android.widget.RatingBar;
 import android.widget.TextView;
 
+import com.actionbarsherlock.app.ActionBar;
+import com.actionbarsherlock.app.SherlockFragmentActivity;
+import com.actionbarsherlock.view.Menu;
+import com.actionbarsherlock.view.MenuItem;
 import com.oakonell.findx.model.Level;
 import com.oakonell.findx.model.Levels;
 import com.oakonell.findx.model.Stage;
 
-public class StageActivity extends Activity {
-    public static final String STAGE_ID = "stageId";
+public class StageActivity extends SherlockFragmentActivity {
+	public static final String STAGE_ID = "stageId";
 
-    private ArrayAdapter<Level> adapter;
-    private Stage stage;
+	private ArrayAdapter<Level> adapter;
+	private Stage stage;
 
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+	@Override
+	public void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
 
-        setContentView(R.layout.stage);
+		setContentView(R.layout.stage);
 
-        Intent intent = getIntent();
-        if (stage == null) {
-            String stageId = intent.getStringExtra(STAGE_ID);
-            if (stageId == null) {
-                throw new IllegalArgumentException("StageActivity launched without a stageId!");
-            }
-            stage = Levels.getStage(stageId);
-        }
+		final ActionBar ab = getSupportActionBar();
+		ab.setDisplayHomeAsUpEnabled(false);
+		ab.setHomeButtonEnabled(true);
+		ab.setDisplayUseLogoEnabled(true);
+		ab.setDisplayShowTitleEnabled(true);
 
-        GridView levelSelect = (GridView) findViewById(R.id.level_select);
+		
+		Intent intent = getIntent();
+		if (stage == null) {
+			String stageId = intent.getStringExtra(STAGE_ID);
+			if (stageId == null) {
+				throw new IllegalArgumentException(
+						"StageActivity launched without a stageId!");
+			}
+			stage = Levels.getStage(stageId);
+		}
 
-        adapter = new ArrayAdapter<Level>(getApplication(),
-                R.layout.level_select_grid_item, stage.getLevels()) {
+		GridView levelSelect = (GridView) findViewById(R.id.level_select);
 
-            @Override
-            public View getView(int position, View row, ViewGroup parent) {
-                if (row == null) {
-                    row = getLayoutInflater().inflate(R.layout.level_select_grid_item,
-                            parent, false);
-                }
+		adapter = new ArrayAdapter<Level>(getApplication(),
+				R.layout.level_select_grid_item, stage.getLevels()) {
 
-                final Level level = getItem(position);
-                TextView id = (TextView) row.findViewById(R.id.level_id);
-                id.setText(level.getId());
+			@Override
+			public View getView(int position, View row, ViewGroup parent) {
+				if (row == null) {
+					row = getLayoutInflater().inflate(
+							R.layout.level_select_grid_item, parent, false);
+				}
 
-                Button levelButton = (Button) row.findViewById(R.id.level_name);
-                levelButton.setText(level.getName());
+				final Level level = getItem(position);
+				TextView id = (TextView) row.findViewById(R.id.level_id);
+				id.setText(level.getId());
 
-                levelButton.setOnClickListener(new OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        startPuzzle(level.getId());
-                    }
-                });
+				Button levelButton = (Button) row.findViewById(R.id.level_name);
+				levelButton.setText(level.getName());
 
-                ImageView lock = (ImageView) row.findViewById(R.id.lock);
+				levelButton.setOnClickListener(new OnClickListener() {
+					@Override
+					public void onClick(View view) {
+						startPuzzle(level.getId());
+					}
+				});
 
-                int rating = level.getRating();
-                RatingBar ratingBar = (RatingBar) row.findViewById(R.id.rating);
-                ratingBar.setVisibility(rating > 0 ? View.VISIBLE : View.INVISIBLE);
-                ratingBar.setRating(rating);
-                if (level.isUnlocked()) {
-                    levelButton.setEnabled(true);
-                    lock.setVisibility(View.INVISIBLE);
-                } else {
-                    levelButton.setEnabled(false);
-                    lock.setVisibility(View.VISIBLE);
-                }
-                return row;
-            }
-        };
+				ImageView lock = (ImageView) row.findViewById(R.id.lock);
 
-        levelSelect.setAdapter(adapter);
+				int rating = level.getRating();
+				RatingBar ratingBar = (RatingBar) row.findViewById(R.id.rating);
+				ratingBar.setVisibility(rating > 0 ? View.VISIBLE
+						: View.INVISIBLE);
+				ratingBar.setRating(rating);
+				if (level.isUnlocked()) {
+					levelButton.setEnabled(true);
+					lock.setVisibility(View.INVISIBLE);
+				} else {
+					levelButton.setEnabled(false);
+					lock.setVisibility(View.VISIBLE);
+				}
+				return row;
+			}
+		};
 
-        adapter.notifyDataSetChanged();
+		levelSelect.setAdapter(adapter);
 
-        ImageView back = (ImageView) findViewById(R.id.back);
-        back.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent levelIntent = new Intent(StageActivity.this, ChooseStageActivity.class);
-                startActivity(levelIntent);
-                StageActivity.this.finish();
-            }
-        });
-        BackgroundMusicHelper.onActivtyCreate(this, stage.getBgMusicId());
-    }
+		adapter.notifyDataSetChanged();
 
-    private void startPuzzle(final String levelId) {
-        BackgroundMusicHelper.continueMusicOnNextActivity();
-        Intent levelIntent = new Intent(StageActivity.this, PuzzleActivity.class);
-        levelIntent.putExtra(PuzzleActivity.PUZZLE_ID, levelId);
-        startActivity(levelIntent);
-    }
+		ImageView back = (ImageView) findViewById(R.id.back);
+		back.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				Intent levelIntent = new Intent(StageActivity.this,
+						ChooseStageActivity.class);
+				startActivity(levelIntent);
+				StageActivity.this.finish();
+			}
+		});
+		BackgroundMusicHelper.onActivtyCreate(this, stage.getBgMusicId());
+	}
 
-    @Override
-    protected void onRestart() {
-        if (adapter != null) {
-            // update ratings and enablement of the level buttons
-            adapter.notifyDataSetChanged();
-        }
-        super.onRestart();
-    }
+	private void startPuzzle(final String levelId) {
+		BackgroundMusicHelper.continueMusicOnNextActivity();
+		Intent levelIntent = new Intent(StageActivity.this,
+				PuzzleActivity.class);
+		levelIntent.putExtra(PuzzleActivity.PUZZLE_ID, levelId);
+		startActivity(levelIntent);
+	}
 
-    @Override
-    protected void onResume() {
-        BackgroundMusicHelper.onActivityResume(this, stage.getBgMusicId());
-        if (adapter != null) {
-            // update ratings and enablement of the level buttons
-            adapter.notifyDataSetChanged();
-        }
-        super.onResume();
-    }
+	@Override
+	protected void onRestart() {
+		if (adapter != null) {
+			// update ratings and enablement of the level buttons
+			adapter.notifyDataSetChanged();
+		}
+		super.onRestart();
+	}
 
-    @Override
-    protected void onDestroy() {
-        BackgroundMusicHelper.onActivityDestroy();
-        super.onDestroy();
-    }
+	@Override
+	protected void onResume() {
+		BackgroundMusicHelper.onActivityResume(this, stage.getBgMusicId());
+		if (adapter != null) {
+			// update ratings and enablement of the level buttons
+			adapter.notifyDataSetChanged();
+		}
+		super.onResume();
+	}
 
-    @Override
-    protected void onPause() {
-        BackgroundMusicHelper.onActivityPause();
-        super.onPause();
-    }
+	@Override
+	protected void onDestroy() {
+		BackgroundMusicHelper.onActivityDestroy();
+		super.onDestroy();
+	}
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        return MenuHelper.onCreateOptionsMenu(this, menu);
-    }
+	@Override
+	protected void onPause() {
+		BackgroundMusicHelper.onActivityPause();
+		super.onPause();
+	}
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        return MenuHelper.onOptionsItemSelected(this, item);
-    }
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		return MenuHelper.onCreateOptionsMenu(this, menu);
+	}
+
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		return MenuHelper.onOptionsItemSelected(this, item);
+	}
 
 }

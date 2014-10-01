@@ -1,58 +1,41 @@
 package com.oakonell.findx.settings;
 
-import android.app.AlertDialog;
-import android.content.DialogInterface;
 import android.os.Bundle;
-import android.preference.Preference;
-import android.preference.Preference.OnPreferenceClickListener;
 
+import com.oakonell.findx.BuildConfig;
 import com.oakonell.findx.R;
-import com.oakonell.findx.model.Level;
+import com.oakonell.utils.Utils;
 import com.oakonell.utils.preference.CommonPreferences;
+import com.oakonell.utils.preference.PrefsActivity;
 
-public class FindXPreferences extends CommonPreferences {
+public class FindXPreferences extends PrefsActivity {
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+	@Override
+	public void onCreate(Bundle aSavedState) {
+		super.onCreate(aSavedState);
+		if (Utils.hasHoneycomb()) {
+			addPreV11Resources();
+		}
+	}
 
-        addPreferencesFromResource(R.xml.preferences);
+	@Override
+	protected int[] getPreV11PreferenceResources() {
+		if (BuildConfig.DEBUG) {
+			return new int[] { R.xml.preferences };
+		}
+		return new int[] { R.xml.preferences };
+	}
 
-        postCreate(AboutFindXActivity.class);
+	@Override
+	protected PreferenceConfigurer getPreV11PreferenceConfigurer() {
+		PrefConfigurer prefConfigurer = new PrefConfigurer(this,
+				getPrefFinder());
+		return configureMultiple(prefConfigurer, new CommonPreferences(this,
+				getPrefFinder(), AboutFindXActivity.class));
+	}
 
-        Preference resetPref = findPreference(getString(R.string.pref_reset_level_progress_key));
-        resetPref.setOnPreferenceClickListener(new OnPreferenceClickListener() {
-            @Override
-            public boolean onPreferenceClick(Preference preference) {
-                resetLevels();
-                return true;
-            }
-        });
+	protected boolean isValidFragment(String fragmentName) {
+		return true;
+	}
 
-    }
-
-    protected void resetLevels() {
-        DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                switch (which) {
-                    case DialogInterface.BUTTON_POSITIVE:
-                        Level.resetLevelProgress();
-                        finish();
-                        break;
-
-                    case DialogInterface.BUTTON_NEGATIVE:
-                        break;
-                    default:
-                        throw new RuntimeException("Unexpected button was clicked");
-                }
-            }
-        };
-
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        String message = getResources().getString(R.string.pref_confirm_reset_levels);
-        builder.setMessage(message).setPositiveButton(android.R.string.yes, dialogClickListener)
-                .setNegativeButton(android.R.string.no, dialogClickListener).show();
-
-    }
 }

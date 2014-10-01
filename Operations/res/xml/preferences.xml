@@ -57,7 +57,7 @@
     </PreferenceCategory>
 
     <PreferenceCategory
-        android:key="@string/pref_other_category"
+        android:key="@string/pref_other_category_key"
         android:title="@string/pref_other_category" >
 
         <Preference
@@ -67,7 +67,11 @@
         <Preference
             android:key="@string/pref_changes_key"
             android:title="@string/pref_changes" />
-
+        
+        <Preference
+            android:key="@string/pref_rate_app_key"
+            android:title="@string/pref_rate_app" />
+        
         <Preference
             android:key="@string/pref_about_key"
             android:title="@string/pref_about" />
