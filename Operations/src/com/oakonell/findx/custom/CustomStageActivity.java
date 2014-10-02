@@ -11,8 +11,8 @@ import org.apache.commons.math3.fraction.Fraction;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -37,8 +37,13 @@ import android.widget.RatingBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.games.Games;
+import com.google.example.games.basegameutils.BaseGameActivity;
+import com.google.example.games.basegameutils.GameHelper;
+import com.oakonell.findx.Achievements.AchievementContext;
 import com.oakonell.findx.BackgroundMusicHelper;
 import com.oakonell.findx.ChooseStageActivity;
+import com.oakonell.findx.FindXApp;
 import com.oakonell.findx.MenuHelper;
 import com.oakonell.findx.PuzzleActivity;
 import com.oakonell.findx.R;
@@ -67,7 +72,8 @@ import com.oakonell.utils.activity.dragndrop.OnDropListener;
 import com.oakonell.utils.share.ShareHelper;
 import com.oakonell.utils.xml.XMLUtils;
 
-public class CustomStageActivity extends Activity {
+public class CustomStageActivity extends BaseGameActivity implements
+		AchievementContext {
 
 	private ArrayAdapter<Level> adapter;
 	private CustomStage stage;
@@ -645,4 +651,25 @@ public class CustomStageActivity extends Activity {
 		return MenuHelper.onOptionsItemSelected(this, item);
 	}
 
+	@Override
+	public void onSignInFailed() {
+		Toast.makeText(this, "Sign in failed", Toast.LENGTH_SHORT).show();
+	}
+
+	@Override
+	public void onSignInSucceeded() {
+		FindXApp app = (FindXApp) getApplication();
+		Intent settingsIntent = Games.getSettingsIntent(getApiClient());
+		app.setSettingsIntent(settingsIntent);
+	}
+
+	@Override
+	public GameHelper getHelper() {
+		return getGameHelper();
+	}
+
+	@Override
+	public Context getContext() {
+		return this;
+	}
 }

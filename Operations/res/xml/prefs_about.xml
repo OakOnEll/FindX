@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    android:title="Settings" >
+
+    <PreferenceCategory android:title="App Info" >
+        <Preference
+            android:key="@string/pref_reset_preferences_key"
+            android:title="@string/pref_reset_preferences" />
+        <Preference
+            android:key="@string/pref_about_key"
+            android:title="About" />
+        <Preference
+            android:key="@string/pref_rate_app_key"
+            android:title="@string/pref_rate_app" />
+        <Preference
+            android:key="@string/pref_changes_key"
+            android:title="@string/pref_changes" />
+    </PreferenceCategory>
+
+</PreferenceScreen>

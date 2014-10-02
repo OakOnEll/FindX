@@ -1,21 +1,36 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.oakonell.findx"
-    android:versionCode="4"
-    android:versionName="1.0" >
+    android:versionCode="5"
+    android:versionName="2.0" >
 
-    <uses-sdk android:minSdkVersion="4" />
+    <uses-sdk android:minSdkVersion="9" />
 
     <uses-permission android:name="android.permission.VIBRATE" />
+    <!-- For parse.com data access and google play -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <!-- for google play -->
+    <uses-permission android:name="android.permission.GET_ACCOUNTS" />
 
     <application
         android:name=".FindXApp"
         android:icon="@drawable/ic_launcher_findx"
         android:label="@string/app_name" >
+        <meta-data
+            android:name="com.google.android.gms.version"
+            android:value="@integer/google_play_services_version" />
+        <meta-data
+            android:name="com.google.android.gms.appstate.APP_ID"
+            android:value="@string/app_id" />
+        <meta-data
+            android:name="com.google.android.gms.games.APP_ID"
+            android:value="@string/app_id" />
+
         <activity
             android:name=".ChooseStageActivity"
             android:label="@string/app_name"
-            android:launchMode="singleInstance" >
+            >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -25,7 +40,7 @@
         <activity
             android:name=".StageActivity"
             android:label="@string/app_name"
-            android:launchMode="singleInstance" >
+             >
         </activity>
         <activity android:name=".PuzzleActivity" >
         </activity>

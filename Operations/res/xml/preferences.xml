@@ -4,34 +4,30 @@
     <PreferenceCategory
         android:key="@string/pref_sound_category_key"
         android:title="@string/pref_sound_category_title" >
-
         <CheckBoxPreference
+            android:defaultValue="true"
             android:key="@string/pref_music_key"
-            android:title="@string/pref_music" android:defaultValue="true"/>
-
+            android:title="@string/pref_music" />
         <CheckBoxPreference
+            android:defaultValue="true"
             android:key="@string/pref_sound_fx_key"
-            android:title="@string/pref_sound_fx" android:defaultValue="true"/>
+            android:title="@string/pref_sound_fx" />
     </PreferenceCategory>
-
     <PreferenceCategory
         android:key="@string/pref_share_category_key"
         android:title="@string/pref_share_category_title" >
-
         <com.oakonell.utils.preference.ValueDisplayingEditTextPreference
             android:defaultValue=""
             android:dialogMessage="@string/pref_dlg_share_author_msg"
             android:dialogTitle="@string/pref_dlg_ttl_share_author"
             android:key="@string/pref_share_author_key"
             android:title="@string/pref_share_author" />
-
         <com.oakonell.utils.preference.ValueDisplayingEditTextPreference
             android:defaultValue="@string/default_level_finish_share_message"
             android:dialogMessage="@string/pref_dlg_share_level_finish_msg"
             android:dialogTitle="@string/pref_dlg_ttl_default_level_finish_share"
             android:key="@string/pref_default_share_level_finish_key"
             android:title="@string/pref_default_share_level_finish_text" />
-
         <com.oakonell.utils.preference.ValueDisplayingEditTextPreference
             android:defaultValue="@string/default_custom_level_share_message"
             android:dialogMessage="@string/pref_dlg_custom_share_level_msg"
@@ -46,31 +42,12 @@
             android:key="@string/pref_copy_for_face_book_key"
             android:title="@string/pref_copy_for_face_book" />
     </PreferenceCategory>
-
     <PreferenceCategory
         android:key="@string/pref_level_progress_category_key"
         android:title="@string/pref_level_progress_category" >
-
         <Preference
             android:key="@string/pref_reset_level_progress_key"
             android:title="@string/pref_reset_level_progress_label" />
-    </PreferenceCategory>
-
-    <PreferenceCategory
-        android:key="@string/pref_other_category"
-        android:title="@string/pref_other_category" >
-
-        <Preference
-            android:key="@string/pref_reset_preferences_key"
-            android:title="@string/pref_reset_preferences" />
-
-        <Preference
-            android:key="@string/pref_changes_key"
-            android:title="@string/pref_changes" />
-
-        <Preference
-            android:key="@string/pref_about_key"
-            android:title="@string/pref_about" />
     </PreferenceCategory>
 
 </PreferenceScreen>

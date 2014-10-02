@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="offline_achievement_label">Achievement</string>
+    <string name="achievement_the_trivial_solution_label">The Trivial Solution</string>
+    <string name="achievement_room_for_improvement_label">Room for Improvement</string>
+    <string name="achievement_apprenticed_label">Apprenticed</string>
+    <string name="achievement_journeyman_label">Journey-Man</string>
+    <string name="achievement_the_masters_degree_label">Master\'s Degree</string>
+    <string name="achievement_the_contributor_label">The Contributor</string>
+
+</resources>

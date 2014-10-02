@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+Google Play game services IDs.
+Save this file as res/values/games-ids.xml in your project.
+-->
+<resources>
+  <string name="achievement_the_trivial_solution">CgkI0eiT7qgKEAIQAg</string>
+  <string name="achievement_room_for_improvement">CgkI0eiT7qgKEAIQBg</string>
+  <string name="achievement_apprenticed">CgkI0eiT7qgKEAIQAw</string>
+  <string name="achievement_journeyman">CgkI0eiT7qgKEAIQBA</string>
+  <string name="achievement_the_masters_degree">CgkI0eiT7qgKEAIQBQ</string>
+  <string name="achievement_the_contributor">CgkI0eiT7qgKEAIQBw</string>
+</resources>

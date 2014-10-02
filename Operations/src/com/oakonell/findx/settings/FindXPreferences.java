@@ -1,13 +1,9 @@
 package com.oakonell.findx.settings;
 
-import android.app.AlertDialog;
-import android.content.DialogInterface;
 import android.os.Bundle;
-import android.preference.Preference;
-import android.preference.Preference.OnPreferenceClickListener;
 
+import com.oakonell.findx.BuildConfig;
 import com.oakonell.findx.R;
-import com.oakonell.findx.model.Level;
 import com.oakonell.utils.Utils;
 import com.oakonell.utils.preference.CommonPreferences;
 import com.oakonell.utils.preference.PrefsActivity;
@@ -21,20 +17,30 @@ public class FindXPreferences extends PrefsActivity {
 			addPreV11Resources();
 		}
 
+	}
 
-
+	@Override
+	protected int[] getPreV11PreferenceResources() {
+		if (BuildConfig.DEBUG) {
+			return new int[] { R.xml.preferences, R.xml.prefs_account,
+					R.xml.prefs_develop, R.xml.prefs_about };
+		}
+		return new int[] { R.xml.preferences, R.xml.prefs_account,
+				R.xml.prefs_about };
 	}
 
 	@Override
 	protected PreferenceConfigurer getPreV11PreferenceConfigurer() {
-		return configureMultiple(new CommonPreferences(this, getPrefFinder(),
-				AboutFindXActivity.class), new ResetPreferenceConfigurer(this,
-				getPrefFinder()));
-	}
-
-
-	@Override
-	protected int[] getPreV11PreferenceResources() {
-		return new int[] { R.xml.preferences };
+		if (BuildConfig.DEBUG) {
+			return configureMultiple(new ResetPreferenceConfigurer(this,
+					getPrefFinder()), new AccountPrefConfigurer(this,
+					getPrefFinder()), new DevelopPrefConfigurer(this,
+					getPrefFinder()), new CommonPreferences(this,
+					getPrefFinder(), AboutFindXActivity.class));
+		}
+		return configureMultiple(new ResetPreferenceConfigurer(this,
+				getPrefFinder()), new AccountPrefConfigurer(this,
+				getPrefFinder()), new CommonPreferences(this, getPrefFinder(),
+				AboutFindXActivity.class));
 	}
 }
