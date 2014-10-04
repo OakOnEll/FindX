@@ -7,6 +7,7 @@ import org.apache.commons.math3.fraction.Fraction;
 import com.oakonell.findx.model.Expression;
 import com.oakonell.findx.model.Operation;
 import com.oakonell.findx.model.OperationVisitor;
+import com.parse.ParseObject;
 
 @Immutable
 public class Subtract extends AbstractOperation {
@@ -90,5 +91,12 @@ public class Subtract extends AbstractOperation {
     public void accept(OperationVisitor visitor) {
         visitor.visitSubtract(this);
     }
+
+	@Override
+	public void addToParseObject(ParseObject parseOp) {
+		parseOp.put("type", type().ordinal());
+		parseOp.put("scalar", expr.getConstant());
+		parseOp.put("linearCoeff", expr.getXCoefficient());
+	}
 
 }

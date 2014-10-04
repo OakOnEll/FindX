@@ -1,5 +1,6 @@
 package com.oakonell.findx.custom;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -25,11 +26,10 @@ import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.view.View.OnLongClickListener;
 import android.view.View.OnTouchListener;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.GridView;
 import android.widget.ImageView;
@@ -47,6 +47,7 @@ import com.oakonell.findx.FindXApp;
 import com.oakonell.findx.MenuHelper;
 import com.oakonell.findx.PuzzleActivity;
 import com.oakonell.findx.R;
+import com.oakonell.findx.custom.PopupMenuDialogFragment.OnItemSelected;
 import com.oakonell.findx.custom.model.CustomLevel;
 import com.oakonell.findx.custom.model.CustomLevelBuilder;
 import com.oakonell.findx.custom.model.CustomStage;
@@ -66,7 +67,6 @@ import com.oakonell.utils.activity.dragndrop.DragController;
 import com.oakonell.utils.activity.dragndrop.DragLayer;
 import com.oakonell.utils.activity.dragndrop.DragSource;
 import com.oakonell.utils.activity.dragndrop.DragView;
-import com.oakonell.utils.activity.dragndrop.ImageDropTarget;
 import com.oakonell.utils.activity.dragndrop.OnDragListener;
 import com.oakonell.utils.activity.dragndrop.OnDropListener;
 import com.oakonell.utils.share.ShareHelper;
@@ -87,6 +87,17 @@ public class CustomStageActivity extends BaseGameActivity implements
 
 		// TODO do this in an AsyncTask
 		stage = Levels.getCustomStage();
+
+		ImageView search = (ImageView) findViewById(R.id.search);
+		search.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				Intent levelIntent = new Intent(CustomStageActivity.this,
+						CustomLevelSearchActivity.class);
+				startActivity(levelIntent);
+
+			}
+		});
 
 		GridView levelSelect = (GridView) findViewById(R.id.level_select);
 
@@ -123,76 +134,6 @@ public class CustomStageActivity extends BaseGameActivity implements
 				target.setBackgroundResource(bg);
 			}
 		};
-
-		ImageDropTarget trashCan = (ImageDropTarget) findViewById(R.id.delete_level);
-		trashCan.setOnDragListener(dragListener);
-		trashCan.setOnDropListener(new OnDropListener() {
-			@Override
-			public void onDrop(View target, DragSource source, int x, int y,
-					int xOffset, int yOffset, DragView dragView, Object dragInfo) {
-				deleteLevel(((CustomLevelGridCell) source).getLevel());
-			}
-
-			@Override
-			public boolean acceptDrop(View target, DragSource source, int x,
-					int y, int xOffset, int yOffset, DragView dragView,
-					Object dragInfo) {
-				return true;
-			}
-		});
-		textIdByDropTarget.put(trashCan, R.id.delete_hint);
-		mDragLayer.addTarget(trashCan);
-
-		ImageDropTarget pencil = (ImageDropTarget) findViewById(R.id.edit_level);
-		pencil.setOnDragListener(dragListener);
-		pencil.setOnDropListener(new OnDropListener() {
-			@Override
-			public void onDrop(View view, DragSource source, int x, int y,
-					int xOffset, int yOffset, DragView dragView, Object dragInfo) {
-				CustomLevel level = ((CustomLevelGridCell) source).getLevel();
-				if (level.isImported()) {
-					Toast.makeText(CustomStageActivity.this,
-							R.string.cannot_edit_imported_levels,
-							Toast.LENGTH_SHORT).show();
-					return;
-				}
-
-				Intent levelIntent = new Intent(CustomStageActivity.this,
-						CustomPuzzleBuilderActivity.class);
-				levelIntent.putExtra(CustomPuzzleBuilderActivity.LEVEL_ID,
-						level.getDbId());
-				startActivity(levelIntent);
-			}
-
-			@Override
-			public boolean acceptDrop(View target, DragSource source, int x,
-					int y, int xOffset, int yOffset, DragView dragView,
-					Object dragInfo) {
-				return true;
-			}
-		});
-		textIdByDropTarget.put(pencil, R.id.edit_hint);
-		mDragLayer.addTarget(pencil);
-
-		ImageDropTarget share = (ImageDropTarget) findViewById(R.id.share_level);
-		share.setOnDragListener(dragListener);
-		share.setOnDropListener(new OnDropListener() {
-			@Override
-			public void onDrop(View view, DragSource source, int x, int y,
-					int xOffset, int yOffset, DragView dragView, Object dragInfo) {
-				CustomLevel level = ((CustomLevelGridCell) source).getLevel();
-				shareLevel(level);
-			}
-
-			@Override
-			public boolean acceptDrop(View target, DragSource source, int x,
-					int y, int xOffset, int yOffset, DragView dragView,
-					Object dragInfo) {
-				return true;
-			}
-		});
-		textIdByDropTarget.put(share, R.id.share_hint);
-		mDragLayer.addTarget(share);
 
 		mDragController.setDragListener(mDragLayer);
 
@@ -236,21 +177,19 @@ public class CustomStageActivity extends BaseGameActivity implements
 				TextView id = (TextView) row.findViewById(R.id.level_id);
 				id.setText(level.getId());
 
-				final Button levelButton = (Button) row
+				final TextView levelButton = (TextView) row
 						.findViewById(R.id.level_name);
 				levelButton.setText(level.getName());
 
-				levelButton.setOnClickListener(new OnClickListener() {
+				View menu = row.findViewById(R.id.menu);
+				menu.setOnClickListener(new OnClickListener() {
 					@Override
-					public void onClick(View view) {
-						startPuzzle(level.getId());
+					public void onClick(View v) {
+						List<LevelMenuItem> menuItems = new ArrayList<CustomStageActivity.LevelMenuItem>();
+						addMenuItems(level, menuItems);
+						showPopupMenu(menuItems, v);
 					}
-				});
-				levelButton.setOnLongClickListener(new OnLongClickListener() {
-					@Override
-					public boolean onLongClick(View v) {
-						return startDrag(row);
-					}
+
 				});
 
 				int rating = level.getRating();
@@ -280,17 +219,29 @@ public class CustomStageActivity extends BaseGameActivity implements
 					authorText.setText("");
 				}
 
-				// if (level.isUnlocked(CustomStageActivity.this)) {
-				// levelButton.setEnabled(true);
-				// } else {
-				// levelButton.setEnabled(false);
-				// }
 				return row;
 			}
 
 		};
 
 		levelSelect.setAdapter(adapter);
+		levelSelect
+				.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+					@Override
+					public void onItemClick(AdapterView<?> parent, View view,
+							int position, long id) {
+						Level level = adapter.getItem(position);
+						startPuzzle(level.getId());
+					}
+				});
+		levelSelect
+				.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+					@Override
+					public boolean onItemLongClick(AdapterView<?> parent,
+							View view, int position, long id) {
+						return startDrag(view);
+					}
+				});
 
 		adapter.notifyDataSetChanged();
 
@@ -305,9 +256,7 @@ public class CustomStageActivity extends BaseGameActivity implements
 			}
 		});
 
-		final ImageDropTarget buildCustom = (ImageDropTarget) findViewById(R.id.build_custom);
-		textIdByDropTarget.put(buildCustom, R.id.copy_hint);
-		mDragLayer.addTarget(buildCustom);
+		final ImageView buildCustom = (ImageView) findViewById(R.id.build_custom);
 		buildCustom.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
@@ -316,61 +265,33 @@ public class CustomStageActivity extends BaseGameActivity implements
 				startActivity(levelIntent);
 			}
 		});
-		buildCustom.setFocusable(true);
-		// give feedback on presses
-		buildCustom.setOnTouchListener(new OnTouchListener() {
-			@Override
-			public boolean onTouch(View arg0, MotionEvent arg1) {
-				switch (arg1.getAction()) {
-				case MotionEvent.ACTION_DOWN: {
-					int bg = android.R.color.background_light;
-					buildCustom.setBackgroundResource(bg);
-					// a nice alternative, but how to undo
-					// buildCustom.setColorFilter(0xFFFF0000,
-					// PorterDuff.Mode.MULTIPLY);
-					break;
-				}
-				case MotionEvent.ACTION_UP:
-				case MotionEvent.ACTION_CANCEL: {
-					int bg = android.R.color.background_dark;
-					buildCustom.setBackgroundResource(bg);
-					// buildCustom.setColorFilter(0xFF000000,
-					// PorterDuff.Mode.MULTIPLY);
-					break;
-				}
-				}
-				return false;
-			}
-		});
-		buildCustom.setOnDragListener(dragListener);
-		buildCustom.setOnDropListener(new OnDropListener() {
-			@Override
-			public void onDrop(View view, DragSource source, int x, int y,
-					int xOffset, int yOffset, DragView dragView, Object dragInfo) {
-				CustomLevel level = ((CustomLevelGridCell) source).getLevel();
-				if (level.isImported()) {
-					Toast.makeText(CustomStageActivity.this,
-							R.string.cannot_copy_imported_levels,
-							Toast.LENGTH_SHORT).show();
-					return;
-				}
+//		buildCustom.setFocusable(true);
+//		// give feedback on presses
+//		buildCustom.setOnTouchListener(new OnTouchListener() {
+//			@Override
+//			public boolean onTouch(View arg0, MotionEvent arg1) {
+//				switch (arg1.getAction()) {
+//				case MotionEvent.ACTION_DOWN: {
+//					int bg = android.R.color.background_light;
+//					buildCustom.setBackgroundResource(bg);
+//					// a nice alternative, but how to undo
+//					// buildCustom.setColorFilter(0xFFFF0000,
+//					// PorterDuff.Mode.MULTIPLY);
+//					break;
+//				}
+//				case MotionEvent.ACTION_UP:
+//				case MotionEvent.ACTION_CANCEL: {
+//					int bg = android.R.color.background_dark;
+//					buildCustom.setBackgroundResource(bg);
+//					// buildCustom.setColorFilter(0xFF000000,
+//					// PorterDuff.Mode.MULTIPLY);
+//					break;
+//				}
+//				}
+//				return false;
+//			}
+//		});
 
-				Intent levelIntent = new Intent(CustomStageActivity.this,
-						CustomPuzzleBuilderActivity.class);
-				levelIntent.putExtra(CustomPuzzleBuilderActivity.LEVEL_ID,
-						level.getDbId());
-				levelIntent.putExtra(CustomPuzzleBuilderActivity.COPY, true);
-
-				startActivity(levelIntent);
-			}
-
-			@Override
-			public boolean acceptDrop(View target, DragSource source, int x,
-					int y, int xOffset, int yOffset, DragView dragView,
-					Object dragInfo) {
-				return true;
-			}
-		});
 		BackgroundMusicHelper.onActivtyCreate(this, stage.getBgMusicId());
 	}
 
@@ -619,6 +540,24 @@ public class CustomStageActivity extends BaseGameActivity implements
 		alertDialog.show();
 	}
 
+	private void copyLevel(CustomLevel level) {
+		Intent levelIntent = new Intent(CustomStageActivity.this,
+				CustomPuzzleBuilderActivity.class);
+		levelIntent.putExtra(CustomPuzzleBuilderActivity.LEVEL_ID,
+				level.getDbId());
+		levelIntent.putExtra(CustomPuzzleBuilderActivity.COPY, true);
+
+		startActivity(levelIntent);
+	}
+
+	private void editLevel(final CustomLevel level) {
+		Intent levelIntent = new Intent(CustomStageActivity.this,
+				CustomPuzzleBuilderActivity.class);
+		levelIntent.putExtra(CustomPuzzleBuilderActivity.LEVEL_ID,
+				level.getDbId());
+		startActivity(levelIntent);
+	}
+
 	public boolean startDrag(View v) {
 		DragSource dragSource = (DragSource) v;
 
@@ -672,4 +611,76 @@ public class CustomStageActivity extends BaseGameActivity implements
 	public Context getContext() {
 		return this;
 	}
+
+	private void showPopupMenu(final List<LevelMenuItem> menus,
+			View originatingView) {
+		// builder.setTitle("Modify Match");
+		String[] menuitems = new String[menus.size()];
+		int i = 0;
+		for (LevelMenuItem each : menus) {
+			menuitems[i++] = each.text;
+		}
+
+		PopupMenuDialogFragment frag = new PopupMenuDialogFragment();
+		frag.initialize(originatingView, menuitems, new OnItemSelected() {
+			@Override
+			public void onSelected(int which) {
+				// // The 'which' argument contains the index
+				// // position of the selected item
+				menus.get(which).execute.execute(CustomStageActivity.this,
+						adapter);
+				adapter.notifyDataSetChanged();
+			}
+		});
+		frag.show(getSupportFragmentManager(), "popup");
+	}
+
+	public interface ItemExecute {
+		void execute(CustomStageActivity activity, ArrayAdapter<Level> adapter);
+	}
+
+	public static class LevelMenuItem {
+		final String text;
+		final ItemExecute execute;
+
+		public LevelMenuItem(String text, ItemExecute execute) {
+			this.text = text;
+			this.execute = execute;
+		}
+	}
+
+	private void addMenuItems(final CustomLevel level,
+			List<LevelMenuItem> menuItems) {
+		menuItems.add(new LevelMenuItem("Delete", new ItemExecute() {
+			@Override
+			public void execute(CustomStageActivity activity,
+					ArrayAdapter<Level> adapter) {
+				deleteLevel(level);
+			}
+		}));
+		if (!level.isImported()) {
+			menuItems.add(new LevelMenuItem("Edit", new ItemExecute() {
+				@Override
+				public void execute(CustomStageActivity activity,
+						ArrayAdapter<Level> adapter) {
+					editLevel(level);
+				}
+			}));
+			menuItems.add(new LevelMenuItem("Copy", new ItemExecute() {
+				@Override
+				public void execute(CustomStageActivity activity,
+						ArrayAdapter<Level> adapter) {
+					copyLevel(level);
+				}
+			}));
+		}
+		menuItems.add(new LevelMenuItem("Share", new ItemExecute() {
+			@Override
+			public void execute(CustomStageActivity activity,
+					ArrayAdapter<Level> adapter) {
+				shareLevel(level);
+			}
+		}));
+	}
+
 }

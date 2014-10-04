@@ -29,8 +29,7 @@
 
         <activity
             android:name=".ChooseStageActivity"
-            android:label="@string/app_name"
-            >
+            android:label="@string/app_name" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -39,14 +38,15 @@
         </activity>
         <activity
             android:name=".StageActivity"
-            android:label="@string/app_name"
-             >
+            android:label="@string/app_name" >
         </activity>
         <activity android:name=".PuzzleActivity" >
         </activity>
         <activity android:name=".custom.CustomStageActivity" >
         </activity>
         <activity android:name=".custom.CustomPuzzleBuilderActivity" >
+        </activity>
+        <activity android:name=".custom.CustomLevelSearchActivity" >
         </activity>
         <activity android:name=".settings.AboutFindXActivity" >
         </activity>

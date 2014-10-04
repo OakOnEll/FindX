@@ -8,8 +8,8 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.RatingBar;
@@ -63,15 +63,18 @@ public class StageActivity extends BaseGameActivity implements
 				TextView id = (TextView) row.findViewById(R.id.level_id);
 				id.setText(level.getId());
 
-				Button levelButton = (Button) row.findViewById(R.id.level_name);
+				TextView levelButton = (TextView) row
+						.findViewById(R.id.level_name);
 				levelButton.setText(level.getName());
+				
+				row.findViewById(R.id.menu).setVisibility(View.INVISIBLE);
 
-				levelButton.setOnClickListener(new OnClickListener() {
-					@Override
-					public void onClick(View view) {
-						startPuzzle(level.getId());
-					}
-				});
+				// row.setOnClickListener(new OnClickListener() {
+				// @Override
+				// public void onClick(View view) {
+				// startPuzzle(level.getId());
+				// }
+				// });
 
 				ImageView lock = (ImageView) row.findViewById(R.id.lock);
 
@@ -92,6 +95,15 @@ public class StageActivity extends BaseGameActivity implements
 		};
 
 		levelSelect.setAdapter(adapter);
+		levelSelect
+				.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+					@Override
+					public void onItemClick(AdapterView<?> parent, View view,
+							int position, long id) {
+						Level level = adapter.getItem(position);
+						startPuzzle(level.getId());
+					}
+				});
 
 		adapter.notifyDataSetChanged();
 

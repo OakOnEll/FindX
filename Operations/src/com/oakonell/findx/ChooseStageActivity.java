@@ -9,6 +9,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.GridView;
@@ -22,6 +23,7 @@ import com.google.example.games.basegameutils.BaseGameActivity;
 import com.google.example.games.basegameutils.GameHelper;
 import com.oakonell.findx.Achievements.AchievementContext;
 import com.oakonell.findx.custom.CustomStageActivity;
+import com.oakonell.findx.custom.ParseConnectivity;
 import com.oakonell.findx.data.DataBaseHelper;
 import com.oakonell.findx.model.Levels;
 import com.oakonell.findx.model.Puzzle;
@@ -60,6 +62,7 @@ public class ChooseStageActivity extends BaseGameActivity implements
 		signOutButton.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
+				ParseConnectivity.logout();
 				getGameHelper().signOut();
 				signOut();
 				// show login button
@@ -114,15 +117,16 @@ public class ChooseStageActivity extends BaseGameActivity implements
 				TextView id = (TextView) row.findViewById(R.id.level_id);
 				id.setText(stage.getId());
 
-				Button stageButton = (Button) row.findViewById(R.id.level_name);
+				TextView stageButton = (TextView) row
+						.findViewById(R.id.level_name);
 				stageButton.setText(stage.getTitleId());
 
-				stageButton.setOnClickListener(new OnClickListener() {
-					@Override
-					public void onClick(View view) {
-						startStage(stage.getId());
-					}
-				});
+				// row.setOnClickListener(new OnClickListener() {
+				// @Override
+				// public void onClick(View view) {
+				// startStage(stage.getId());
+				// }
+				// });
 
 				ImageView lock = (ImageView) row.findViewById(R.id.lock);
 
@@ -139,6 +143,15 @@ public class ChooseStageActivity extends BaseGameActivity implements
 		};
 
 		stageSelect.setAdapter(adapter);
+		stageSelect
+				.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+					@Override
+					public void onItemClick(AdapterView<?> parent, View view,
+							int position, long id) {
+						Stage stage = adapter.getItem(position);
+						startStage(stage.getId());
+					}
+				});
 
 		Button buildLevel = (Button) findViewById(R.id.custom);
 		buildLevel.setOnClickListener(new OnClickListener() {
@@ -222,6 +235,8 @@ public class ChooseStageActivity extends BaseGameActivity implements
 	@Override
 	public void onSignInSucceeded() {
 		showLogout();
+
+		ParseConnectivity.connect(this, getGameHelper());
 
 		FindXApp app = (FindXApp) getApplication();
 		Intent settingsIntent = Games.getSettingsIntent(getApiClient());
