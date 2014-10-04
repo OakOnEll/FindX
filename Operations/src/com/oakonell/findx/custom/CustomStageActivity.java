@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -19,14 +20,14 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Parcelable;
 import android.preference.PreferenceManager;
 import android.util.Base64;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.view.View.OnTouchListener;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -37,6 +38,8 @@ import android.widget.RatingBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.cocosw.undobar.UndoBarController;
+import com.cocosw.undobar.UndoBarController.UndoListener;
 import com.google.android.gms.games.Games;
 import com.google.example.games.basegameutils.BaseGameActivity;
 import com.google.example.games.basegameutils.GameHelper;
@@ -50,7 +53,10 @@ import com.oakonell.findx.R;
 import com.oakonell.findx.custom.PopupMenuDialogFragment.OnItemSelected;
 import com.oakonell.findx.custom.model.CustomLevel;
 import com.oakonell.findx.custom.model.CustomLevelBuilder;
+import com.oakonell.findx.custom.model.CustomLevelDBReader;
+import com.oakonell.findx.custom.model.CustomLevelDBWriter;
 import com.oakonell.findx.custom.model.CustomStage;
+import com.oakonell.findx.model.Equation;
 import com.oakonell.findx.model.Expression;
 import com.oakonell.findx.model.Level;
 import com.oakonell.findx.model.Levels;
@@ -71,14 +77,20 @@ import com.oakonell.utils.activity.dragndrop.OnDragListener;
 import com.oakonell.utils.activity.dragndrop.OnDropListener;
 import com.oakonell.utils.share.ShareHelper;
 import com.oakonell.utils.xml.XMLUtils;
+import com.parse.ParseException;
+import com.parse.ParseObject;
+import com.parse.ParseUser;
 
 public class CustomStageActivity extends BaseGameActivity implements
 		AchievementContext {
+	private static final int DISMISS_BAR_DURATION = 2000;
 
 	private ArrayAdapter<Level> adapter;
 	private CustomStage stage;
 	private DragController mDragController;
 	private DragLayer mDragLayer;
+
+	private List<Level> levels;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -106,39 +118,13 @@ public class CustomStageActivity extends BaseGameActivity implements
 		mDragLayer.setDragController(mDragController);
 		mDragLayer.setGridView(levelSelect);
 
-		final Map<View, Integer> textIdByDropTarget = new HashMap<View, Integer>();
-		OnDragListener dragListener = new OnDragListener() {
-			@Override
-			public void onDragOver(View target, DragSource source, int x,
-					int y, int xOffset, int yOffset, DragView dragView,
-					Object dragInfo) {
-			}
 
-			@Override
-			public void onDragExit(View target, DragSource source, int x,
-					int y, int xOffset, int yOffset, DragView dragView,
-					Object dragInfo) {
-				Integer id = textIdByDropTarget.get(target);
-				findViewById(id).setVisibility(View.INVISIBLE);
-				int bg = android.R.color.background_dark;
-				target.setBackgroundResource(bg);
-			}
-
-			@Override
-			public void onDragEnter(View target, DragSource source, int x,
-					int y, int xOffset, int yOffset, DragView dragView,
-					Object dragInfo) {
-				Integer id = textIdByDropTarget.get(target);
-				findViewById(id).setVisibility(View.VISIBLE);
-				int bg = android.R.color.background_light;
-				target.setBackgroundResource(bg);
-			}
-		};
 
 		mDragController.setDragListener(mDragLayer);
 
+		levels = new ArrayList<Level>(stage.getLevels());
 		adapter = new ArrayAdapter<Level>(getApplication(),
-				R.layout.level_select_grid_item, stage.getLevels()) {
+				R.layout.level_select_grid_item, levels) {
 
 			@Override
 			public View getView(int position, View inputRow, ViewGroup parent) {
@@ -161,7 +147,8 @@ public class CustomStageActivity extends BaseGameActivity implements
 						CustomLevel movedLevel = s.getLevel();
 						CustomLevel myLevel = row.getLevel();
 						stage.reorderFromTo(movedLevel, myLevel);
-
+						levels.clear();
+						levels.addAll(stage.getLevels());
 						adapter.notifyDataSetChanged();
 					}
 
@@ -265,32 +252,32 @@ public class CustomStageActivity extends BaseGameActivity implements
 				startActivity(levelIntent);
 			}
 		});
-//		buildCustom.setFocusable(true);
-//		// give feedback on presses
-//		buildCustom.setOnTouchListener(new OnTouchListener() {
-//			@Override
-//			public boolean onTouch(View arg0, MotionEvent arg1) {
-//				switch (arg1.getAction()) {
-//				case MotionEvent.ACTION_DOWN: {
-//					int bg = android.R.color.background_light;
-//					buildCustom.setBackgroundResource(bg);
-//					// a nice alternative, but how to undo
-//					// buildCustom.setColorFilter(0xFFFF0000,
-//					// PorterDuff.Mode.MULTIPLY);
-//					break;
-//				}
-//				case MotionEvent.ACTION_UP:
-//				case MotionEvent.ACTION_CANCEL: {
-//					int bg = android.R.color.background_dark;
-//					buildCustom.setBackgroundResource(bg);
-//					// buildCustom.setColorFilter(0xFF000000,
-//					// PorterDuff.Mode.MULTIPLY);
-//					break;
-//				}
-//				}
-//				return false;
-//			}
-//		});
+		// buildCustom.setFocusable(true);
+		// // give feedback on presses
+		// buildCustom.setOnTouchListener(new OnTouchListener() {
+		// @Override
+		// public boolean onTouch(View arg0, MotionEvent arg1) {
+		// switch (arg1.getAction()) {
+		// case MotionEvent.ACTION_DOWN: {
+		// int bg = android.R.color.background_light;
+		// buildCustom.setBackgroundResource(bg);
+		// // a nice alternative, but how to undo
+		// // buildCustom.setColorFilter(0xFFFF0000,
+		// // PorterDuff.Mode.MULTIPLY);
+		// break;
+		// }
+		// case MotionEvent.ACTION_UP:
+		// case MotionEvent.ACTION_CANCEL: {
+		// int bg = android.R.color.background_dark;
+		// buildCustom.setBackgroundResource(bg);
+		// // buildCustom.setColorFilter(0xFF000000,
+		// // PorterDuff.Mode.MULTIPLY);
+		// break;
+		// }
+		// }
+		// return false;
+		// }
+		// });
 
 		BackgroundMusicHelper.onActivtyCreate(this, stage.getBgMusicId());
 	}
@@ -512,32 +499,43 @@ public class CustomStageActivity extends BaseGameActivity implements
 	}
 
 	protected void deleteLevel(final CustomLevel level) {
-		// prompt and delete all moves after this operation
-		final AlertDialog alertDialog = new AlertDialog.Builder(this).create();
-		alertDialog.setTitle(getText(R.string.confirm_delete_level));
-		alertDialog.setMessage(getResources().getString(
-				R.string.confirm_delete_level_text,
-				level.getId() + " - " + level.getName()));
-		alertDialog.setIcon(android.R.drawable.ic_delete);
-		alertDialog.setButton(getText(android.R.string.ok),
-				new DialogInterface.OnClickListener() {
-					@Override
-					public void onClick(DialogInterface dialog, int which) {
-						stage.delete(level);
-						// targeted update?
-						adapter.notifyDataSetChanged();
-						alertDialog.dismiss();
-					}
-				});
-		alertDialog.setButton2(getText(android.R.string.cancel),
-				new DialogInterface.OnClickListener() {
-					@Override
-					public void onClick(DialogInterface dialog, int which) {
-						alertDialog.dismiss();
-						return;
-					}
-				});
-		alertDialog.show();
+		final AtomicBoolean delete = new AtomicBoolean(true);
+
+		UndoBarController.UndoBar undoBar = new UndoBarController.UndoBar(this);
+		undoBar.message("Deleted " + level.getName());
+		undoBar.listener(new UndoListener() {
+			@Override
+			public void onUndo(Parcelable token) {
+				// cancel the delete
+				delete.set(false);
+				Toast.makeText(CustomStageActivity.this,
+						"Restored " + level.getName(), Toast.LENGTH_SHORT)
+						.show();
+				levels.clear();
+				levels.addAll(stage.getLevels());
+				adapter.notifyDataSetChanged();
+			}
+		});
+		undoBar.duration(DISMISS_BAR_DURATION);
+		undoBar.show(true);
+		levels.remove(level);
+		
+		// schedule the delete...
+		Handler handler = new Handler();
+		handler.postDelayed(new Runnable() {
+			@Override
+			public void run() {
+				if (!delete.get()) {
+					// was canceled
+					return;
+				}
+				stage.delete(level);
+				levels.clear();
+				levels.addAll(stage.getLevels());
+				adapter.notifyDataSetChanged();
+			}
+		}, DISMISS_BAR_DURATION + 200);
+
 	}
 
 	private void copyLevel(CustomLevel level) {
@@ -659,13 +657,6 @@ public class CustomStageActivity extends BaseGameActivity implements
 			}
 		}));
 		if (!level.isImported()) {
-			menuItems.add(new LevelMenuItem("Edit", new ItemExecute() {
-				@Override
-				public void execute(CustomStageActivity activity,
-						ArrayAdapter<Level> adapter) {
-					editLevel(level);
-				}
-			}));
 			menuItems.add(new LevelMenuItem("Copy", new ItemExecute() {
 				@Override
 				public void execute(CustomStageActivity activity,
@@ -673,6 +664,23 @@ public class CustomStageActivity extends BaseGameActivity implements
 					copyLevel(level);
 				}
 			}));
+			if (!level.savedToServer()) {
+				menuItems.add(new LevelMenuItem("Edit", new ItemExecute() {
+					@Override
+					public void execute(CustomStageActivity activity,
+							ArrayAdapter<Level> adapter) {
+						editLevel(level);
+					}
+				}));
+				menuItems.add(new LevelMenuItem("Post", new ItemExecute() {
+					@Override
+					public void execute(CustomStageActivity activity,
+							ArrayAdapter<Level> adapter) {
+						postLevel(level);
+					}
+
+				}));
+			}
 		}
 		menuItems.add(new LevelMenuItem("Share", new ItemExecute() {
 			@Override
@@ -681,6 +689,72 @@ public class CustomStageActivity extends BaseGameActivity implements
 				shareLevel(level);
 			}
 		}));
+	}
+
+	private void postLevel(CustomLevel theLevel) {
+		ParseUser parseUser = ParseUser.getCurrentUser();
+		if (parseUser == null) {
+			// prompt to Log in
+			Toast.makeText(this, "Not logged in", Toast.LENGTH_SHORT).show();
+			return;
+		}
+		try {
+			ParseObject level = new ParseObject("CustomLevel");
+			level.put("title", theLevel.getName());
+			level.put("author", parseUser.getUsername());
+
+			Equation startEquation = theLevel.getEquation();
+			Equation equation = startEquation;
+			for (Operation each : theLevel.getSolutionOperations()) {
+				equation = each.apply(equation);
+			}
+			level.put("solution", equation.getRhs().getConstant());
+
+			level.put("start_equation", startEquation.toString());
+			level.put("numMoves", theLevel.getMinMoves());
+			level.save();
+			String id = level.getObjectId();
+
+			Map<Operation, ParseObject> opToParseOp = new HashMap<Operation, ParseObject>();
+			int i = 0;
+			for (Operation each : theLevel.getOperations()) {
+				ParseObject parseOp = new ParseObject("LevelOperation");
+				parseOp.put("level", level);
+				each.addToParseObject(parseOp);
+				opToParseOp.put(each, parseOp);
+				parseOp.save();
+				i++;
+			}
+			i = 0;
+
+			for (Operation each : theLevel.getSolutionOperations()) {
+				ParseObject parseMove = new ParseObject("LevelMove");
+				parseMove.put("level", level);
+				parseMove.put("sequence", i);
+				if (each != null) {
+					ParseObject parseOp = opToParseOp.get(each);
+					parseMove.put("operation", parseOp);
+				}
+				parseMove.save();
+				i++;
+			}
+
+			// update the level to note it is saved to server
+			CustomLevelBuilder builder = new CustomLevelBuilder();
+			CustomLevelDBReader reader = new CustomLevelDBReader();
+			reader.read(this, builder, theLevel.getDbId());
+			builder.setServerId(id);
+			CustomLevelDBWriter writer = new CustomLevelDBWriter();
+			writer.write(this, builder);
+
+			theLevel.setServerId(id);
+
+			adapter.notifyDataSetChanged();
+		} catch (ParseException e) {
+			Toast.makeText(FindXApp.getContext(),
+					"Error writing level data: " + e.getMessage(),
+					Toast.LENGTH_SHORT).show();
+		}
 	}
 
 }

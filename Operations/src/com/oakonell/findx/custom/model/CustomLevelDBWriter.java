@@ -87,6 +87,7 @@ public class CustomLevelDBWriter {
         levelInfo.put(DataBaseHelper.CustomLevelTable.IS_OPTIMAL, builder.isOptimized());
         levelInfo.put(DataBaseHelper.CustomLevelTable.IS_IMPORTED, builder.isImported());
         levelInfo.put(DataBaseHelper.CustomLevelTable.AUTHOR, builder.getAuthor());
+        levelInfo.put(DataBaseHelper.CustomLevelTable.SERVER_ID, builder.getServerId());
 
         levelInfo.put(DataBaseHelper.CustomLevelTable.SOLUTION, builder.getSolution().toString());
         levelInfo.put(DataBaseHelper.CustomLevelTable.SEQ_NUM, builder.getSequence());

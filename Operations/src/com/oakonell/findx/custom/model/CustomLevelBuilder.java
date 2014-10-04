@@ -2,15 +2,12 @@ package com.oakonell.findx.custom.model;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.commons.math3.fraction.Fraction;
 
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.widget.Toast;
 
 import com.oakonell.findx.FindXApp;
 import com.oakonell.findx.data.DataBaseHelper;
@@ -19,9 +16,6 @@ import com.oakonell.findx.model.Expression;
 import com.oakonell.findx.model.Move;
 import com.oakonell.findx.model.Operation;
 import com.oakonell.findx.model.Stage;
-import com.parse.ParseException;
-import com.parse.ParseObject;
-import com.parse.ParseUser;
 
 public class CustomLevelBuilder {
 	// the DB id
@@ -30,6 +24,7 @@ public class CustomLevelBuilder {
 	private boolean isOptimized = true;
 	private boolean isImported;
 	private String author;
+	private String serverId;
 
 	private List<Operation> operations = new ArrayList<Operation>();
 
@@ -180,51 +175,8 @@ public class CustomLevelBuilder {
 	}
 
 	public void save() {
-		saveToParse();
 		CustomLevelDBWriter writer = new CustomLevelDBWriter();
 		writer.write(FindXApp.getContext(), this);
-	}
-
-	private void saveToParse() {
-		ParseUser parseUser = ParseUser.getCurrentUser();
-		if (parseUser != null) {
-			try {
-				ParseObject level = new ParseObject("CustomLevel");
-				level.put("title", title);
-				level.put("author", parseUser.getUsername());
-				level.put("solution", solution);
-				level.put("start_equation", moves.get(0).getStartEquation().toString());
-				level.put("numMoves", moves.size());
-				level.save();
-				Map<Operation, ParseObject> opToParseOp = new HashMap<Operation, ParseObject>();
-				int i = 0;
-				for (Operation each : operations) {
-					ParseObject parseOp = new ParseObject("LevelOperation");
-					parseOp.put("level", level);
-					each.addToParseObject(parseOp);
-					opToParseOp.put(each, parseOp);
-					parseOp.save();
-					i++;
-				}
-				i = 0;
-				for (Move each : moves) {
-					ParseObject parseMove = new ParseObject("LevelMove");
-					parseMove.put("level", level);
-					parseMove.put("sequence", i);
-					if (each.getOperation() != null) {
-						ParseObject parseOp = opToParseOp.get(each
-								.getOperation());
-						parseMove.put("operation", parseOp);
-					}
-					parseMove.save();
-					i++;
-				}
-			} catch (ParseException e) {
-				Toast.makeText(FindXApp.getContext(),
-						"Error writing level data: " + e.getMessage(),
-						Toast.LENGTH_SHORT).show();
-			}
-		}
 	}
 
 	public CustomLevel convertToLevel(Stage custom) {
@@ -251,6 +203,7 @@ public class CustomLevelBuilder {
 
 	public void prepareAsCopy() {
 		id = 0;
+		serverId = null;
 	}
 
 	public void moveUp(Move item) {
@@ -410,6 +363,14 @@ public class CustomLevelBuilder {
 
 	public String getAuthor() {
 		return author;
+	}
+
+	public void setServerId(String id) {
+		serverId = id;
+	}
+
+	public String getServerId() {
+		return serverId;
 	}
 
 }

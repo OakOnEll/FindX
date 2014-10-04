@@ -25,137 +25,163 @@ import com.oakonell.findx.model.ops.Subtract;
 import com.oakonell.findx.model.ops.Swap;
 
 public class CustomLevelDBReader {
-    private FractionFormat format = new FractionFormat();
+	private FractionFormat format = new FractionFormat();
 
-    public void read(Context context, CustomLevelBuilder builder, long id) {
-        DataBaseHelper helper = new DataBaseHelper(context);
-        SQLiteDatabase db = helper.getReadableDatabase();
+	public void read(Context context, CustomLevelBuilder builder, long id) {
+		DataBaseHelper helper = new DataBaseHelper(context);
+		SQLiteDatabase db = helper.getReadableDatabase();
 
-        Cursor query = db.query(DataBaseHelper.CUSTOM_LEVEL_TABLE_NAME, null, BaseColumns._ID + "=?",
-                new String[] { Long.toString(id) }, null, null, null);
-        if (!query.moveToFirst()) {
-            query.close();
-            db.close();
-            throw new RuntimeException("Level with id=" + id + " was not found");
-        }
-        readFromCursor(db, query, builder);
+		Cursor query = db.query(DataBaseHelper.CUSTOM_LEVEL_TABLE_NAME, null,
+				BaseColumns._ID + "=?", new String[] { Long.toString(id) },
+				null, null, null);
+		if (!query.moveToFirst()) {
+			query.close();
+			db.close();
+			throw new RuntimeException("Level with id=" + id + " was not found");
+		}
+		readFromCursor(db, query, builder);
 
-        query.close();
-        db.close();
-    }
+		query.close();
+		db.close();
+	}
 
-    public CustomLevelBuilder readFromCursor(SQLiteDatabase db, Cursor query) {
-        CustomLevelBuilder builder = new CustomLevelBuilder();
-        readFromCursor(db, query, builder);
-        return builder;
-    }
+	public CustomLevelBuilder readFromCursor(SQLiteDatabase db, Cursor query) {
+		CustomLevelBuilder builder = new CustomLevelBuilder();
+		readFromCursor(db, query, builder);
+		return builder;
+	}
 
-    private void readFromCursor(SQLiteDatabase db, Cursor query, CustomLevelBuilder builder) {
-        builder.setId(query.getLong(query.getColumnIndex(BaseColumns._ID)));
-        builder.setTitle(query.getString(query.getColumnIndex(DataBaseHelper.CustomLevelTable.NAME)));
-        String solutionString = query.getString(query.getColumnIndex(DataBaseHelper.CustomLevelTable.SOLUTION));
-        builder.setSolution(format.parse(solutionString));
-        builder.setSequence(query.getInt(query.getColumnIndex(DataBaseHelper.CustomLevelTable.SEQ_NUM)));
+	private void readFromCursor(SQLiteDatabase db, Cursor query,
+			CustomLevelBuilder builder) {
+		builder.setId(query.getLong(query.getColumnIndex(BaseColumns._ID)));
+		builder.setTitle(query.getString(query
+				.getColumnIndex(DataBaseHelper.CustomLevelTable.NAME)));
+		String solutionString = query.getString(query
+				.getColumnIndex(DataBaseHelper.CustomLevelTable.SOLUTION));
+		builder.setSolution(format.parse(solutionString));
+		builder.setSequence(query.getInt(query
+				.getColumnIndex(DataBaseHelper.CustomLevelTable.SEQ_NUM)));
 
-        Expression lhs = readExpression(query, DataBaseHelper.CustomLevelTable.LHS_X_COEFF,
-                DataBaseHelper.CustomLevelTable.LHS_CONST);
-        Expression rhs = readExpression(query, DataBaseHelper.CustomLevelTable.RHS_X_COEFF,
-                DataBaseHelper.CustomLevelTable.RHS_CONST);
-        Equation startEquation = new Equation(lhs, rhs);
+		Expression lhs = readExpression(query,
+				DataBaseHelper.CustomLevelTable.LHS_X_COEFF,
+				DataBaseHelper.CustomLevelTable.LHS_CONST);
+		Expression rhs = readExpression(query,
+				DataBaseHelper.CustomLevelTable.RHS_X_COEFF,
+				DataBaseHelper.CustomLevelTable.RHS_CONST);
+		Equation startEquation = new Equation(lhs, rhs);
 
-        // load the operations, and place in id->op map
-        Map<Long, Operation> operationsById = new HashMap<Long, Operation>();
-        readOperations(db, builder, operationsById);
-        readMoves(db, builder, operationsById, startEquation);
+		// load the operations, and place in id->op map
+		Map<Long, Operation> operationsById = new HashMap<Long, Operation>();
+		readOperations(db, builder, operationsById);
+		readMoves(db, builder, operationsById, startEquation);
 
-        boolean isOptimized = query.getInt(query.getColumnIndex(DataBaseHelper.CustomLevelTable.IS_OPTIMAL)) > 0;
-        builder.markAsOptimized(isOptimized);
+		boolean isOptimized = query.getInt(query
+				.getColumnIndex(DataBaseHelper.CustomLevelTable.IS_OPTIMAL)) > 0;
+		builder.markAsOptimized(isOptimized);
 
-        builder.setIsImported(query.getInt(query.getColumnIndex(DataBaseHelper.CustomLevelTable.IS_IMPORTED)) > 0);
-        builder.setAuthor(query.getString(query.getColumnIndex(DataBaseHelper.CustomLevelTable.AUTHOR)));
-    }
+		builder.setIsImported(query.getInt(query
+				.getColumnIndex(DataBaseHelper.CustomLevelTable.IS_IMPORTED)) > 0);
+		builder.setAuthor(query.getString(query
+				.getColumnIndex(DataBaseHelper.CustomLevelTable.AUTHOR)));
+		builder.setServerId(query.getString(query
+				.getColumnIndex(DataBaseHelper.CustomLevelTable.SERVER_ID)));
+	}
 
-    private Expression readExpression(Cursor query, String xCoeffColName, String constColName) {
-        Fraction coeff = readFraction(query, xCoeffColName);
-        Fraction constVal = readFraction(query, constColName);
+	private Expression readExpression(Cursor query, String xCoeffColName,
+			String constColName) {
+		Fraction coeff = readFraction(query, xCoeffColName);
+		Fraction constVal = readFraction(query, constColName);
 
-        return new Expression(coeff, constVal);
-    }
+		return new Expression(coeff, constVal);
+	}
 
-    private void readMoves(SQLiteDatabase db, CustomLevelBuilder builder, Map<Long, Operation> operationsById,
-            Equation startEquation) {
-        Cursor opQuery = db.query(DataBaseHelper.CUSTOM_LEVEL_MOVES_TABLE_NAME, null,
-                DataBaseHelper.CustomLevelMovesTable.CUSTOM_LEVEL_ID + "=?",
-                new String[] { Long.toString(builder.getId()) }, null, null,
-                DataBaseHelper.CustomLevelMovesTable.SEQ_NUM);
+	private void readMoves(SQLiteDatabase db, CustomLevelBuilder builder,
+			Map<Long, Operation> operationsById, Equation startEquation) {
+		Cursor opQuery = db.query(DataBaseHelper.CUSTOM_LEVEL_MOVES_TABLE_NAME,
+				null, DataBaseHelper.CustomLevelMovesTable.CUSTOM_LEVEL_ID
+						+ "=?",
+				new String[] { Long.toString(builder.getId()) }, null, null,
+				DataBaseHelper.CustomLevelMovesTable.SEQ_NUM);
 
-        Equation eq = startEquation;
-        List<Move> moves = builder.getMoves();
-        moves.clear();
+		Equation eq = startEquation;
+		List<Move> moves = builder.getMoves();
+		moves.clear();
 
-        moves.add(new Move(eq, null));
-        while (opQuery.moveToNext()) {
-            Long opId = opQuery.getLong(opQuery.getColumnIndex(DataBaseHelper.CustomLevelMovesTable.OPERATION_ID));
-            Operation operation = operationsById.get(opId);
-            if (operation == null) {
-                throw new RuntimeException("No operation in map with id " + opId + ", while reading custom level "
-                        + builder.getId());
-            }
-            Move move = new Move(eq, operation);
-            moves.add(move);
-            eq = move.getEndEquation();
-        }
-        // add an extra null move?
+		moves.add(new Move(eq, null));
+		while (opQuery.moveToNext()) {
+			Long opId = opQuery
+					.getLong(opQuery
+							.getColumnIndex(DataBaseHelper.CustomLevelMovesTable.OPERATION_ID));
+			Operation operation = operationsById.get(opId);
+			if (operation == null) {
+				throw new RuntimeException("No operation in map with id "
+						+ opId + ", while reading custom level "
+						+ builder.getId());
+			}
+			Move move = new Move(eq, operation);
+			moves.add(move);
+			eq = move.getEndEquation();
+		}
+		// add an extra null move?
 
-        opQuery.close();
+		opQuery.close();
 
-    }
+	}
 
-    private void readOperations(SQLiteDatabase db, CustomLevelBuilder builder, Map<Long, Operation> operationsById) {
-        Cursor opQuery = db.query(DataBaseHelper.CUSTOM_LEVEL_OPERATIONS_TABLE_NAME, null,
-                DataBaseHelper.CustomLevelOperationsTable.CUSTOM_LEVEL_ID + "=?",
-                new String[] { Long.toString(builder.getId()) }, null, null,
-                DataBaseHelper.CustomLevelOperationsTable.SEQ_NUM);
+	private void readOperations(SQLiteDatabase db, CustomLevelBuilder builder,
+			Map<Long, Operation> operationsById) {
+		Cursor opQuery = db.query(
+				DataBaseHelper.CUSTOM_LEVEL_OPERATIONS_TABLE_NAME, null,
+				DataBaseHelper.CustomLevelOperationsTable.CUSTOM_LEVEL_ID
+						+ "=?",
+				new String[] { Long.toString(builder.getId()) }, null, null,
+				DataBaseHelper.CustomLevelOperationsTable.SEQ_NUM);
 
-        while (opQuery.moveToNext()) {
-            String typeString = opQuery.getString(opQuery
-                    .getColumnIndex(DataBaseHelper.CustomLevelOperationsTable.TYPE));
-            Long id = opQuery.getLong(opQuery.getColumnIndex(BaseColumns._ID));
-            OperationType type = OperationType.valueOf(typeString);
-            Operation op;
-            switch (type) {
-                case ADD:
-                    op = new Add(readExpression(opQuery, DataBaseHelper.CustomLevelOperationsTable.X_COEFF,
-                            DataBaseHelper.CustomLevelOperationsTable.CONST));
-                    break;
-                case SUBTRACT:
-                    op = new Subtract(readExpression(opQuery, DataBaseHelper.CustomLevelOperationsTable.X_COEFF,
-                            DataBaseHelper.CustomLevelOperationsTable.CONST));
-                    break;
-                case MULTIPLY:
-                    op = new Multiply(readFraction(opQuery, DataBaseHelper.CustomLevelOperationsTable.CONST));
-                    break;
-                case DIVIDE:
-                    op = new Divide(readFraction(opQuery, DataBaseHelper.CustomLevelOperationsTable.CONST));
-                    break;
-                case SWAP:
-                    op = new Swap();
-                    break;
-                default:
-                    throw new RuntimeException("Unknown type " + type + " while reading custom level "
-                            + builder.getId());
-            }
-            operationsById.put(id, op);
-            builder.addOperation(op);
-        }
+		while (opQuery.moveToNext()) {
+			String typeString = opQuery
+					.getString(opQuery
+							.getColumnIndex(DataBaseHelper.CustomLevelOperationsTable.TYPE));
+			Long id = opQuery.getLong(opQuery.getColumnIndex(BaseColumns._ID));
+			OperationType type = OperationType.valueOf(typeString);
+			Operation op;
+			switch (type) {
+			case ADD:
+				op = new Add(readExpression(opQuery,
+						DataBaseHelper.CustomLevelOperationsTable.X_COEFF,
+						DataBaseHelper.CustomLevelOperationsTable.CONST));
+				break;
+			case SUBTRACT:
+				op = new Subtract(readExpression(opQuery,
+						DataBaseHelper.CustomLevelOperationsTable.X_COEFF,
+						DataBaseHelper.CustomLevelOperationsTable.CONST));
+				break;
+			case MULTIPLY:
+				op = new Multiply(readFraction(opQuery,
+						DataBaseHelper.CustomLevelOperationsTable.CONST));
+				break;
+			case DIVIDE:
+				op = new Divide(readFraction(opQuery,
+						DataBaseHelper.CustomLevelOperationsTable.CONST));
+				break;
+			case SWAP:
+				op = new Swap();
+				break;
+			default:
+				throw new RuntimeException("Unknown type " + type
+						+ " while reading custom level " + builder.getId());
+			}
+			operationsById.put(id, op);
+			builder.addOperation(op);
+		}
 
-        opQuery.close();
-    }
+		opQuery.close();
+	}
 
-    private Fraction readFraction(Cursor query, String constColName) {
-        String constString = query.getString(query.getColumnIndex(constColName));
-        Fraction constVal = format.parse(constString);
-        return constVal;
-    }
+	private Fraction readFraction(Cursor query, String constColName) {
+		String constString = query
+				.getString(query.getColumnIndex(constColName));
+		Fraction constVal = format.parse(constString);
+		return constVal;
+	}
 
 }
