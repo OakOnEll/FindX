@@ -53,9 +53,9 @@ public class PromptNicknameFragment extends DialogFragment {
 
 					@Override
 					protected void onPostExecute(Void result) {
+						progDialog.dismiss();
 						if (success) {
 							dismiss();
-							progDialog.dismiss();
 							if (continuation != null) {
 								continuation.run();
 							}
