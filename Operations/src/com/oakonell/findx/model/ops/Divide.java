@@ -94,10 +94,4 @@ public class Divide extends AbstractOperation {
         visitor.visitDivide(this);
     }
 
-	@Override
-	public void addToParseObject(ParseObject parseOp) {
-		parseOp.put("type", type().ordinal());
-		parseOp.put("scalar", factor);
-	}
-
 }

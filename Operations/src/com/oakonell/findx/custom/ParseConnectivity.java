@@ -1,9 +1,11 @@
 package com.oakonell.findx.custom;
 
 import java.security.MessageDigest;
+import java.util.List;
 
 import android.app.Activity;
 import android.content.Context;
+import android.support.v4.app.FragmentActivity;
 import android.util.Base64;
 import android.util.Log;
 import android.widget.Toast;
@@ -21,14 +23,17 @@ public class ParseConnectivity {
 	private static final String TAG = "ParseConnectivity";
 
 	public void login(Context context, GameHelper helper) {
-		String user = Games.getCurrentAccountName(helper.getApiClient());
+		// TODO check network connectitivity
+		String privateEmail = Games
+				.getCurrentAccountName(helper.getApiClient());
+		String opaqueUserName = getParseOpaqueUserName(context, privateEmail);
 
-		String password = getParsePassword(context, user);
+		String password = getParsePassword(context, privateEmail);
 		if (password == null)
 			return;
 
 		ParseQuery<ParseUser> query = ParseUser.getQuery();
-		query.whereEqualTo("username", user);
+		query.whereEqualTo("username", opaqueUserName);
 
 		ParseUser parseUser;
 		try {
@@ -38,10 +43,10 @@ public class ParseConnectivity {
 			parseUser = null;
 		}
 		if (parseUser != null) {
-			login(context, helper, user, password);
+			login(context, helper, opaqueUserName, password);
 			return;
 		}
-		createUser(context, helper, user, password);
+		createUser(context, helper, opaqueUserName, password);
 	}
 
 	private void reportError(Context context, String error) {
@@ -49,7 +54,26 @@ public class ParseConnectivity {
 		Toast.makeText(context, error, Toast.LENGTH_SHORT).show();
 	}
 
+	private String getParseOpaqueUserName(Context context, String user) {
+		// TODO
+		try {
+			MessageDigest digester = MessageDigest.getInstance("SHA-1");
+			String pre = "User" + context.getString(R.string.hash_key);
+			String post = context.getString(R.string.hash_key);
+			byte[] digestBytes = digester.digest((pre + user + post)
+					.getBytes("UTF-8"));
+			return Base64.encodeToString(digestBytes, Base64.DEFAULT);
+		} catch (Exception e) {
+			reportError(
+					context,
+					"Error getting password to sign in to Parse.com: "
+							+ e.getMessage());
+			return null;
+		}
+	}
+
 	private String getParsePassword(Context context, String user) {
+		// TODO
 		try {
 			MessageDigest digester = MessageDigest.getInstance("SHA-1");
 			String pre = context.getString(R.string.hash_key);
@@ -86,6 +110,7 @@ public class ParseConnectivity {
 					// signUpMsg("Account already taken.");
 				}
 			}
+
 		});
 
 	}
@@ -124,4 +149,36 @@ public class ParseConnectivity {
 	public static void logout() {
 		ParseUser.logOut();
 	}
+
+	public static void createUniqueNickname(FragmentActivity context, Runnable continuation) {
+		PromptNicknameFragment frag = new PromptNicknameFragment();
+		frag.initialize(continuation);
+		frag.show(context.getSupportFragmentManager(), "popup");
+	}
+
+	public static boolean modifyNickName(String nick) {
+		ParseQuery<ParseUser> userQuery = ParseUser.getQuery();
+		userQuery.whereEqualTo("nickname", nick);
+		List<ParseUser> users;
+		try {
+			users = userQuery.find();
+		} catch (ParseException e) {
+			throw new RuntimeException(
+					"Error trying to find user with nickname", e);
+		}
+		if (!users.isEmpty()) {
+			return false;
+		}
+
+		ParseUser currentUser = ParseUser.getCurrentUser();
+		currentUser.put("nickname", nick);
+		try {
+			currentUser.save();
+		} catch (ParseException e) {
+			throw new RuntimeException("Error saving user's nickname", e);
+		}
+
+		return true;
+	}
+
 }

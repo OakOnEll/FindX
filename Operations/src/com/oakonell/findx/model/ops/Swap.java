@@ -5,7 +5,6 @@ import javax.annotation.concurrent.Immutable;
 import com.oakonell.findx.model.Equation;
 import com.oakonell.findx.model.Operation;
 import com.oakonell.findx.model.OperationVisitor;
-import com.parse.ParseObject;
 
 @Immutable
 public class Swap implements Operation {
@@ -48,11 +47,6 @@ public class Swap implements Operation {
 	@Override
 	public void accept(OperationVisitor visitor) {
 		visitor.visitSwap(this);
-	}
-
-	@Override
-	public void addToParseObject(ParseObject parseOp) {
-		parseOp.put("type", type().ordinal());
 	}
 
 }

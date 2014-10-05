@@ -1,6 +1,5 @@
 package com.oakonell.findx.model;
 
-import com.parse.ParseObject;
 
 public interface Operation {
     public enum OperationType {
@@ -17,5 +16,4 @@ public interface Operation {
 
     void accept(OperationVisitor visitor);
 
-	void addToParseObject(ParseObject parseOp);
 }

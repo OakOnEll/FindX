@@ -41,6 +41,17 @@ public class Achievements {
 
 	};
 
+	Achievement contributor = new BooleanAchievement(
+			R.string.achievement_the_contributor,
+			R.string.achievement_the_contributor_label, "The contributor") {
+
+		@Override
+		public void testAndSet(AchievementContext context, Puzzle puzzle) {
+			unlock(context);
+		}
+
+	};
+
 	Achievement improvement = new BooleanAchievement(
 			R.string.achievement_room_for_improvement,
 			R.string.achievement_room_for_improvement_label,
@@ -76,7 +87,8 @@ public class Achievements {
 				return;
 			}
 			for (Level each : puzzle.getStage().getLevels()) {
-				// TODO this seemed to be not work when resolving the last one for a three star
+				// TODO this seemed to be not work when resolving the last one
+				// for a three star
 				if (puzzle.getId().equals(each.getId())) {
 					if (puzzle.getRating() != 3 && each.getRating() != 3) {
 						return;
@@ -109,6 +121,7 @@ public class Achievements {
 				"Master's Degree", "3"));
 
 		achievements.addAll(levelEndAchievements);
+		achievements.add(contributor);
 	}
 
 	private interface Achievement {
@@ -288,6 +301,10 @@ public class Achievements {
 		GameHelper getHelper();
 
 		Context getContext();
+	}
+
+	public void setContributor(AchievementContext context) {
+		contributor.testAndSet(context, null);
 	}
 
 }

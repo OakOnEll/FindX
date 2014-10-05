@@ -6,20 +6,24 @@ import java.util.List;
 import android.app.Dialog;
 import android.app.ListActivity;
 import android.app.ProgressDialog;
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
 
+import com.oakonell.findx.PuzzleActivity;
 import com.oakonell.findx.R;
+import com.oakonell.findx.custom.model.CustomLevel;
+import com.oakonell.findx.custom.model.CustomLevelBuilder;
+import com.oakonell.findx.model.Levels;
 import com.parse.ParseException;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
 
 public class CustomLevelSearchActivity extends ListActivity {
-	private ParseCustomLevelAdapter adapter;
+	private ParseCustomLevelSearchAdapter adapter;
 	private List<ParseObject> levels;
 	private Dialog progressDialog;
 
@@ -30,6 +34,7 @@ public class CustomLevelSearchActivity extends ListActivity {
 			ParseQuery<ParseObject> query = new ParseQuery<ParseObject>(
 					"CustomLevel");
 			query.orderByDescending("_created_at");
+			query.include("createdBy");
 
 			try {
 				levels = query.find();
@@ -76,8 +81,8 @@ public class CustomLevelSearchActivity extends ListActivity {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		levels= new ArrayList<ParseObject>();
-		adapter = new ParseCustomLevelAdapter(this, levels);
+		levels = new ArrayList<ParseObject>();
+		adapter = new ParseCustomLevelSearchAdapter(this, levels);
 		setListAdapter(adapter);
 		setContentView(R.layout.custom_level_search);
 
@@ -89,21 +94,44 @@ public class CustomLevelSearchActivity extends ListActivity {
 	}
 
 	@Override
-	protected void onListItemClick(ListView l, View v, int position, long id) {
+	protected void onListItemClick(ListView l, View v, final int position,
+			long id) {
 		super.onListItemClick(l, v, position, id);
+		// TODO this should bring up the detailed view on the level
+		//    show operations, comments, and modifiable rating bar
 
-		ParseObject level = levels.get(position);
+		final ProgressDialog dialog = ProgressDialog.show(this,
+				"Loading level", "Please wait...");
+		AsyncTask<Void, Void, CustomLevelBuilder> task = new AsyncTask<Void, Void, CustomLevelBuilder>() {
+			@Override
+			protected CustomLevelBuilder doInBackground(Void... params) {
+				ParseObject level = levels.get(position);
 
-		/*
-		 * ParseObject level = new ParseObject("CustomLevel");
-		 * level.put("title", title); level.put("author",
-		 * parseUser.getUsername()); level.put("solution", solution);
-		 * level.put("start_equation", moves.get(0).getStartEquation());
-		 * level.put("numMoves", moves.size());
-		 */
+				CustomLevelBuilder builder = ParseLevelHelper.load(level);
 
-		Toast.makeText(this, "Selected " + level.getString("title"),
-				Toast.LENGTH_SHORT).show();
+				builder.save();
+				Levels.resetCustomStage();
+				return builder;
+			}
+
+			@Override
+			protected void onPostExecute(CustomLevelBuilder builder) {
+				dialog.dismiss();
+				finish();
+				CustomLevel newlevel = Levels.getCustomStage().getLevelByDBId(
+						builder.getId());
+				finish();
+				startPuzzle(newlevel.getId());
+			}
+		};
+		task.execute();
 	}
 
+	private void startPuzzle(final String levelId) {
+		Intent levelIntent = new Intent(CustomLevelSearchActivity.this,
+				PuzzleActivity.class);
+		levelIntent.putExtra(PuzzleActivity.PUZZLE_ID, levelId);
+		levelIntent.putExtra(PuzzleActivity.IS_CUSTOM, true);
+		startActivity(levelIntent);
+	}
 }

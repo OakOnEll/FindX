@@ -96,12 +96,4 @@ public class Add extends AbstractOperation {
 		visitor.visitAdd(this);
 	}
 
-	@Override
-	public void addToParseObject(ParseObject parseOp) {
-		parseOp.put("type", type().ordinal());
-		parseOp.put("scalar", expr.getConstant());
-		parseOp.put("linearCoeff", expr.getXCoefficient());
-	}
-
-
 }

@@ -1,9 +1,7 @@
 package com.oakonell.findx.custom;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -14,11 +12,13 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Parcelable;
@@ -43,6 +43,7 @@ import com.cocosw.undobar.UndoBarController.UndoListener;
 import com.google.android.gms.games.Games;
 import com.google.example.games.basegameutils.BaseGameActivity;
 import com.google.example.games.basegameutils.GameHelper;
+import com.oakonell.findx.Achievements;
 import com.oakonell.findx.Achievements.AchievementContext;
 import com.oakonell.findx.BackgroundMusicHelper;
 import com.oakonell.findx.ChooseStageActivity;
@@ -56,7 +57,6 @@ import com.oakonell.findx.custom.model.CustomLevelBuilder;
 import com.oakonell.findx.custom.model.CustomLevelDBReader;
 import com.oakonell.findx.custom.model.CustomLevelDBWriter;
 import com.oakonell.findx.custom.model.CustomStage;
-import com.oakonell.findx.model.Equation;
 import com.oakonell.findx.model.Expression;
 import com.oakonell.findx.model.Level;
 import com.oakonell.findx.model.Levels;
@@ -68,17 +68,15 @@ import com.oakonell.findx.model.ops.Divide;
 import com.oakonell.findx.model.ops.Multiply;
 import com.oakonell.findx.model.ops.Subtract;
 import com.oakonell.findx.model.ops.Swap;
+import com.oakonell.utils.StringUtils;
 import com.oakonell.utils.Utils;
 import com.oakonell.utils.activity.dragndrop.DragController;
 import com.oakonell.utils.activity.dragndrop.DragLayer;
 import com.oakonell.utils.activity.dragndrop.DragSource;
 import com.oakonell.utils.activity.dragndrop.DragView;
-import com.oakonell.utils.activity.dragndrop.OnDragListener;
 import com.oakonell.utils.activity.dragndrop.OnDropListener;
 import com.oakonell.utils.share.ShareHelper;
 import com.oakonell.utils.xml.XMLUtils;
-import com.parse.ParseException;
-import com.parse.ParseObject;
 import com.parse.ParseUser;
 
 public class CustomStageActivity extends BaseGameActivity implements
@@ -117,8 +115,6 @@ public class CustomStageActivity extends BaseGameActivity implements
 		mDragLayer = (DragLayer) findViewById(R.id.drag_layer);
 		mDragLayer.setDragController(mDragController);
 		mDragLayer.setGridView(levelSelect);
-
-
 
 		mDragController.setDragListener(mDragLayer);
 
@@ -283,6 +279,9 @@ public class CustomStageActivity extends BaseGameActivity implements
 	}
 
 	private void shareLevel(final CustomLevel level) {
+		// TODO can share
+		// in progress levels- passed via URL encoding, as the old
+		// posted level, via a new url that passes the parseObject id
 		Runnable runnable = new Runnable() {
 			@Override
 			public void run() {
@@ -483,6 +482,8 @@ public class CustomStageActivity extends BaseGameActivity implements
 	protected void onRestart() {
 		if (adapter != null) {
 			// update ratings and enablement of the level buttons
+			levels.clear();
+			levels.addAll(stage.getLevels());
 			adapter.notifyDataSetChanged();
 		}
 		super.onRestart();
@@ -493,6 +494,8 @@ public class CustomStageActivity extends BaseGameActivity implements
 		BackgroundMusicHelper.onActivityResume(this, stage.getBgMusicId());
 		if (adapter != null) {
 			// update ratings and enablement of the level buttons
+			levels.clear();
+			levels.addAll(stage.getLevels());
 			adapter.notifyDataSetChanged();
 		}
 		super.onResume();
@@ -519,7 +522,7 @@ public class CustomStageActivity extends BaseGameActivity implements
 		undoBar.duration(DISMISS_BAR_DURATION);
 		undoBar.show(true);
 		levels.remove(level);
-		
+
 		// schedule the delete...
 		Handler handler = new Handler();
 		handler.postDelayed(new Runnable() {
@@ -691,70 +694,58 @@ public class CustomStageActivity extends BaseGameActivity implements
 		}));
 	}
 
-	private void postLevel(CustomLevel theLevel) {
+	private void postLevel(final CustomLevel theLevel) {
 		ParseUser parseUser = ParseUser.getCurrentUser();
 		if (parseUser == null) {
 			// prompt to Log in
 			Toast.makeText(this, "Not logged in", Toast.LENGTH_SHORT).show();
 			return;
 		}
-		try {
-			ParseObject level = new ParseObject("CustomLevel");
-			level.put("title", theLevel.getName());
-			level.put("author", parseUser.getUsername());
-
-			Equation startEquation = theLevel.getEquation();
-			Equation equation = startEquation;
-			for (Operation each : theLevel.getSolutionOperations()) {
-				equation = each.apply(equation);
-			}
-			level.put("solution", equation.getRhs().getConstant());
-
-			level.put("start_equation", startEquation.toString());
-			level.put("numMoves", theLevel.getMinMoves());
-			level.save();
-			String id = level.getObjectId();
-
-			Map<Operation, ParseObject> opToParseOp = new HashMap<Operation, ParseObject>();
-			int i = 0;
-			for (Operation each : theLevel.getOperations()) {
-				ParseObject parseOp = new ParseObject("LevelOperation");
-				parseOp.put("level", level);
-				each.addToParseObject(parseOp);
-				opToParseOp.put(each, parseOp);
-				parseOp.save();
-				i++;
-			}
-			i = 0;
-
-			for (Operation each : theLevel.getSolutionOperations()) {
-				ParseObject parseMove = new ParseObject("LevelMove");
-				parseMove.put("level", level);
-				parseMove.put("sequence", i);
-				if (each != null) {
-					ParseObject parseOp = opToParseOp.get(each);
-					parseMove.put("operation", parseOp);
+		if (StringUtils.isEmpty(parseUser.getString("nickname"))) {
+			Runnable continuation = new Runnable() {
+				@Override
+				public void run() {
+					postLevel(theLevel);
 				}
-				parseMove.save();
-				i++;
+			};
+			ParseConnectivity.createUniqueNickname(this, continuation);
+			return;
+		}
+
+		final ProgressDialog dialog = ProgressDialog.show(this,
+				"Saving to server", "Please wait...");
+		dialog.setCancelable(false);
+
+		AsyncTask<Void, Void, Void> task = new AsyncTask<Void, Void, Void>() {
+
+			@Override
+			protected Void doInBackground(Void... params) {
+				String id = ParseLevelHelper.postLevel(theLevel);
+
+				// update the level to note it is saved to server
+				CustomLevelBuilder builder = new CustomLevelBuilder();
+				CustomLevelDBReader reader = new CustomLevelDBReader();
+				reader.read(CustomStageActivity.this, builder,
+						theLevel.getDbId());
+				builder.setServerId(id);
+				CustomLevelDBWriter writer = new CustomLevelDBWriter();
+				writer.write(CustomStageActivity.this, builder);
+
+				theLevel.setServerId(id);
+
+				return null;
 			}
 
-			// update the level to note it is saved to server
-			CustomLevelBuilder builder = new CustomLevelBuilder();
-			CustomLevelDBReader reader = new CustomLevelDBReader();
-			reader.read(this, builder, theLevel.getDbId());
-			builder.setServerId(id);
-			CustomLevelDBWriter writer = new CustomLevelDBWriter();
-			writer.write(this, builder);
+			@Override
+			protected void onPostExecute(Void result) {
+				FindXApp app = (FindXApp) getApplication();
+				Achievements achievements = app.getAchievements();
+				achievements.setContributor(CustomStageActivity.this);
+				dialog.dismiss();
+				adapter.notifyDataSetChanged();
+			}
 
-			theLevel.setServerId(id);
-
-			adapter.notifyDataSetChanged();
-		} catch (ParseException e) {
-			Toast.makeText(FindXApp.getContext(),
-					"Error writing level data: " + e.getMessage(),
-					Toast.LENGTH_SHORT).show();
-		}
+		};
+		task.execute();
 	}
-
 }

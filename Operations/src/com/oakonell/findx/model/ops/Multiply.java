@@ -96,10 +96,5 @@ public class Multiply extends AbstractOperation {
 		visitor.visitMultiply(this);
 	}
 
-	@Override
-	public void addToParseObject(ParseObject parseOp) {
-		parseOp.put("type", type().ordinal());
-		parseOp.put("scalar", factor);
-	}
 
 }
