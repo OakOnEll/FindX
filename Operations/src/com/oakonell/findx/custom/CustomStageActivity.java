@@ -13,11 +13,13 @@ import org.w3c.dom.Element;
 
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
@@ -61,6 +63,8 @@ import com.oakonell.findx.custom.parse.CustomLevelSearchActivity;
 import com.oakonell.findx.custom.parse.ParseConnectivity;
 import com.oakonell.findx.custom.parse.ParseConnectivity.ParseUserExtra;
 import com.oakonell.findx.custom.parse.ParseLevelHelper;
+import com.oakonell.findx.data.DataBaseHelper;
+import com.oakonell.findx.data.DataBaseHelper.CustomLevelTable;
 import com.oakonell.findx.model.Expression;
 import com.oakonell.findx.model.Level;
 import com.oakonell.findx.model.Levels;
@@ -92,8 +96,6 @@ public class CustomStageActivity extends BaseGameActivity implements
 	private DragController mDragController;
 	private DragLayer mDragLayer;
 
-	private List<Level> levels;
-
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -122,9 +124,9 @@ public class CustomStageActivity extends BaseGameActivity implements
 
 		mDragController.setDragListener(mDragLayer);
 
-		levels = new ArrayList<Level>(stage.getLevels());
+		stage.getLevels();
 		adapter = new ArrayAdapter<Level>(getApplication(),
-				R.layout.level_select_grid_item, levels) {
+				R.layout.level_select_grid_item, stage.getLevels()) {
 
 			@Override
 			public View getView(int position, View inputRow, ViewGroup parent) {
@@ -147,8 +149,6 @@ public class CustomStageActivity extends BaseGameActivity implements
 						CustomLevel movedLevel = s.getLevel();
 						CustomLevel myLevel = row.getLevel();
 						stage.reorderFromTo(movedLevel, myLevel);
-						levels.clear();
-						levels.addAll(stage.getLevels());
 						adapter.notifyDataSetChanged();
 					}
 
@@ -486,8 +486,6 @@ public class CustomStageActivity extends BaseGameActivity implements
 	protected void onRestart() {
 		if (adapter != null) {
 			// update ratings and enablement of the level buttons
-			levels.clear();
-			levels.addAll(stage.getLevels());
 			adapter.notifyDataSetChanged();
 		}
 		super.onRestart();
@@ -498,8 +496,6 @@ public class CustomStageActivity extends BaseGameActivity implements
 		BackgroundMusicHelper.onActivityResume(this, stage.getBgMusicId());
 		if (adapter != null) {
 			// update ratings and enablement of the level buttons
-			levels.clear();
-			levels.addAll(stage.getLevels());
 			adapter.notifyDataSetChanged();
 		}
 		super.onResume();
@@ -508,6 +504,8 @@ public class CustomStageActivity extends BaseGameActivity implements
 	protected void deleteLevel(final CustomLevel level) {
 		final AtomicBoolean delete = new AtomicBoolean(true);
 
+		final DataBaseHelper helper = new DataBaseHelper(this);
+
 		UndoBarController.UndoBar undoBar = new UndoBarController.UndoBar(this);
 		undoBar.message("Deleted " + level.getName());
 		undoBar.listener(new UndoListener() {
@@ -515,17 +513,34 @@ public class CustomStageActivity extends BaseGameActivity implements
 			public void onUndo(Parcelable token) {
 				// cancel the delete
 				delete.set(false);
+
+				SQLiteDatabase db = helper.getWritableDatabase();
+				ContentValues values = new ContentValues();
+				values.put(CustomLevelTable.TO_DELETE, 0);
+				db.update(DataBaseHelper.CUSTOM_LEVEL_TABLE_NAME, values,
+						CustomLevelTable.SERVER_ID + "=?",
+						new String[] { level.getServerId() });
+				db.close();
+
 				Toast.makeText(CustomStageActivity.this,
 						"Restored " + level.getName(), Toast.LENGTH_SHORT)
 						.show();
-				levels.clear();
-				levels.addAll(stage.getLevels());
+		        Levels.resetCustomStage();
 				adapter.notifyDataSetChanged();
 			}
 		});
 		undoBar.duration(DISMISS_BAR_DURATION);
 		undoBar.show(true);
-		levels.remove(level);
+
+		SQLiteDatabase db = helper.getWritableDatabase();
+		ContentValues values = new ContentValues();
+		values.put(CustomLevelTable.TO_DELETE, 1);
+		db.update(DataBaseHelper.CUSTOM_LEVEL_TABLE_NAME, values,
+				CustomLevelTable.SERVER_ID + "=?",
+				new String[] { level.getServerId() });
+		db.close();
+        Levels.resetCustomStage();
+		adapter.notifyDataSetChanged();
 
 		// schedule the delete...
 		Handler handler = new Handler();
@@ -537,9 +552,8 @@ public class CustomStageActivity extends BaseGameActivity implements
 					return;
 				}
 				stage.delete(level);
-				levels.clear();
-				levels.addAll(stage.getLevels());
-				adapter.notifyDataSetChanged();
+		        Levels.resetCustomStage();
+				//adapter.notifyDataSetChanged();
 			}
 		}, DISMISS_BAR_DURATION + 200);
 
@@ -705,7 +719,8 @@ public class CustomStageActivity extends BaseGameActivity implements
 			Toast.makeText(this, "Not logged in", Toast.LENGTH_SHORT).show();
 			return;
 		}
-		if (StringUtils.isEmpty(parseUser.getString(ParseUserExtra.nickname_field))) {
+		if (StringUtils.isEmpty(parseUser
+				.getString(ParseUserExtra.nickname_field))) {
 			Runnable continuation = new Runnable() {
 				@Override
 				public void run() {

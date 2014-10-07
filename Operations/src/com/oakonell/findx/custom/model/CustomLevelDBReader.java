@@ -27,6 +27,29 @@ import com.oakonell.findx.model.ops.Swap;
 public class CustomLevelDBReader {
 	private FractionFormat format = new FractionFormat();
 
+	public long findDbIdByServerId(Context context, String parseLevelId) {
+		DataBaseHelper helper = new DataBaseHelper(context);
+		Cursor query = null;
+		SQLiteDatabase db = null;
+		try {
+			db = helper.getReadableDatabase();
+
+			query = db.query(DataBaseHelper.CUSTOM_LEVEL_TABLE_NAME, null,
+					DataBaseHelper.CustomLevelTable.SERVER_ID + "=?",
+					new String[] { parseLevelId }, null, null, null);
+			if (!query.moveToFirst()) {
+				return -1;
+			}
+			return query.getLong(query.getColumnIndex(BaseColumns._ID ));			
+		} finally {
+			if (query != null)
+				query.close();
+			if (db != null)
+				db.close();
+		}
+
+	}
+
 	public void read(Context context, CustomLevelBuilder builder, long id) {
 		DataBaseHelper helper = new DataBaseHelper(context);
 		SQLiteDatabase db = helper.getReadableDatabase();

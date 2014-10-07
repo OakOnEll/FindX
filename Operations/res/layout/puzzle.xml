@@ -39,6 +39,14 @@
                 android:paddingLeft="8sp"
                 android:text=""
                 android:textAppearance="?android:attr/textAppearanceLarge" />
+
+            <Button
+                android:id="@+id/details"
+                android:visibility="gone"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Details" />
+
         </LinearLayout>
 
         <LinearLayout

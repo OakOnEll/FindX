@@ -8,7 +8,7 @@ import android.provider.BaseColumns;
 public class DataBaseHelper extends SQLiteOpenHelper {
 
 	public static final String DATABASE_NAME = "findx.db";
-	private static final int DATABASE_VERSION = 8;
+	private static final int DATABASE_VERSION = 9;
 
 	public static final String CUSTOM_LEVEL_TABLE_NAME = "custom_level";
 
@@ -33,6 +33,7 @@ public class DataBaseHelper extends SQLiteOpenHelper {
 		public static final String IS_IMPORTED = "is_imported";
 		public static final String AUTHOR = "author";
 		public static final String SERVER_ID = "server_id";
+		public static final String TO_DELETE = "to_delete";
 
 	}
 
@@ -103,6 +104,7 @@ public class DataBaseHelper extends SQLiteOpenHelper {
 				CustomLevelTable.IS_IMPORTED + " INTEGER, "
 				+ CustomLevelTable.AUTHOR + " STRING, "
 				+ CustomLevelTable.SERVER_ID + " STRING, "
+				+ CustomLevelTable.TO_DELETE + " INTEGER, "
 				+ CustomLevelTable.IS_OPTIMAL + " INTEGER " + ");";
 		sqLiteDatabase.execSQL(createTableString);
 
@@ -150,6 +152,10 @@ public class DataBaseHelper extends SQLiteOpenHelper {
 
 	@Override
 	public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+		if (oldVersion < 9 && newVersion >= 9) {
+			db.execSQL("ALTER TABLE " + CUSTOM_LEVEL_TABLE_NAME
+					+ " ADD COLUMN " + CustomLevelTable.TO_DELETE + " INTEGER;");
+		}
 		if (oldVersion < 8 && newVersion >= 8) {
 			db.execSQL("ALTER TABLE " + CUSTOM_LEVEL_TABLE_NAME
 					+ " ADD COLUMN " + CustomLevelTable.SERVER_ID + " STRING;");

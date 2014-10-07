@@ -46,6 +46,9 @@ public class CustomLevel extends Level {
 		return !StringUtils.isEmpty(serverId);
 	}
 
+	public String getServerId() {
+		return serverId;
+	}
 	public void setServerId(String id) {
 		this.serverId = id;
 	}

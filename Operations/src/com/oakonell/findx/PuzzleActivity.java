@@ -37,6 +37,8 @@ import com.oakonell.findx.Achievements.AchievementContext;
 import com.oakonell.findx.DelayedTextView.SoundInfo;
 import com.oakonell.findx.DelayedTextView.TextViewInfo;
 import com.oakonell.findx.custom.CustomStageActivity;
+import com.oakonell.findx.custom.model.CustomLevel;
+import com.oakonell.findx.custom.parse.CustomLevelDetailActivity;
 import com.oakonell.findx.data.DataBaseHelper;
 import com.oakonell.findx.model.Level;
 import com.oakonell.findx.model.Move;
@@ -92,6 +94,25 @@ public class PuzzleActivity extends BaseGameActivity implements
 			String puzzleId = intent.getStringExtra(PUZZLE_ID);
 			puzzle = new Puzzle(puzzleId);
 		}
+		Button detailsButton = (Button) findViewById(R.id.details);
+		if (puzzle.getLevel() instanceof CustomLevel) {
+			CustomLevel cLevel = (CustomLevel) puzzle.getLevel();
+			if (cLevel.savedToServer()) {
+				detailsButton.setVisibility(View.VISIBLE);
+			}
+		}
+		detailsButton.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				CustomLevel cLevel = (CustomLevel) puzzle.getLevel();
+
+				Intent levelIntent = new Intent(PuzzleActivity.this,
+						CustomLevelDetailActivity.class);
+				levelIntent.putExtra(CustomLevelDetailActivity.LEVEL_PARSE_ID,
+						cLevel.getServerId());
+				startActivity(levelIntent);
+			}
+		});
 		fromCustom = intent.getBooleanExtra(IS_CUSTOM, false);
 
 		BackgroundMusicHelper.onActivtyCreate(this, puzzle.getStage()

@@ -1,7 +1,12 @@
 package com.oakonell.findx.custom.parse;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 
 import android.app.Dialog;
 import android.app.ListActivity;
@@ -9,21 +14,25 @@ import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.TextView;
 
-import com.oakonell.findx.PuzzleActivity;
 import com.oakonell.findx.R;
+import com.oakonell.findx.custom.model.CustomLevelBuilder;
 import com.oakonell.findx.custom.parse.ParseConnectivity.ParseUserExtra;
+import com.oakonell.findx.custom.parse.ParseCustomLevelSearchAdapter.CheckCallback;
 import com.oakonell.findx.custom.parse.ParseLevelHelper.ParseCustomLevel;
+import com.oakonell.findx.model.Levels;
 import com.oakonell.utils.StringUtils;
 import com.parse.ParseException;
 import com.parse.ParseObject;
@@ -40,6 +49,10 @@ public class CustomLevelSearchActivity extends ListActivity {
 	private Dialog progressDialog;
 	private String filter;
 	SortCriteria sort = SORT_BY_CREATION_DATE;
+	private boolean downloading = false;
+
+	private Map<String, Integer> checkedPositionByIds = new HashMap<String, Integer>();
+	private Button downloadChecked;
 
 	private static class SortCriteria {
 		final int val;
@@ -63,7 +76,8 @@ public class CustomLevelSearchActivity extends ListActivity {
 			// Gets the current list of todos in sorted order
 			ParseQuery<ParseObject> query;
 			// whereMatches may slow down on large data sets..
-			// might be better to store a redundant canonical uppercase value for each field bing used in case insensitive searches
+			// might be better to store a redundant canonical uppercase value
+			// for each field bing used in case insensitive searches
 			if (!StringUtils.isEmpty(filter)) {
 				ParseQuery<ParseUser> query1 = ParseUser.getQuery();
 				// query1.whereContains(ParseUserExtra.nickname_field, filter);
@@ -144,10 +158,37 @@ public class CustomLevelSearchActivity extends ListActivity {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		levels = new ArrayList<ParseObject>();
-		adapter = new ParseCustomLevelSearchAdapter(this, levels);
-		setListAdapter(adapter);
 		setContentView(R.layout.custom_level_search);
+		downloadChecked = (Button) findViewById(R.id.download_checked);
+		downloadChecked.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				downloadChecked();
+			}
+		});
+		configureDownloadCheckedButton();
+		levels = new ArrayList<ParseObject>();
+
+		CheckCallback callback = new CheckCallback() {
+			@Override
+			public void checkStateChanged(int position, boolean isChecked) {
+				if (downloading)
+					return;
+				ParseObject level = levels.get(position);
+				String id = level.getObjectId();
+				if (isChecked) {
+					checkedPositionByIds.put(id, position);
+				} else {
+					checkedPositionByIds.remove(id);
+				}
+				configureDownloadCheckedButton();
+			}
+
+		};
+
+		adapter = new ParseCustomLevelSearchAdapter(this, levels,
+				checkedPositionByIds, callback);
+		setListAdapter(adapter);
 
 		TextView empty = (TextView) findViewById(android.R.id.empty);
 		empty.setVisibility(View.INVISIBLE);
@@ -204,6 +245,85 @@ public class CustomLevelSearchActivity extends ListActivity {
 		registerForContextMenu(getListView());
 	}
 
+	private void configureDownloadCheckedButton() {
+		downloadChecked.setEnabled(!checkedPositionByIds.isEmpty());
+		// if (checkedPositionByIds.isEmpty()) {
+		// downloadChecked.setVisibility(View.GONE);
+		// } else {
+		// downloadChecked.setVisibility(View.VISIBLE);
+		// }
+	}
+
+	protected void downloadChecked() {
+		final Handler handler = new Handler();
+		final int max = checkedPositionByIds.size();
+		final ProgressDialog progress = ProgressDialog.show(this,
+				"Downloading levels", "Downloading 0/" + max + "...");
+		downloading = true;
+		AsyncTask<Void, Integer, Void> task = new AsyncTask<Void, Integer, Void>() {
+
+			@Override
+			protected Void doInBackground(Void... params) {
+				Set<Entry<String, Integer>> entrySet = new HashSet<Map.Entry<String, Integer>>(
+						checkedPositionByIds.entrySet());
+				int i = 0;
+				for (Entry<String, Integer> entry : entrySet) {
+					i++;
+					publishProgress(i);
+					Integer position = entry.getValue();
+					CustomLevelBuilder builder = ParseLevelHelper.load(adapter
+							.getItem(position));
+					builder.save();
+					checkedPositionByIds.remove(entry.getKey());
+					// int firstPosition =
+					// getListView().getFirstVisiblePosition();
+					// int lastPosition =
+					// getListView().getLastVisiblePosition();
+					// if (firstPosition <= position && position <=
+					// lastPosition) {
+					// int childViewIndex = position - firstPosition;
+					// View child = getListView().getChildAt(childViewIndex);
+					// final ViewHolder holder = (ViewHolder) child.getTag();
+					// handler.post(new Runnable() {
+					// @Override
+					// public void run() {
+					// holder.check.setEnabled(enabled);Checked(false);
+					// }
+					// });
+					//
+					// }
+				}
+				return null;
+			}
+
+			@Override
+			protected void onProgressUpdate(Integer... values) {
+				progress.setMessage("Downloading " + values[0] + "/" + max
+						+ "...");
+			}
+
+			@Override
+			protected void onPostExecute(Void result) {
+				adapter.notifyDataSetChanged();
+				Levels.resetCustomStage();
+				configureDownloadCheckedButton();
+				downloading = false;
+				progress.dismiss();
+			}
+
+			@Override
+			protected void onCancelled() {
+				adapter.notifyDataSetChanged();
+				Levels.resetCustomStage();
+				configureDownloadCheckedButton();
+				downloading = false;
+				progress.dismiss();
+			}
+
+		};
+		task.execute();
+	}
+
 	@Override
 	protected void onStart() {
 		super.onStart();
@@ -229,11 +349,4 @@ public class CustomLevelSearchActivity extends ListActivity {
 		// TODO deal with update to this record
 	}
 
-	private void startPuzzle(final String levelId) {
-		Intent levelIntent = new Intent(CustomLevelSearchActivity.this,
-				PuzzleActivity.class);
-		levelIntent.putExtra(PuzzleActivity.PUZZLE_ID, levelId);
-		levelIntent.putExtra(PuzzleActivity.IS_CUSTOM, true);
-		startActivity(levelIntent);
-	}
 }

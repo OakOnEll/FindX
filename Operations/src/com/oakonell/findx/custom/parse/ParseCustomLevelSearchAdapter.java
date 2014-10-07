@@ -1,6 +1,7 @@
 package com.oakonell.findx.custom.parse;
 
 import java.util.List;
+import java.util.Map;
 
 import android.app.Activity;
 import android.text.format.DateUtils;
@@ -8,10 +9,14 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
+import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.RatingBar;
 import android.widget.TextView;
 
 import com.oakonell.findx.R;
+import com.oakonell.findx.custom.model.CustomLevelDBReader;
 import com.oakonell.findx.custom.parse.ParseConnectivity.ParseUserExtra;
 import com.oakonell.findx.custom.parse.ParseLevelHelper.ParseCustomLevel;
 import com.parse.ParseObject;
@@ -19,6 +24,7 @@ import com.parse.ParseObject;
 public class ParseCustomLevelSearchAdapter extends ArrayAdapter<ParseObject> {
 	public static class ViewHolder {
 
+		public CheckBox check;
 		public TextView title;
 		public TextView equation;
 		public TextView description;
@@ -29,21 +35,31 @@ public class ParseCustomLevelSearchAdapter extends ArrayAdapter<ParseObject> {
 	}
 
 	private Activity context;
+	private CheckCallback callback;
+	Map<String, Integer> checkedPositionByIds;
+
+	public interface CheckCallback {
+		void checkStateChanged(int position, boolean isChecked);
+	}
 
 	public ParseCustomLevelSearchAdapter(Activity context,
-			List<ParseObject> objects) {
+			List<ParseObject> objects,
+			Map<String, Integer> checkedPositionByIds, CheckCallback callback) {
 		super(context, R.layout.custom_level_item, objects);
 		this.context = context;
+		this.callback = callback;
+		this.checkedPositionByIds = checkedPositionByIds;
 	}
 
 	@Override
-	public View getView(int position, View convertView, ViewGroup parent) {
+	public View getView(final int position, View convertView, ViewGroup parent) {
 		View view = convertView;
 		ViewHolder holder;
 		if (view == null) {
 			LayoutInflater inflater = context.getLayoutInflater();
 			view = inflater.inflate(R.layout.custom_level_item, null);
 			holder = new ViewHolder();
+			holder.check = (CheckBox) view.findViewById(R.id.check);
 			holder.title = (TextView) view.findViewById(R.id.title);
 			holder.description = (TextView) view.findViewById(R.id.description);
 			holder.equation = (TextView) view.findViewById(R.id.equation);
@@ -69,6 +85,31 @@ public class ParseCustomLevelSearchAdapter extends ArrayAdapter<ParseObject> {
 				.getDouble(ParseCustomLevel.total_ratings_field);
 		float rating = numRatings == 0 ? 0
 				: (float) (totalRatings / numRatings);
+
+		CustomLevelDBReader reader = new CustomLevelDBReader();
+		holder.check.setOnCheckedChangeListener(null);
+		// put this in async..
+		long dbId = reader.findDbIdByServerId(context, item.getObjectId());
+		if (dbId > 0) {
+			holder.check.setChecked(true);
+			holder.check.setEnabled(false);
+		} else {
+			if (checkedPositionByIds.get(item.getObjectId()) != null) {
+				holder.check.setChecked(false);
+			} else {
+				holder.check.setChecked(false);
+			}
+			holder.check.setEnabled(true);
+		}
+		holder.check.setOnCheckedChangeListener(new OnCheckedChangeListener() {
+			@Override
+			public void onCheckedChanged(CompoundButton buttonView,
+					boolean isChecked) {
+				if (callback != null) {
+					callback.checkStateChanged(position, isChecked);
+				}
+			}
+		});
 
 		holder.title.setText(title);
 		holder.equation.setText(equationString);

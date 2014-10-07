@@ -27,6 +27,7 @@ import com.oakonell.findx.PuzzleActivity;
 import com.oakonell.findx.R;
 import com.oakonell.findx.custom.model.CustomLevel;
 import com.oakonell.findx.custom.model.CustomLevelBuilder;
+import com.oakonell.findx.custom.model.CustomLevelDBReader;
 import com.oakonell.findx.custom.parse.ParseConnectivity.ParseUserExtra;
 import com.oakonell.findx.custom.parse.ParseLevelHelper.ParseCustomLevel;
 import com.oakonell.findx.custom.parse.ParseLevelHelper.ParseLevelOperation;
@@ -92,13 +93,30 @@ public class CustomLevelDetailActivity extends FragmentActivity {
 		num_rankings = (TextView) headerView.findViewById(R.id.num_rankings);
 		// TODO use the rating bar on change as the edit trigger
 
-		Button download = (Button) headerView.findViewById(R.id.download);
-		download.setOnClickListener(new OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				downloadAndStartPuzzle();
-			}
-		});
+		final CustomLevelDBReader reader = new CustomLevelDBReader();
+		final long dbId = reader.findDbIdByServerId(this, levelId);
+		if (dbId > 0) {
+			Button download = (Button) headerView.findViewById(R.id.download);
+			download.setText("Play");
+			download.setOnClickListener(new OnClickListener() {
+				@Override
+				public void onClick(View v) {
+					// Ugh-ly..
+					CustomLevel theLevel = Levels.getCustomStage()
+							.getLevelByDBId(dbId);
+					finish();
+					startPuzzle(theLevel.getId());
+				}
+			});
+		} else {
+			Button download = (Button) headerView.findViewById(R.id.download);
+			download.setOnClickListener(new OnClickListener() {
+				@Override
+				public void onClick(View v) {
+					downloadAndStartPuzzle();
+				}
+			});
+		}
 
 		mainAdapter.addView(headerView);
 
@@ -106,9 +124,10 @@ public class CustomLevelDetailActivity extends FragmentActivity {
 
 		mainAdapter.addAdapter(operationsAdapter);
 
-		View commentHeaderView = inflater.inflate(R.layout.comments_header, null);
+		View commentHeaderView = inflater.inflate(R.layout.comments_header,
+				null);
 		mainAdapter.addView(commentHeaderView);
-		
+
 		currentUserRatingView = inflater.inflate(
 				R.layout.custom_level_current_user_rate, null);
 		Button editRating = (Button) currentUserRatingView
@@ -129,8 +148,8 @@ public class CustomLevelDetailActivity extends FragmentActivity {
 		commentsAdapter = new CommentsAdapter(this, comments);
 		mainAdapter.addAdapter(commentsAdapter);
 
-//		listView.addFooterView(v);
-		
+		// listView.addFooterView(v);
+
 		listView.setAdapter(mainAdapter);
 
 	}
@@ -143,8 +162,8 @@ public class CustomLevelDetailActivity extends FragmentActivity {
 				updateHeader(level);
 				// TODO release the my comment progress
 				Toast.makeText(CustomLevelDetailActivity.this,
-						"Updated rating and comment",
-						Toast.LENGTH_SHORT).show();
+						"Updated rating and comment", Toast.LENGTH_SHORT)
+						.show();
 			}
 		});
 		frag.show(getSupportFragmentManager(), "");
@@ -290,11 +309,10 @@ public class CustomLevelDetailActivity extends FragmentActivity {
 		float rating = numRatings == 0 ? 0 : ((float) totalRating) / numRatings;
 
 		long createdMillis = object.getCreatedAt().getTime();
-		CharSequence createdString = DateUtils.getRelativeDateTimeString(
-				this, createdMillis, DateUtils.DAY_IN_MILLIS,
+		CharSequence createdString = DateUtils.getRelativeDateTimeString(this,
+				createdMillis, DateUtils.DAY_IN_MILLIS,
 				DateUtils.WEEK_IN_MILLIS, DateUtils.FORMAT_ABBREV_ALL);
 
-		
 		title.setText(titleString);
 		author.setText("Created by " + authorName + " on " + createdString);
 		equation.setText(equationString);
@@ -302,10 +320,12 @@ public class CustomLevelDetailActivity extends FragmentActivity {
 
 		ratingBar.setRating(rating);
 		num_rankings.setText("" + numRatings);
-		
+
 		if (myParseComment != null) {
-			myCommentView.setText(myParseComment.getString(ParseLevelRating.comment_field));
-			myRatingBar.setRating((float)myParseComment.getDouble(ParseLevelRating.rating_field));
+			myCommentView.setText(myParseComment
+					.getString(ParseLevelRating.comment_field));
+			myRatingBar.setRating((float) myParseComment
+					.getDouble(ParseLevelRating.rating_field));
 		}
 
 	}
@@ -382,8 +402,7 @@ public class CustomLevelDetailActivity extends FragmentActivity {
 			ViewHolder holder;
 			if (view == null) {
 				LayoutInflater inflater = context.getLayoutInflater();
-				view = inflater.inflate(R.layout.operation_item,
-						null);
+				view = inflater.inflate(R.layout.operation_item, null);
 				holder = new ViewHolder();
 				holder.operation = (TextView) view.findViewById(R.id.operation);
 				view.setTag(holder);
