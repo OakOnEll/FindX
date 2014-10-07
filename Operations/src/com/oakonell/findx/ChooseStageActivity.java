@@ -9,7 +9,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.GridView;
@@ -121,21 +120,21 @@ public class ChooseStageActivity extends BaseGameActivity implements
 						.findViewById(R.id.level_name);
 				stageButton.setText(stage.getTitleId());
 
-				// row.setOnClickListener(new OnClickListener() {
-				// @Override
-				// public void onClick(View view) {
-				// startStage(stage.getId());
-				// }
-				// });
+				stageButton.setOnClickListener(new OnClickListener() {
+					 @Override
+					 public void onClick(View view) {
+					 startStage(stage.getId());
+					 }
+					 });
 
 				ImageView lock = (ImageView) row.findViewById(R.id.lock);
 
 				if (stage.isUnlocked()) {
-					row.setClickable(true);
+					row.setEnabled(true);
 					stageButton.setEnabled(true);
 					lock.setVisibility(View.INVISIBLE);
 				} else {
-					row.setClickable(false);
+					row.setEnabled(false);
 					stageButton.setEnabled(false);
 					lock.setVisibility(View.VISIBLE);
 				}
@@ -145,15 +144,15 @@ public class ChooseStageActivity extends BaseGameActivity implements
 		};
 
 		stageSelect.setAdapter(adapter);
-		stageSelect
-				.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-					@Override
-					public void onItemClick(AdapterView<?> parent, View view,
-							int position, long id) {
-						Stage stage = adapter.getItem(position);
-						startStage(stage.getId());
-					}
-				});
+		// stageSelect
+		// .setOnItemClickListener(new AdapterView.OnItemClickListener() {
+		// @Override
+		// public void onItemClick(AdapterView<?> parent, View view,
+		// int position, long id) {
+		// Stage stage = adapter.getItem(position);
+		// startStage(stage.getId());
+		// }
+		// });
 
 		Button buildLevel = (Button) findViewById(R.id.custom);
 		buildLevel.setOnClickListener(new OnClickListener() {
