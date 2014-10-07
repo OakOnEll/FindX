@@ -57,6 +57,10 @@ import com.oakonell.findx.custom.model.CustomLevelBuilder;
 import com.oakonell.findx.custom.model.CustomLevelDBReader;
 import com.oakonell.findx.custom.model.CustomLevelDBWriter;
 import com.oakonell.findx.custom.model.CustomStage;
+import com.oakonell.findx.custom.parse.CustomLevelSearchActivity;
+import com.oakonell.findx.custom.parse.ParseConnectivity;
+import com.oakonell.findx.custom.parse.ParseConnectivity.ParseUserExtra;
+import com.oakonell.findx.custom.parse.ParseLevelHelper;
 import com.oakonell.findx.model.Expression;
 import com.oakonell.findx.model.Level;
 import com.oakonell.findx.model.Levels;
@@ -701,7 +705,7 @@ public class CustomStageActivity extends BaseGameActivity implements
 			Toast.makeText(this, "Not logged in", Toast.LENGTH_SHORT).show();
 			return;
 		}
-		if (StringUtils.isEmpty(parseUser.getString("nickname"))) {
+		if (StringUtils.isEmpty(parseUser.getString(ParseUserExtra.nickname_field))) {
 			Runnable continuation = new Runnable() {
 				@Override
 				public void run() {

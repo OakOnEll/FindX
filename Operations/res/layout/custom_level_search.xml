@@ -4,24 +4,35 @@
     android:layout_height="match_parent"
     android:orientation="vertical" >
 
+    <!-- dummy view to prevent automatic focus -->
+
+    <LinearLayout
+        android:layout_width="0px"
+        android:layout_height="0px"
+        android:focusable="true"
+        android:focusableInTouchMode="true" />
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content" >
 
-        <TextView
-            android:id="@+id/search_lbl"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Search"
-            android:textAppearance="?android:attr/textAppearanceMedium" />
-
         <EditText
-            android:id="@+id/search"
+            android:id="@+id/search_text"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:ems="10"
-            android:hint="" />
+            android:hint="Search"
+            android:maxLines="1"
+            android:nextFocusLeft="@+id/search"
+            android:nextFocusUp="@id/search_text"
+            android:singleLine="true" />
+
+        <ImageButton
+            android:id="@+id/search"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@android:drawable/ic_menu_search" />
     </LinearLayout>
 
     <LinearLayout
@@ -33,7 +44,7 @@
             android:id="@+id/sort_by_lbl"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Medium Text"
+            android:text="Sort by"
             android:textAppearance="?android:attr/textAppearanceMedium" />
 
         <Spinner

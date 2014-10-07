@@ -23,7 +23,7 @@ import com.google.example.games.basegameutils.BaseGameActivity;
 import com.google.example.games.basegameutils.GameHelper;
 import com.oakonell.findx.Achievements.AchievementContext;
 import com.oakonell.findx.custom.CustomStageActivity;
-import com.oakonell.findx.custom.ParseConnectivity;
+import com.oakonell.findx.custom.parse.ParseConnectivity;
 import com.oakonell.findx.data.DataBaseHelper;
 import com.oakonell.findx.model.Levels;
 import com.oakonell.findx.model.Puzzle;
@@ -131,9 +131,11 @@ public class ChooseStageActivity extends BaseGameActivity implements
 				ImageView lock = (ImageView) row.findViewById(R.id.lock);
 
 				if (stage.isUnlocked()) {
+					row.setClickable(true);
 					stageButton.setEnabled(true);
 					lock.setVisibility(View.INVISIBLE);
 				} else {
+					row.setClickable(false);
 					stageButton.setEnabled(false);
 					lock.setVisibility(View.VISIBLE);
 				}

@@ -84,9 +84,11 @@ public class StageActivity extends BaseGameActivity implements
 						: View.INVISIBLE);
 				ratingBar.setRating(rating);
 				if (level.isUnlocked()) {
+					row.setClickable(true);
 					levelButton.setEnabled(true);
 					lock.setVisibility(View.INVISIBLE);
 				} else {
+					row.setClickable(false);
 					levelButton.setEnabled(false);
 					lock.setVisibility(View.VISIBLE);
 				}

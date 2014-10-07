@@ -7,7 +7,6 @@ import org.apache.commons.math3.fraction.Fraction;
 import com.oakonell.findx.model.Expression;
 import com.oakonell.findx.model.Operation;
 import com.oakonell.findx.model.OperationVisitor;
-import com.parse.ParseObject;
 
 @Immutable
 public class Multiply extends AbstractOperation {
