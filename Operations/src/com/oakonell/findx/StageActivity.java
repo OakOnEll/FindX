@@ -66,15 +66,15 @@ public class StageActivity extends BaseGameActivity implements
 				TextView levelButton = (TextView) row
 						.findViewById(R.id.level_name);
 				levelButton.setText(level.getName());
-				
+
 				row.findViewById(R.id.menu).setVisibility(View.INVISIBLE);
 
-				// row.setOnClickListener(new OnClickListener() {
-				// @Override
-				// public void onClick(View view) {
-				// startPuzzle(level.getId());
-				// }
-				// });
+				levelButton.setOnClickListener(new OnClickListener() {
+					@Override
+					public void onClick(View view) {
+						startPuzzle(level.getId());
+					}
+				});
 
 				ImageView lock = (ImageView) row.findViewById(R.id.lock);
 
