@@ -8,7 +8,7 @@ import android.provider.BaseColumns;
 public class DataBaseHelper extends SQLiteOpenHelper {
 
 	public static final String DATABASE_NAME = "findx.db";
-	private static final int DATABASE_VERSION = 9;
+	private static final int DATABASE_VERSION = 10;
 
 	public static final String CUSTOM_LEVEL_TABLE_NAME = "custom_level";
 
@@ -19,9 +19,11 @@ public class DataBaseHelper extends SQLiteOpenHelper {
 		public static final String SEQ_NUM = "sequence";
 
 		// equation columns
+		public static final String LHS_X2_COEFF = "lhs_x2_coeff";
 		public static final String LHS_X_COEFF = "lhs_x_coeff";
 		public static final String LHS_CONST = "lhs_const";
 
+		public static final String RHS_X2_COEFF = "rhs_x2_coeff";
 		public static final String RHS_X_COEFF = "rhs_x_coeff";
 		public static final String RHS_CONST = "rhs_const";
 
@@ -45,6 +47,7 @@ public class DataBaseHelper extends SQLiteOpenHelper {
 		public static final String SEQ_NUM = "sequence";
 
 		// expression columns
+		public static final String X2_COEFF = "lhs_x2_coeff";
 		public static final String X_COEFF = "lhs_x_coeff";
 		public static final String CONST = "lhs_const";
 	}
@@ -94,8 +97,10 @@ public class DataBaseHelper extends SQLiteOpenHelper {
 				+ CustomLevelTable.MAX_MOVES + " INTEGER, "
 				+ CustomLevelTable.SEQ_NUM + " INTEGER, " +
 
-				CustomLevelTable.LHS_X_COEFF + " TEXT, "
+				CustomLevelTable.LHS_X2_COEFF + " TEXT, "
+				+ CustomLevelTable.LHS_X_COEFF + " TEXT, "
 				+ CustomLevelTable.LHS_CONST + " TEXT, "
+				+ CustomLevelTable.RHS_X2_COEFF + " TEXT, "
 				+ CustomLevelTable.RHS_X_COEFF + " TEXT, "
 				+ CustomLevelTable.RHS_CONST + " TEXT, " +
 
@@ -114,6 +119,7 @@ public class DataBaseHelper extends SQLiteOpenHelper {
 				+ CustomLevelOperationsTable.CUSTOM_LEVEL_ID + " INTEGER, "
 				+ CustomLevelOperationsTable.TYPE + " TEXT, "
 				+ CustomLevelOperationsTable.SEQ_NUM + " INTEGER, "
+				+ CustomLevelOperationsTable.X2_COEFF + " TEXT, "
 				+ CustomLevelOperationsTable.X_COEFF + " TEXT, "
 				+ CustomLevelOperationsTable.CONST + " TEXT " + ");";
 		sqLiteDatabase.execSQL(createTableString);
@@ -152,6 +158,16 @@ public class DataBaseHelper extends SQLiteOpenHelper {
 
 	@Override
 	public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+		if (oldVersion < 10 && newVersion >= 10) {
+			db.execSQL("ALTER TABLE " + CUSTOM_LEVEL_TABLE_NAME
+					+ " ADD COLUMN " + CustomLevelTable.LHS_X2_COEFF + " TEXT;");
+			db.execSQL("ALTER TABLE " + CUSTOM_LEVEL_TABLE_NAME
+					+ " ADD COLUMN " + CustomLevelTable.RHS_X2_COEFF + " TEXT;");
+
+			db.execSQL("ALTER TABLE " + CUSTOM_LEVEL_OPERATIONS_TABLE_NAME
+					+ " ADD COLUMN " + CustomLevelOperationsTable.X2_COEFF
+					+ " TEXT;");
+		}
 		if (oldVersion < 9 && newVersion >= 9) {
 			db.execSQL("ALTER TABLE " + CUSTOM_LEVEL_TABLE_NAME
 					+ " ADD COLUMN " + CustomLevelTable.TO_DELETE + " INTEGER;");

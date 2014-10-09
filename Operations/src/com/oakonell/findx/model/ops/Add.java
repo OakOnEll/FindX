@@ -22,11 +22,13 @@ public class Add extends AbstractOperation {
 
 	@Override
 	public Expression apply(Expression expression) {
+		Fraction x2Coeff = OptimizedFractionUtils.add(
+				expression.getX2Coefficient(), expr.getX2Coefficient());
 		Fraction xCoeff = OptimizedFractionUtils.add(
 				expression.getXCoefficient(), expr.getXCoefficient());
 		Fraction constant = OptimizedFractionUtils.add(
 				expression.getConstant(), expr.getConstant());
-		return new Expression(xCoeff, constant);
+		return new Expression(x2Coeff, xCoeff, constant);
 	}
 
 	@Override

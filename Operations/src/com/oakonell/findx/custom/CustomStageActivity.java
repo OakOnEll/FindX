@@ -74,6 +74,8 @@ import com.oakonell.findx.model.OperationVisitor;
 import com.oakonell.findx.model.ops.Add;
 import com.oakonell.findx.model.ops.Divide;
 import com.oakonell.findx.model.ops.Multiply;
+import com.oakonell.findx.model.ops.Square;
+import com.oakonell.findx.model.ops.SquareRoot;
 import com.oakonell.findx.model.ops.Subtract;
 import com.oakonell.findx.model.ops.Swap;
 import com.oakonell.utils.StringUtils;
@@ -338,16 +340,28 @@ public class CustomStageActivity extends BaseGameActivity implements
 					}
 
 					@Override
+					public void visitSquare(Square square) {
+					}
+
+					@Override
+					public void visitSquareRoot(SquareRoot squareRoot) {
+					}
+
+					@Override
 					public void visitSubtract(Subtract sub) {
 						Expression expression = sub.getExpression();
 						appendExpression(expression);
 					}
 
 					private void appendExpression(Expression expression) {
+						Element x2 = doc.createElement("x2");
 						Element x = doc.createElement("x");
 						Element constant = doc.createElement("c");
+						op.appendChild(x2);
 						op.appendChild(x);
 						op.appendChild(constant);
+						XMLUtils.setTextContent(x2, expression
+								.getX2Coefficient().toString());
 						XMLUtils.setTextContent(x, expression.getXCoefficient()
 								.toString());
 						XMLUtils.setTextContent(constant, expression
@@ -525,7 +539,7 @@ public class CustomStageActivity extends BaseGameActivity implements
 				Toast.makeText(CustomStageActivity.this,
 						"Restored " + level.getName(), Toast.LENGTH_SHORT)
 						.show();
-		        Levels.resetCustomStage();
+				Levels.resetCustomStage();
 				adapter.notifyDataSetChanged();
 			}
 		});
@@ -539,7 +553,7 @@ public class CustomStageActivity extends BaseGameActivity implements
 				CustomLevelTable.SERVER_ID + "=?",
 				new String[] { level.getServerId() });
 		db.close();
-        Levels.resetCustomStage();
+		Levels.resetCustomStage();
 		adapter.notifyDataSetChanged();
 
 		// schedule the delete...
@@ -552,8 +566,8 @@ public class CustomStageActivity extends BaseGameActivity implements
 					return;
 				}
 				stage.delete(level);
-		        Levels.resetCustomStage();
-				//adapter.notifyDataSetChanged();
+				Levels.resetCustomStage();
+				// adapter.notifyDataSetChanged();
 			}
 		}, DISMISS_BAR_DURATION + 200);
 

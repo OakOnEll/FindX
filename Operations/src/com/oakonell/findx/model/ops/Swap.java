@@ -49,4 +49,8 @@ public class Swap implements Operation {
 		visitor.visitSwap(this);
 	}
 
+	public boolean canApply(Equation equation) {
+		return true;
+	}
+
 }

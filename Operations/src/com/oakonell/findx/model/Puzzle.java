@@ -228,6 +228,13 @@ public class Puzzle {
 		return level.getEquation();
 	}
 
+	public Equation getCurrentEquation() {
+		if (moves.isEmpty()) {
+			return level.getEquation();
+		}
+		return moves.get(moves.size() - 1).getEndEquation();
+	}
+
 	public void apply(Operation operation) {
 		if (!getOperations().contains(operation)) {
 			throw new RuntimeException("Operation " + operation

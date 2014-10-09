@@ -32,5 +32,14 @@ public class ExpressionTest extends TestCase {
 
         assertEquals("-x", new Expression(new Fraction(-1), null).toString());
 
+		assertEquals("x<sup><small>2</small></sup> - 2x + 1",new Expression(Fraction.ONE, new Fraction(-2), Fraction.ONE).toString());
+		assertEquals("x<sup><small>2</small></sup> + 2x + 1",new Expression(Fraction.ONE, new Fraction(2), Fraction.ONE).toString());
+		assertEquals("x<sup><small>2</small></sup> + 1",new Expression(Fraction.ONE, new Fraction(0), Fraction.ONE).toString());
+		assertEquals("x<sup><small>2</small></sup> - 1",new Expression(Fraction.ONE, new Fraction(0), Fraction.MINUS_ONE).toString());
+		assertEquals("-x<sup><small>2</small></sup> - 1",new Expression(Fraction.MINUS_ONE, new Fraction(0), Fraction.MINUS_ONE).toString());
+		assertEquals("-2x<sup><small>2</small></sup> - 1",new Expression(new Fraction(-2), new Fraction(0), Fraction.MINUS_ONE).toString());
+		assertEquals("-(1/2)x<sup><small>2</small></sup> - 1",new Expression(new Fraction(-1,2), new Fraction(0), Fraction.MINUS_ONE).toString());
+
+        
     }
 }

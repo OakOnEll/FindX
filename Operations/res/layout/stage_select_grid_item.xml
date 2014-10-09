@@ -24,8 +24,7 @@
 
         <TextView
             android:id="@+id/level_name"
-            style="@style/FindXButton"
-            android:textColor="@android:color/black"
+            style="@style/FindXButton"            
             android:gravity="center"
             android:layout_width="match_parent"
             android:layout_height="fill_parent"

@@ -21,6 +21,8 @@ import com.oakonell.findx.model.Operation.OperationType;
 import com.oakonell.findx.model.ops.Add;
 import com.oakonell.findx.model.ops.Divide;
 import com.oakonell.findx.model.ops.Multiply;
+import com.oakonell.findx.model.ops.Square;
+import com.oakonell.findx.model.ops.SquareRoot;
 import com.oakonell.findx.model.ops.Subtract;
 import com.oakonell.findx.model.ops.Swap;
 import com.oakonell.utils.StringUtils;
@@ -34,6 +36,7 @@ public class ParseLevelHelper {
 	public interface ExpressionField {
 		final String scalar_field = "scalar";
 		final String xcoeff_field = "xcoeff";
+		final String x2coeff_field = "x2coeff";
 	}
 
 	public interface ParseCustomLevel {
@@ -44,7 +47,8 @@ public class ParseLevelHelper {
 		final String num_moves_field = "numMoves";
 		final String num_operations_field = "numOperations";
 		// some redundant fields, to allow easy sorting and retrieval with just
-		// the level, no joins or server side sum/avg, which parse.com doesn't support
+		// the level, no joins or server side sum/avg, which parse.com doesn't
+		// support
 		final String total_ratings_field = "total_ratings";
 		final String avg_rating_field = "avg_rating";
 		final String num_ratings_field = "num_ratings";
@@ -158,6 +162,8 @@ public class ParseLevelHelper {
 				.toString());
 		level.put(prefix + ExpressionField.xcoeff_field, expr.getXCoefficient()
 				.toString());
+		level.put(prefix + ExpressionField.x2coeff_field, expr
+				.getX2Coefficient().toString());
 	}
 
 	public static CustomLevelBuilder load(ParseObject level) {
@@ -254,6 +260,12 @@ public class ParseLevelHelper {
 		case SWAP:
 			op = new Swap();
 			break;
+		case SQUARE_ROOT:
+			op = new SquareRoot();
+			break;
+		case SQUARE:
+			op = new Square();
+			break;
 		default:
 			throw new RuntimeException("Unexpected operator index " + typeIndex);
 		}
@@ -271,18 +283,26 @@ public class ParseLevelHelper {
 
 		Fraction scalar = Fraction.ZERO;
 		Fraction xCcoeff = Fraction.ZERO;
+		Fraction x2Ccoeff = Fraction.ZERO;
 		String scalarString = each.getString(prefix
 				+ ExpressionField.scalar_field);
 		if (!StringUtils.isEmpty(scalarString)) {
 			scalar = format.parse(scalarString);
 		}
+
 		String xCcoeffString = each.getString(prefix
 				+ ExpressionField.xcoeff_field);
 		if (!StringUtils.isEmpty(xCcoeffString)) {
 			xCcoeff = format.parse(xCcoeffString);
 		}
 
-		return new Expression(xCcoeff, scalar);
+		String x2CcoeffString = each.getString(prefix
+				+ ExpressionField.x2coeff_field);
+		if (!StringUtils.isEmpty(x2CcoeffString)) {
+			x2Ccoeff = format.parse(x2CcoeffString);
+		}
+
+		return new Expression(x2Ccoeff, xCcoeff, scalar);
 	}
 
 	public static void addOrModifyRatingComment(final ParseObject parseLevel,

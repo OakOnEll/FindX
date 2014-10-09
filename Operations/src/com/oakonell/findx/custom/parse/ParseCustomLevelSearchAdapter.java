@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 import android.app.Activity;
+import android.text.Html;
 import android.text.format.DateUtils;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -95,7 +96,7 @@ public class ParseCustomLevelSearchAdapter extends ArrayAdapter<ParseObject> {
 			holder.check.setEnabled(false);
 		} else {
 			if (checkedPositionByIds.get(item.getObjectId()) != null) {
-				holder.check.setChecked(false);
+				holder.check.setChecked(true);
 			} else {
 				holder.check.setChecked(false);
 			}
@@ -112,7 +113,7 @@ public class ParseCustomLevelSearchAdapter extends ArrayAdapter<ParseObject> {
 		});
 
 		holder.title.setText(title);
-		holder.equation.setText(equationString);
+		holder.equation.setText(Html.fromHtml(equationString));
 		holder.description.setText("Solvable with " + numOperations
 				+ " operations in " + minMoves + " moves.");
 

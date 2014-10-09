@@ -27,8 +27,7 @@
             android:layout_height="fill_parent"
             android:gravity="center"
             android:minLines="2"
-            android:text="Button"
-            android:textColor="@android:color/black" />
+            android:text="Button" />
 
         <ImageView
             android:id="@+id/lock"

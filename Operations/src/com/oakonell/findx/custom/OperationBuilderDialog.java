@@ -9,6 +9,7 @@ import org.apache.commons.math3.fraction.Fraction;
 import android.app.Dialog;
 import android.content.Context;
 import android.text.Editable;
+import android.text.Html;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.AdapterView;
@@ -29,305 +30,383 @@ import com.oakonell.findx.model.OperationVisitor;
 import com.oakonell.findx.model.ops.Add;
 import com.oakonell.findx.model.ops.Divide;
 import com.oakonell.findx.model.ops.Multiply;
+import com.oakonell.findx.model.ops.Square;
+import com.oakonell.findx.model.ops.SquareRoot;
 import com.oakonell.findx.model.ops.Subtract;
 import com.oakonell.findx.model.ops.Swap;
 
 public class OperationBuilderDialog {
 
-    public interface OperationBuiltContinuation {
-        void operationBuilt(Operation op);
-    }
+	public interface OperationBuiltContinuation {
+		void operationBuilt(Operation op);
+	}
 
-    private RandomHelper randomHelper;
+	private RandomHelper randomHelper;
 
-    public OperationBuilderDialog(RandomHelper randomHelper) {
-        this.randomHelper = randomHelper;
-    }
+	public OperationBuilderDialog(RandomHelper randomHelper) {
+		this.randomHelper = randomHelper;
+	}
 
-    public void buildExpression(Context context, Operation existingOperation,
-            final OperationBuiltContinuation continuation) {
-        final Dialog dialog = new Dialog(context);
+	public void buildExpression(Context context, Operation existingOperation,
+			final OperationBuiltContinuation continuation) {
+		final Dialog dialog = new Dialog(context);
 
-        dialog.setContentView(R.layout.operation_builder);
-        dialog.setTitle(R.string.edit_operation);
+		dialog.setContentView(R.layout.operation_builder);
+		dialog.setTitle(R.string.edit_operation);
 
-        final Spinner operationSpinner = (Spinner) dialog.findViewById(R.id.operation_spinner);
-        final ArrayAdapter<CharSequence> adapter =
-                new ArrayAdapter<CharSequence>(context, android.R.layout.simple_spinner_item);
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        operationSpinner.setAdapter(adapter);
+		final Spinner operationSpinner = (Spinner) dialog
+				.findViewById(R.id.operation_spinner);
+		final ArrayAdapter<CharSequence> adapter = new ArrayAdapter<CharSequence>(
+				context, android.R.layout.simple_spinner_item);
+		adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+		operationSpinner.setAdapter(adapter);
 
-        final List<OperationType> opTypes = new ArrayList<Operation.OperationType>();
-        for (OperationType each : Operation.OperationType.values()) {
-            opTypes.add(each);
-        }
-        for (OperationType each : opTypes) {
-            // TODO translate the op type enums
-            adapter.add(each.toString());
-        }
+		final List<OperationType> opTypes = new ArrayList<Operation.OperationType>();
+		for (OperationType each : Operation.OperationType.values()) {
+			opTypes.add(each);
+		}
+		for (OperationType each : opTypes) {
+			// TODO translate the op type enums
+			adapter.add(each.toString());
+		}
 
-        final FractionEditText xCoeffText = (FractionEditText) dialog.findViewById(R.id.x_coeff);
-        final TextView xLabel = (TextView) dialog.findViewById(R.id.x_label);
-        final FractionEditText constantText = (FractionEditText) dialog.findViewById(R.id.constant);
+		final FractionEditText x2CoeffText = (FractionEditText) dialog
+				.findViewById(R.id.x2_coeff);
+		final FractionEditText xCoeffText = (FractionEditText) dialog
+				.findViewById(R.id.x_coeff);
+		final TextView xLabel = (TextView) dialog.findViewById(R.id.x_label);
+		final TextView x2Label = (TextView) dialog.findViewById(R.id.x2_label);
+		x2Label.setText(Html.fromHtml("x<sup><small>2</small></sup> + "));
 
-        if (existingOperation == null) {
-            operationSpinner.setSelection(0);
-        } else {
-            operationSpinner.setSelection(opTypes.indexOf(existingOperation.type()));
-            adapter.notifyDataSetChanged();
-            OperationVisitor setter = new OperationVisitor() {
-                @Override
-                public void visitSwap(Swap swap) {
-                }
+		final FractionEditText constantText = (FractionEditText) dialog
+				.findViewById(R.id.constant);
 
-                @Override
-                public void visitSubtract(Subtract sub) {
-                    xCoeffText.setFraction(sub.getExpression().getXCoefficient());
-                    constantText.setFraction(sub.getExpression().getConstant());
-                }
+		if (existingOperation == null) {
+			operationSpinner.setSelection(0);
+		} else {
+			operationSpinner.setSelection(opTypes.indexOf(existingOperation
+					.type()));
+			adapter.notifyDataSetChanged();
+			OperationVisitor setter = new OperationVisitor() {
+				@Override
+				public void visitSwap(Swap swap) {
+				}
 
-                @Override
-                public void visitAdd(Add add) {
-                    xCoeffText.setFraction(add.getExpression().getXCoefficient());
-                    constantText.setFraction(add.getExpression().getConstant());
-                }
+				@Override
+				public void visitSquare(Square square) {
+				}
 
-                @Override
-                public void visitMultiply(Multiply multiply) {
-                    constantText.setFraction(multiply.getFactor());
-                }
+				@Override
+				public void visitSquareRoot(SquareRoot squareRoot) {
+				}
 
-                @Override
-                public void visitDivide(Divide divide) {
-                    constantText.setFraction(divide.getFactor());
-                }
+				@Override
+				public void visitSubtract(Subtract sub) {
+					x2CoeffText.setFraction(sub.getExpression()
+							.getX2Coefficient());
+					xCoeffText.setFraction(sub.getExpression()
+							.getXCoefficient());
+					constantText.setFraction(sub.getExpression().getConstant());
+				}
 
-            };
-            existingOperation.accept(setter);
-        }
+				@Override
+				public void visitAdd(Add add) {
+					x2CoeffText.setFraction(add.getExpression()
+							.getX2Coefficient());
+					xCoeffText.setFraction(add.getExpression()
+							.getXCoefficient());
+					constantText.setFraction(add.getExpression().getConstant());
+				}
 
-        final Button okButton = (Button) dialog.findViewById(R.id.ok);
+				@Override
+				public void visitMultiply(Multiply multiply) {
+					constantText.setFraction(multiply.getFactor());
+				}
 
-        OnFractionChanged onFractionChanged = new OnFractionChanged() {
+				@Override
+				public void visitDivide(Divide divide) {
+					constantText.setFraction(divide.getFactor());
+				}
 
-            @Override
-            public void fractionParseError(FractionEditText view, Editable value) {
-                okButton.setEnabled(false);
-            }
+			};
+			existingOperation.accept(setter);
+		}
 
-            @Override
-            public void fractionChanged(FractionEditText view, Fraction value) {
-                int itemIndex = operationSpinner.getSelectedItemPosition();
-                OperationType opType = opTypes.get(itemIndex);
+		final Button okButton = (Button) dialog.findViewById(R.id.ok);
 
-                switch (opType) {
-                    case ADD:
-                        // fall through
-                    case SUBTRACT: {
-                        checkAdditionInputsValidity(xCoeffText, constantText, okButton);
-                    }
-                        break;
-                    case MULTIPLY:
-                        // fall through
-                    case DIVIDE: {
-                        checkMultiplicationInputsValidity(constantText, okButton);
-                    }
-                        break;
-                    case SWAP:
-                        break;
-                    default:
-                        throw new RuntimeException("Unsupported operation type " + opType);
-                }
-            }
-        };
+		OnFractionChanged onFractionChanged = new OnFractionChanged() {
 
-        xCoeffText.setOnFractionChanged(onFractionChanged);
-        constantText.setOnFractionChanged(onFractionChanged);
+			@Override
+			public void fractionParseError(FractionEditText view, Editable value) {
+				okButton.setEnabled(false);
+			}
 
-        operationSpinner.setOnItemSelectedListener(new OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int pos, long rowId) {
-                int itemIndex = operationSpinner.getSelectedItemPosition();
-                OperationType opType = opTypes.get(itemIndex);
+			@Override
+			public void fractionChanged(FractionEditText view, Fraction value) {
+				int itemIndex = operationSpinner.getSelectedItemPosition();
+				OperationType opType = opTypes.get(itemIndex);
 
-                handleOpType(opType, xCoeffText, xLabel, constantText, okButton);
-            }
+				switch (opType) {
+				case ADD:
+					// fall through
+				case SUBTRACT: {
+					checkAdditionInputsValidity(x2CoeffText, xCoeffText,
+							constantText, okButton);
+				}
+					break;
+				case MULTIPLY:
+					// fall through
+				case DIVIDE: {
+					checkMultiplicationInputsValidity(constantText, okButton);
+				}
+					break;
+				case SQUARE:
+					break;
+				case SQUARE_ROOT:
+					break;
+				case SWAP:
+					break;
+				default:
+					throw new RuntimeException("Unsupported operation type "
+							+ opType);
+				}
+			}
+		};
 
-            @Override
-            public void onNothingSelected(AdapterView<?> arg0) {
-            }
-        });
+		x2CoeffText.setOnFractionChanged(onFractionChanged);
+		xCoeffText.setOnFractionChanged(onFractionChanged);
+		constantText.setOnFractionChanged(onFractionChanged);
 
-        Button randomize = (Button) dialog.findViewById(R.id.random_op);
-        randomize.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                int opTypeIndex = randomHelper.nextInt(opTypes.size());
-                OperationType operationType = opTypes.get(opTypeIndex);
-                switch (operationType) {
-                    case ADD:
-                        // fall through
-                    case SUBTRACT:
-                        Expression expr = randomHelper.randomExpression();
-                        xCoeffText.setFraction(expr.getXCoefficient());
-                        constantText.setFraction(expr.getConstant());
-                        break;
-                    case DIVIDE:
-                        // fall through
-                    case MULTIPLY:
-                        Fraction randSmallFraction = randomHelper.randSmallFraction();
-                        if (randSmallFraction.compareTo(Fraction.ZERO) == 0) {
-                            randSmallFraction = Fraction.ONE;
-                        }
-                        constantText.setFraction(randSmallFraction);
-                        break;
-                    case SWAP:
-                        break;
-                    default:
-                        throw new RuntimeException("Unhandled operation type " + operationType);
-                }
+		operationSpinner
+				.setOnItemSelectedListener(new OnItemSelectedListener() {
+					@Override
+					public void onItemSelected(AdapterView<?> parent,
+							View view, int pos, long rowId) {
+						int itemIndex = operationSpinner
+								.getSelectedItemPosition();
+						OperationType opType = opTypes.get(itemIndex);
 
-                operationSpinner.setSelection(opTypes.indexOf(operationType));
-                adapter.notifyDataSetChanged();
-            }
-        });
+						handleOpType(opType, x2CoeffText, xCoeffText, x2Label,
+								xLabel, constantText, okButton);
+					}
 
-        okButton.setEnabled(false);
-        okButton.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                int itemIndex = operationSpinner.getSelectedItemPosition();
-                OperationType opType = opTypes.get(itemIndex);
+					@Override
+					public void onNothingSelected(AdapterView<?> arg0) {
+					}
+				});
 
-                Operation operation = null;
-                // exception from getFraction is handled by checking validity
-                // first.
-                switch (opType) {
-                    case ADD: {
-                        if (!checkAdditionInputsValidity(xCoeffText, constantText, okButton)) {
-                            return;
-                        }
-                        Fraction xCoeff = xCoeffText.getFraction();
-                        Fraction constant = constantText.getFraction();
+		Button randomize = (Button) dialog.findViewById(R.id.random_op);
+		randomize.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View view) {
+				int opTypeIndex = randomHelper.nextInt(opTypes.size());
+				OperationType operationType = opTypes.get(opTypeIndex);
+				switch (operationType) {
+				case ADD:
+					// fall through
+				case SUBTRACT:
+					// ignore x^2 coefficient for randoms
+					Expression expr = randomHelper.randomExpression();
+					xCoeffText.setFraction(expr.getXCoefficient());
+					constantText.setFraction(expr.getConstant());
+					break;
+				case DIVIDE:
+					// fall through
+				case MULTIPLY:
+					Fraction randSmallFraction = randomHelper
+							.randSmallFraction();
+					if (randSmallFraction.compareTo(Fraction.ZERO) == 0) {
+						randSmallFraction = Fraction.ONE;
+					}
+					constantText.setFraction(randSmallFraction);
+					break;
+				case SQUARE:
+					break;
+				case SQUARE_ROOT:
+					break;
+				case SWAP:
+					break;
+				default:
+					throw new RuntimeException("Unhandled operation type "
+							+ operationType);
+				}
 
-                        operation = new Add(new Expression(xCoeff, constant));
-                    }
-                        break;
-                    case SUBTRACT: {
-                        if (!checkAdditionInputsValidity(xCoeffText, constantText, okButton)) {
-                            return;
-                        }
-                        Fraction xCoeff = xCoeffText.getFraction();
-                        Fraction constant = constantText.getFraction();
+				operationSpinner.setSelection(opTypes.indexOf(operationType));
+				adapter.notifyDataSetChanged();
+			}
+		});
 
-                        operation = new Subtract(new Expression(xCoeff, constant));
-                    }
-                        break;
-                    case MULTIPLY: {
-                        if (!checkMultiplicationInputsValidity(constantText, okButton)) {
-                            return;
-                        }
-                        Fraction constant = constantText.getFraction();
+		okButton.setEnabled(false);
+		okButton.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				int itemIndex = operationSpinner.getSelectedItemPosition();
+				OperationType opType = opTypes.get(itemIndex);
 
-                        operation = new Multiply(constant);
-                    }
-                        break;
-                    case DIVIDE: {
-                        if (!checkMultiplicationInputsValidity(constantText, okButton)) {
-                            return;
-                        }
+				Operation operation = null;
+				// exception from getFraction is handled by checking validity
+				// first.
+				switch (opType) {
+				case ADD: {
+					if (!checkAdditionInputsValidity(x2CoeffText, xCoeffText,
+							constantText, okButton)) {
+						return;
+					}
+					Fraction x2Coeff = x2CoeffText.getFraction();
+					Fraction xCoeff = xCoeffText.getFraction();
+					Fraction constant = constantText.getFraction();
 
-                        Fraction constant = constantText.getFraction();
-                        operation = new Divide(constant);
-                    }
-                        break;
-                    case SWAP:
-                        operation = new Swap();
-                        break;
-                    default:
-                        throw new RuntimeException("Unsupported operation type " + opType);
-                }
+					operation = new Add(new Expression(x2Coeff, xCoeff,
+							constant));
+				}
+					break;
+				case SUBTRACT: {
+					if (!checkAdditionInputsValidity(x2CoeffText, xCoeffText,
+							constantText, okButton)) {
+						return;
+					}
+					Fraction x2Coeff = x2CoeffText.getFraction();
+					Fraction xCoeff = xCoeffText.getFraction();
+					Fraction constant = constantText.getFraction();
 
-                continuation.operationBuilt(operation);
-                dialog.dismiss();
-            }
-        });
+					operation = new Subtract(new Expression(x2Coeff, xCoeff,
+							constant));
+				}
+					break;
+				case MULTIPLY: {
+					if (!checkMultiplicationInputsValidity(constantText,
+							okButton)) {
+						return;
+					}
+					Fraction constant = constantText.getFraction();
 
-        Button cancelButton = (Button) dialog.findViewById(R.id.cancel);
-        cancelButton.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                dialog.cancel();
-            }
-        });
+					operation = new Multiply(constant);
+				}
+					break;
+				case DIVIDE: {
+					if (!checkMultiplicationInputsValidity(constantText,
+							okButton)) {
+						return;
+					}
 
-        dialog.show();
+					Fraction constant = constantText.getFraction();
+					operation = new Divide(constant);
+				}
+					break;
+				case SQUARE:
+					operation = new Square();
+					break;
+				case SQUARE_ROOT:
+					operation = new SquareRoot();
+					break;
+				case SWAP:
+					operation = new Swap();
+					break;
+				default:
+					throw new RuntimeException("Unsupported operation type "
+							+ opType);
+				}
 
-    }
+				continuation.operationBuilt(operation);
+				dialog.dismiss();
+			}
+		});
 
-    private boolean checkMultiplicationInputsValidity(final FractionEditText constantText, final Button okButton) {
-        boolean inputsValid = constantText.isValid();
-        boolean hasAValue = constantText.getEditableText().length() > 0;
-        inputsValid = inputsValid && hasAValue;
-        if (inputsValid) {
-            try {
-                Fraction fraction = constantText.getFraction();
-                if (fraction != null && fraction.compareTo(Fraction.ZERO) == 0) {
-                    constantText.setError(constantText.getContext().getString(R.string.cannot_be_zero));
-                    inputsValid = false;
-                }
-            } catch (MathParseException e) {
-                inputsValid = false;
-            }
-        }
-        okButton.setEnabled(inputsValid);
-        return inputsValid;
-    }
+		Button cancelButton = (Button) dialog.findViewById(R.id.cancel);
+		cancelButton.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				dialog.cancel();
+			}
+		});
 
-    private boolean checkAdditionInputsValidity(final FractionEditText xCoeffText,
-            final FractionEditText constantText, final Button okButton) {
-        boolean inputsValid = xCoeffText.isValid() && constantText.isValid();
-        inputsValid = inputsValid
-                && (xCoeffText.getEditableText().length() > 0 || constantText.getEditableText()
-                        .length() > 0);
-        okButton.setEnabled(inputsValid);
-        return inputsValid;
-    }
+		dialog.show();
 
-    private void handleOpType(OperationType opType, final FractionEditText xCoeffText, final TextView xLabel,
-            final FractionEditText constantText, final Button okButton) {
-        switch (opType) {
-            case ADD:
-                // fall through
-            case SUBTRACT: {
-                xCoeffText.setVisibility(View.VISIBLE);
-                xLabel.setVisibility(View.VISIBLE);
-                constantText.setVisibility(View.VISIBLE);
+	}
 
-                checkAdditionInputsValidity(xCoeffText, constantText, okButton);
+	private boolean checkMultiplicationInputsValidity(
+			final FractionEditText constantText, final Button okButton) {
+		boolean inputsValid = constantText.isValid();
+		boolean hasAValue = constantText.getEditableText().length() > 0;
+		inputsValid = inputsValid && hasAValue;
+		if (inputsValid) {
+			try {
+				Fraction fraction = constantText.getFraction();
+				if (fraction != null && fraction.compareTo(Fraction.ZERO) == 0) {
+					constantText.setError(constantText.getContext().getString(
+							R.string.cannot_be_zero));
+					inputsValid = false;
+				}
+			} catch (MathParseException e) {
+				inputsValid = false;
+			}
+		}
+		okButton.setEnabled(inputsValid);
+		return inputsValid;
+	}
 
-            }
-                break;
-            case MULTIPLY:
-                // fall through
-            case DIVIDE: {
-                xCoeffText.setVisibility(View.GONE);
-                xLabel.setVisibility(View.GONE);
-                constantText.setVisibility(View.VISIBLE);
+	private boolean checkAdditionInputsValidity(
+			final FractionEditText x2CoeffText,
+			final FractionEditText xCoeffText,
+			final FractionEditText constantText, final Button okButton) {
+		boolean inputsValid = xCoeffText.isValid() && constantText.isValid()
+				&& x2CoeffText.isValid();
+		inputsValid = inputsValid
+				&& (x2CoeffText.getEditableText().length() > 0
+						|| xCoeffText.getEditableText().length() > 0 || constantText
+						.getEditableText().length() > 0);
+		okButton.setEnabled(inputsValid);
+		return inputsValid;
+	}
 
-                checkMultiplicationInputsValidity(constantText, okButton);
-            }
-                break;
-            case SWAP:
-                xCoeffText.setVisibility(View.GONE);
-                xLabel.setVisibility(View.GONE);
-                constantText.setVisibility(View.GONE);
+	private void handleOpType(OperationType opType,
+			final FractionEditText x2CoeffText,
+			final FractionEditText xCoeffText, final TextView x2Label,
+			final TextView xLabel, final FractionEditText constantText,
+			final Button okButton) {
+		switch (opType) {
+		case ADD:
+			// fall through
+		case SUBTRACT: {
+			x2CoeffText.setVisibility(View.VISIBLE);
+			x2Label.setVisibility(View.VISIBLE);
+			xCoeffText.setVisibility(View.VISIBLE);
+			xLabel.setVisibility(View.VISIBLE);
+			constantText.setVisibility(View.VISIBLE);
 
-                okButton.setEnabled(true);
-                break;
-            default:
-                throw new RuntimeException("Unsupported operation type " + opType);
-        }
-    }
+			checkAdditionInputsValidity(x2CoeffText, xCoeffText, constantText,
+					okButton);
+
+		}
+			break;
+		case MULTIPLY:
+			// fall through
+		case DIVIDE: {
+			x2CoeffText.setVisibility(View.GONE);
+			x2Label.setVisibility(View.GONE);
+			xCoeffText.setVisibility(View.GONE);
+			xLabel.setVisibility(View.GONE);
+			constantText.setVisibility(View.VISIBLE);
+
+			checkMultiplicationInputsValidity(constantText, okButton);
+		}
+			break;
+		case SQUARE:
+			// fallthrough
+		case SQUARE_ROOT:
+			// fallthrough
+		case SWAP:
+			x2CoeffText.setVisibility(View.GONE);
+			x2Label.setVisibility(View.GONE);
+			xCoeffText.setVisibility(View.GONE);
+			xLabel.setVisibility(View.GONE);
+			constantText.setVisibility(View.GONE);
+
+			okButton.setEnabled(true);
+			break;
+		default:
+			throw new RuntimeException("Unsupported operation type " + opType);
+		}
+	}
 
 }

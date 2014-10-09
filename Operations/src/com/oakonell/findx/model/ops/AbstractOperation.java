@@ -18,4 +18,13 @@ public abstract class AbstractOperation implements Operation {
 
     abstract protected Expression apply(Expression lhs);
 
+    
+	@Override
+	public boolean canApply(Equation equation) {
+		return canApply(equation.getLhs()) && canApply(equation.getRhs());
+	}
+
+	public boolean canApply(Expression expr) {
+		return true;
+	}
 }

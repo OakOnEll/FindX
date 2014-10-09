@@ -14,6 +14,7 @@ import android.graphics.Typeface;
 import android.os.Bundle;
 import android.os.Handler;
 import android.preference.PreferenceManager;
+import android.text.Html;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -104,14 +105,9 @@ public class PuzzleActivity extends BaseGameActivity implements
 		detailsButton.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				CustomLevel cLevel = (CustomLevel) puzzle.getLevel();
-
-				Intent levelIntent = new Intent(PuzzleActivity.this,
-						CustomLevelDetailActivity.class);
-				levelIntent.putExtra(CustomLevelDetailActivity.LEVEL_PARSE_ID,
-						cLevel.getServerId());
-				startActivity(levelIntent);
+				showLevelDetails();
 			}
+
 		});
 		fromCustom = intent.getBooleanExtra(IS_CUSTOM, false);
 
@@ -162,7 +158,8 @@ public class PuzzleActivity extends BaseGameActivity implements
 		TextView startEquationView = (TextView) startEquationLayout
 				.findViewById(R.id.equation);
 		startEquationView.setTypeface(chalkFont);
-		startEquationView.setText(puzzle.getStartEquation().toString());
+		startEquationView.setText(Html.fromHtml(puzzle.getStartEquation()
+				.toString()));
 
 		ViewGroup headerSeparatorLayout = (ViewGroup) findViewById(R.id.header_separator_layout);
 		TextView headerMoveNumView = (TextView) headerSeparatorLayout
@@ -187,45 +184,9 @@ public class PuzzleActivity extends BaseGameActivity implements
 		undo.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				if (puzzle.isSolved()) {
-					return;
-				}
-				if (!puzzle.canUndo()) {
-					// huh, model out of date...?
-					handleUndoEnabling();
-					handleRestartEnabling();
-					return;
-				}
-
-				Runnable undoContinuation = new Runnable() {
-					@Override
-					public void run() {
-						puzzle.undo();
-						adapter.notifyDataSetChanged();
-						handleUndoEnabling();
-						handleRestartEnabling();
-					}
-				};
-
-				soundManager.playSound(Sounds.UNDO);
-				int lastIndex = puzzle.getMoves().size() - 1;
-				int lastVisiblePosition = movesView.getLastVisiblePosition();
-				int visiblePosition = movesView.getFirstVisiblePosition();
-				// start fade animation
-				if (lastVisiblePosition <= lastIndex) {
-					// the move is visible, animate it to disappear
-					View move = movesView.getChildAt(lastIndex
-							- visiblePosition);
-					if (move != null) {
-						animateFade(move, PuzzleActivity.this, UNDO_ERASE_MS,
-								undoContinuation);
-					} else {
-						undoContinuation.run();
-					}
-				} else {
-					undoContinuation.run();
-				}
+				undoLastMove(movesView);
 			}
+
 		});
 
 		Button restart = (Button) findViewById(R.id.restart);
@@ -233,35 +194,7 @@ public class PuzzleActivity extends BaseGameActivity implements
 		restart.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View view) {
-				if (puzzle.isSolved()) {
-					return;
-				}
-				if (!puzzle.hasAnyMoves()) {
-					restart(false);
-					return;
-				}
-				AlertDialog.Builder builder = new AlertDialog.Builder(
-						PuzzleActivity.this);
-				builder.setMessage(R.string.restart_level)
-						.setCancelable(true)
-						.setPositiveButton(android.R.string.yes,
-								new DialogInterface.OnClickListener() {
-									@Override
-									public void onClick(DialogInterface dialog,
-											int id) {
-										dialog.dismiss();
-										restart(true);
-									}
-								})
-						.setNegativeButton(android.R.string.cancel,
-								new DialogInterface.OnClickListener() {
-									@Override
-									public void onClick(DialogInterface dialog,
-											int id) {
-										dialog.cancel();
-									}
-								});
-				builder.show();
+				restartLevel();
 			}
 		});
 
@@ -316,9 +249,9 @@ public class PuzzleActivity extends BaseGameActivity implements
 						+ " moves: animate = " + animateNewMove);
 				if (index != -1 && index == moves.size() - 1 && animateNewMove) {
 					// clear it out- it is a reused view
-					moveNum.writeText("");
-					op.writeText("");
-					eq.writeText("");
+					moveNum.writeText(Html.fromHtml(""));
+					op.writeText(Html.fromHtml(""));
+					eq.writeText(Html.fromHtml(""));
 
 					animateNewMove = false;
 					SoundInfo soundInfo = new SoundInfo();
@@ -352,9 +285,11 @@ public class PuzzleActivity extends BaseGameActivity implements
 					// "");
 					// eq.setText(item.getEndEquation().toString());
 				} else {
-					moveNum.writeText(moveNumString);
-					op.writeText(operation != null ? operation.toString() : "");
-					eq.writeText(item.getEndEquation().toString());
+					moveNum.writeText(Html.fromHtml(moveNumString));
+					op.writeText(Html.fromHtml((operation != null ? operation
+							.toString() : "")));
+					eq.writeText(Html
+							.fromHtml(item.getEndEquation().toString()));
 				}
 				return row;
 			}
@@ -387,7 +322,7 @@ public class PuzzleActivity extends BaseGameActivity implements
 			default:
 				throw new RuntimeException("Unexpected number of operations");
 			}
-			Button op1 = (Button) findViewById(resourceId);
+			TextView op1 = (TextView) findViewById(resourceId);
 			configureOperationButton(movesView, puzzle.getMoves(), adapter,
 					each, op1);
 			i++;
@@ -396,8 +331,8 @@ public class PuzzleActivity extends BaseGameActivity implements
 
 	private void configureOperationButton(final ListView movesView,
 			final List<Move> moves, final ArrayAdapter<Move> adapter,
-			final Operation operation1, Button op1) {
-		op1.setOnClickListener(new OnClickListener() {
+			final Operation operation, TextView opButton) {
+		opButton.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View view) {
 				if (puzzle.isSolved()) {
@@ -406,8 +341,10 @@ public class PuzzleActivity extends BaseGameActivity implements
 				// soundManager.playSound(operation1.type());
 				// TODO adjust for moves not having starting equation as special
 				// move
-				puzzle.apply(operation1);
+				puzzle.apply(operation);
+
 				animateNewMove = true;
+				configureOperationButtons(movesView);
 				handleUndoEnabling();
 				handleRestartEnabling();
 
@@ -420,8 +357,13 @@ public class PuzzleActivity extends BaseGameActivity implements
 				}
 			}
 		});
-		op1.setText(operation1.toString());
-		op1.setVisibility(View.VISIBLE);
+		if (operation.canApply(puzzle.getCurrentEquation())) {
+			opButton.setEnabled(true);
+		} else {
+			opButton.setEnabled(false);
+		}
+		opButton.setText(Html.fromHtml(operation.toString()));
+		opButton.setVisibility(View.VISIBLE);
 	}
 
 	private boolean levelIsFinished;
@@ -769,4 +711,83 @@ public class PuzzleActivity extends BaseGameActivity implements
 		return this;
 	}
 
+	private void undoLastMove(final ListView movesView) {
+		if (puzzle.isSolved()) {
+			return;
+		}
+		if (!puzzle.canUndo()) {
+			// huh, model out of date...?
+			handleUndoEnabling();
+			handleRestartEnabling();
+			return;
+		}
+
+		Runnable undoContinuation = new Runnable() {
+			@Override
+			public void run() {
+				puzzle.undo();
+				adapter.notifyDataSetChanged();
+				handleUndoEnabling();
+				handleRestartEnabling();
+			}
+		};
+
+		soundManager.playSound(Sounds.UNDO);
+		int lastIndex = puzzle.getMoves().size() - 1;
+		int lastVisiblePosition = movesView.getLastVisiblePosition();
+		int visiblePosition = movesView.getFirstVisiblePosition();
+		// start fade animation
+		if (lastVisiblePosition <= lastIndex) {
+			// the move is visible, animate it to disappear
+			View move = movesView.getChildAt(lastIndex - visiblePosition);
+			if (move != null) {
+				animateFade(move, PuzzleActivity.this, UNDO_ERASE_MS,
+						undoContinuation);
+			} else {
+				undoContinuation.run();
+			}
+		} else {
+			undoContinuation.run();
+		}
+	}
+
+	private void showLevelDetails() {
+		CustomLevel cLevel = (CustomLevel) puzzle.getLevel();
+
+		Intent levelIntent = new Intent(PuzzleActivity.this,
+				CustomLevelDetailActivity.class);
+		levelIntent.putExtra(CustomLevelDetailActivity.LEVEL_PARSE_ID,
+				cLevel.getServerId());
+		startActivity(levelIntent);
+	}
+
+	private void restartLevel() {
+		if (puzzle.isSolved()) {
+			return;
+		}
+		if (!puzzle.hasAnyMoves()) {
+			restart(false);
+			return;
+		}
+		AlertDialog.Builder builder = new AlertDialog.Builder(
+				PuzzleActivity.this);
+		builder.setMessage(R.string.restart_level)
+				.setCancelable(true)
+				.setPositiveButton(android.R.string.yes,
+						new DialogInterface.OnClickListener() {
+							@Override
+							public void onClick(DialogInterface dialog, int id) {
+								dialog.dismiss();
+								restart(true);
+							}
+						})
+				.setNegativeButton(android.R.string.cancel,
+						new DialogInterface.OnClickListener() {
+							@Override
+							public void onClick(DialogInterface dialog, int id) {
+								dialog.cancel();
+							}
+						});
+		builder.show();
+	}
 }

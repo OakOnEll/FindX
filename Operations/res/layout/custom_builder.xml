@@ -3,7 +3,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical" >
-
+
     <EditText
         android:id="@+id/title"
         android:layout_width="match_parent"
@@ -41,33 +41,36 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content" >
 
-        <Button
+        <TextView
             android:id="@+id/add_op"
+            style="@style/FindXButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="+" />
 
-        <Button
+        <TextView
             android:id="@+id/op1"
+            style="@style/FindXButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Button"
             android:visibility="gone" />
 
-        <Button
+        <TextView
             android:id="@+id/op2"
+            style="@style/FindXButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Button"
             android:visibility="gone" />
 
-        <Button
+        <TextView
             android:id="@+id/op3"
+            style="@style/FindXButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Button"
             android:visibility="gone" />
-
     </LinearLayout>
 
     <LinearLayout
@@ -76,15 +79,17 @@
         android:layout_height="wrap_content"
         android:gravity="center_horizontal" >
 
-        <Button
+        <TextView
             android:id="@+id/op4"
+            style="@style/FindXButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Button"
             android:visibility="gone" />
 
-        <Button
+        <TextView
             android:id="@+id/op5"
+            style="@style/FindXButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Button"
@@ -101,7 +106,8 @@
     <LinearLayout
         android:id="@+id/linearLayout5"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" android:gravity="center_horizontal">
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal" >
 
         <Button
             android:id="@+id/add_random_moves"
@@ -114,7 +120,6 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/calc_min_moves" />
-
     </LinearLayout>
 
     <LinearLayout

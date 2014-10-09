@@ -3,7 +3,7 @@ package com.oakonell.findx.model;
 
 public interface Operation {
     public enum OperationType {
-        ADD, SUBTRACT, MULTIPLY, DIVIDE, SWAP;
+        ADD, SUBTRACT, MULTIPLY, DIVIDE, SWAP, SQUARE, SQUARE_ROOT;
     }
 
     Equation apply(Equation equation);
@@ -14,6 +14,8 @@ public interface Operation {
 
     OperationType type();
 
+    boolean canApply(Equation equation);
+    
     void accept(OperationVisitor visitor);
 
 }

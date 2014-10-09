@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
+import android.text.Html;
 import android.text.format.DateUtils;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -315,7 +316,7 @@ public class CustomLevelDetailActivity extends FragmentActivity {
 
 		title.setText(titleString);
 		author.setText("Created by " + authorName + " on " + createdString);
-		equation.setText(equationString);
+		equation.setText(Html.fromHtml(equationString));
 		solvable_desription.setText(solvableDescriptionString);
 
 		ratingBar.setRating(rating);
@@ -411,7 +412,7 @@ public class CustomLevelDetailActivity extends FragmentActivity {
 			}
 			final Operation operation = getItem(position);
 
-			holder.operation.setText(operation.toString());
+			holder.operation.setText(Html.fromHtml(operation.toString()));
 
 			return view;
 		}

@@ -140,6 +140,11 @@ public abstract class AbstractEquationSolver {
                 }
             }
 
+            if (!each.canApply(state.equation)) {
+                pruneMoveCount(state, depth + 1);
+            	continue;
+            }
+            
             Equation nextEquation = each.apply(state.equation);
             Integer depthEquationEncountered = state.equations.get(nextEquation);
             if (depthEquationEncountered != null) {

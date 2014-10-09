@@ -26,11 +26,13 @@ public class Multiply extends AbstractOperation {
 
 	@Override
 	public Expression apply(Expression expression) {
+		Fraction x2Coeff = OptimizedFractionUtils.multiply(
+				expression.getX2Coefficient(), factor);
 		Fraction xCoeff = OptimizedFractionUtils.multiply(
 				expression.getXCoefficient(), factor);
 		Fraction constant = OptimizedFractionUtils.multiply(
 				expression.getConstant(), factor);
-		return new Expression(xCoeff, constant);
+		return new Expression(x2Coeff, xCoeff, constant);
 	}
 
 	@Override

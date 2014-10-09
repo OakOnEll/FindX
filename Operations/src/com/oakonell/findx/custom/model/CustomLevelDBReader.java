@@ -21,6 +21,8 @@ import com.oakonell.findx.model.Operation.OperationType;
 import com.oakonell.findx.model.ops.Add;
 import com.oakonell.findx.model.ops.Divide;
 import com.oakonell.findx.model.ops.Multiply;
+import com.oakonell.findx.model.ops.Square;
+import com.oakonell.findx.model.ops.SquareRoot;
 import com.oakonell.findx.model.ops.Subtract;
 import com.oakonell.findx.model.ops.Swap;
 
@@ -40,7 +42,7 @@ public class CustomLevelDBReader {
 			if (!query.moveToFirst()) {
 				return -1;
 			}
-			return query.getLong(query.getColumnIndex(BaseColumns._ID ));			
+			return query.getLong(query.getColumnIndex(BaseColumns._ID));
 		} finally {
 			if (query != null)
 				query.close();
@@ -86,9 +88,11 @@ public class CustomLevelDBReader {
 				.getColumnIndex(DataBaseHelper.CustomLevelTable.SEQ_NUM)));
 
 		Expression lhs = readExpression(query,
+				DataBaseHelper.CustomLevelTable.LHS_X2_COEFF,
 				DataBaseHelper.CustomLevelTable.LHS_X_COEFF,
 				DataBaseHelper.CustomLevelTable.LHS_CONST);
 		Expression rhs = readExpression(query,
+				DataBaseHelper.CustomLevelTable.RHS_X2_COEFF,
 				DataBaseHelper.CustomLevelTable.RHS_X_COEFF,
 				DataBaseHelper.CustomLevelTable.RHS_CONST);
 		Equation startEquation = new Equation(lhs, rhs);
@@ -110,12 +114,13 @@ public class CustomLevelDBReader {
 				.getColumnIndex(DataBaseHelper.CustomLevelTable.SERVER_ID)));
 	}
 
-	private Expression readExpression(Cursor query, String xCoeffColName,
-			String constColName) {
+	private Expression readExpression(Cursor query, String x2CoeffColName,
+			String xCoeffColName, String constColName) {
+		Fraction x2coeff = readFraction(query, x2CoeffColName);
 		Fraction coeff = readFraction(query, xCoeffColName);
 		Fraction constVal = readFraction(query, constColName);
 
-		return new Expression(coeff, constVal);
+		return new Expression(x2coeff, coeff, constVal);
 	}
 
 	private void readMoves(SQLiteDatabase db, CustomLevelBuilder builder,
@@ -170,11 +175,13 @@ public class CustomLevelDBReader {
 			switch (type) {
 			case ADD:
 				op = new Add(readExpression(opQuery,
+						DataBaseHelper.CustomLevelOperationsTable.X2_COEFF,
 						DataBaseHelper.CustomLevelOperationsTable.X_COEFF,
 						DataBaseHelper.CustomLevelOperationsTable.CONST));
 				break;
 			case SUBTRACT:
 				op = new Subtract(readExpression(opQuery,
+						DataBaseHelper.CustomLevelOperationsTable.X2_COEFF,
 						DataBaseHelper.CustomLevelOperationsTable.X_COEFF,
 						DataBaseHelper.CustomLevelOperationsTable.CONST));
 				break;
@@ -185,6 +192,12 @@ public class CustomLevelDBReader {
 			case DIVIDE:
 				op = new Divide(readFraction(opQuery,
 						DataBaseHelper.CustomLevelOperationsTable.CONST));
+				break;
+			case SQUARE:
+				op = new Square();
+				break;
+			case SQUARE_ROOT:
+				op = new SquareRoot();
 				break;
 			case SWAP:
 				op = new Swap();
@@ -203,6 +216,7 @@ public class CustomLevelDBReader {
 	private Fraction readFraction(Cursor query, String constColName) {
 		String constString = query
 				.getString(query.getColumnIndex(constColName));
+		if (constString == null) return Fraction.ZERO;
 		Fraction constVal = format.parse(constString);
 		return constVal;
 	}
