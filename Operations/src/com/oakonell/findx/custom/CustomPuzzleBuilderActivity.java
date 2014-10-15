@@ -5,12 +5,12 @@ import java.util.List;
 import org.apache.commons.math3.exception.MathParseException;
 import org.apache.commons.math3.fraction.Fraction;
 
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v4.app.NavUtils;
 import android.text.Editable;
 import android.text.Html;
 import android.text.TextWatcher;
@@ -24,6 +24,10 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.actionbarsherlock.app.ActionBar;
+import com.actionbarsherlock.view.MenuItem;
+import com.oakonell.findx.GameActivity;
+import com.oakonell.findx.MenuHelper;
 import com.oakonell.findx.R;
 import com.oakonell.findx.custom.OperationBuilderDialog.OperationBuiltContinuation;
 import com.oakonell.findx.custom.model.CustomLevelBuilder;
@@ -39,7 +43,7 @@ import com.oakonell.findx.model.Move;
 import com.oakonell.findx.model.Operation;
 import com.oakonell.utils.NumberPicker;
 
-public class CustomPuzzleBuilderActivity extends Activity {
+public class CustomPuzzleBuilderActivity extends GameActivity {
 	public static final String LEVEL_ID = "id";
 	public static final String COPY = "copy";
 	private static final int MAX_OPERATORS = 5;
@@ -60,6 +64,11 @@ public class CustomPuzzleBuilderActivity extends Activity {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.custom_builder);
+
+		final ActionBar ab = getSupportActionBar();
+		ab.setDisplayHomeAsUpEnabled(true);
+		ab.setDisplayUseLogoEnabled(true);
+		ab.setDisplayShowTitleEnabled(true);
 
 		Intent intent = getIntent();
 		long levelId = intent.getLongExtra(LEVEL_ID, 0);
@@ -119,7 +128,7 @@ public class CustomPuzzleBuilderActivity extends Activity {
 						public void onClick(View view) {
 							builder.moveDown(item);
 							handleOperatorButtons();
-adapter.notifyDataSetChanged();
+							adapter.notifyDataSetChanged();
 						}
 					});
 					op.setOnClickListener(new OnClickListener() {
@@ -165,7 +174,8 @@ adapter.notifyDataSetChanged();
 
 				Operation operation = item.getOperation();
 
-				op.setText(Html.fromHtml(operation != null ? operation.toString() : ""));
+				op.setText(Html.fromHtml(operation != null ? operation
+						.toString() : ""));
 
 				TextView eq = (TextView) row.findViewById(R.id.equation);
 				eq.setText(Html.fromHtml(item.getEndEquation().toString()));
@@ -586,13 +596,6 @@ adapter.notifyDataSetChanged();
 		confirmAndLeave();
 	}
 
-	@Override
-	public Object onRetainNonConfigurationInstance() {
-		if (task != null) {
-			task.setParent(null);
-		}
-		return task;
-	}
 
 	private void deleteMove(final Move item) {
 		// confirm to delete
@@ -655,5 +658,23 @@ adapter.notifyDataSetChanged();
 		final AlertDialog alert = dbuilder.create();
 		alert.show();
 
+	}
+	
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		if (item.getItemId() == android.R.id.home) {
+			confirmAndQuit(new Runnable() {
+				@Override
+				public void run() {
+					NavUtils.navigateUpFromSameTask(CustomPuzzleBuilderActivity.this);
+				}
+			});
+			return true;
+		}
+		return MenuHelper.onOptionsItemSelected(this, item);
+	}
+
+	private void confirmAndQuit(Runnable runnable) {
+		runnable.run();
 	}
 }

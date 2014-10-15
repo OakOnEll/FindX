@@ -14,10 +14,9 @@ import android.graphics.Typeface;
 import android.os.Bundle;
 import android.os.Handler;
 import android.preference.PreferenceManager;
+import android.support.v4.app.NavUtils;
 import android.text.Html;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
@@ -29,16 +28,15 @@ import android.widget.Button;
 import android.widget.ListView;
 import android.widget.RatingBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import com.google.android.gms.games.Games;
-import com.google.example.games.basegameutils.BaseGameActivity;
-import com.google.example.games.basegameutils.GameHelper;
-import com.oakonell.findx.Achievements.AchievementContext;
+import com.actionbarsherlock.app.ActionBar;
+import com.actionbarsherlock.view.MenuInflater;
+import com.actionbarsherlock.view.MenuItem;
 import com.oakonell.findx.DelayedTextView.SoundInfo;
 import com.oakonell.findx.DelayedTextView.TextViewInfo;
 import com.oakonell.findx.custom.CustomStageActivity;
 import com.oakonell.findx.custom.model.CustomLevel;
+import com.oakonell.findx.custom.model.CustomStage;
 import com.oakonell.findx.custom.parse.CustomLevelDetailActivity;
 import com.oakonell.findx.data.DataBaseHelper;
 import com.oakonell.findx.model.Level;
@@ -47,8 +45,7 @@ import com.oakonell.findx.model.Operation;
 import com.oakonell.findx.model.Puzzle;
 import com.oakonell.utils.share.ShareHelper;
 
-public class PuzzleActivity extends BaseGameActivity implements
-		AchievementContext {
+public class PuzzleActivity extends GameActivity {
 	private static final int FINISHED_DELAY_MS = 250;
 	public static final String PUZZLE_ID = "puzzleId";
 	public static final String IS_CUSTOM = "custom";
@@ -78,6 +75,11 @@ public class PuzzleActivity extends BaseGameActivity implements
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.puzzle);
+
+		final ActionBar ab = getSupportActionBar();
+		ab.setDisplayHomeAsUpEnabled(true);
+		ab.setDisplayUseLogoEnabled(true);
+		ab.setDisplayShowTitleEnabled(true);
 
 		chalkFont = Typeface.createFromAsset(getAssets(), "fonts/lcchalk_.ttf");
 
@@ -206,7 +208,14 @@ public class PuzzleActivity extends BaseGameActivity implements
 				if (puzzle.isSolved()) {
 					return;
 				}
-				confirmAndQuit();
+				confirmAndQuit(new Runnable() {
+
+					@Override
+					public void run() {
+						navigateUp();
+					}
+
+				});
 			}
 		});
 
@@ -585,10 +594,20 @@ public class PuzzleActivity extends BaseGameActivity implements
 			launchLevelSelect();
 			return;
 		}
-		confirmAndQuit();
+		confirmAndQuit(new Runnable() {
+
+			@Override
+			public void run() {
+				PuzzleActivity.super.onBackPressed();
+			}
+		});
 	}
 
-	private void confirmAndQuit() {
+	private void confirmAndQuit(final Runnable exit) {
+		if (puzzle.getMoves().isEmpty()) {
+			exit.run();
+			return;
+		}
 		AlertDialog.Builder builder = new AlertDialog.Builder(
 				PuzzleActivity.this);
 		builder.setMessage(R.string.quit_level)
@@ -599,20 +618,21 @@ public class PuzzleActivity extends BaseGameActivity implements
 							public void onClick(final DialogInterface dialog,
 									int id) {
 								saveState = false;
-								Runnable exit = new Runnable() {
+								Runnable wrappedExit = new Runnable() {
 									@Override
 									public void run() {
-										launchLevelSelect();
 										dialog.dismiss();
+										exit.run();
 
 									}
 								};
 								if (soundManager.shouldPlayFx()) {
 									Handler handler = new Handler();
 									soundManager.playSound(Sounds.BOO);
-									handler.postDelayed(exit, BOO_LENGTH_MS);
+									handler.postDelayed(wrappedExit,
+											BOO_LENGTH_MS);
 								} else {
-									exit.run();
+									wrappedExit.run();
 								}
 							}
 						})
@@ -680,35 +700,24 @@ public class PuzzleActivity extends BaseGameActivity implements
 	}
 
 	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
-		return MenuHelper.onCreateOptionsMenu(this, menu);
+	public boolean onCreateOptionsMenu(com.actionbarsherlock.view.Menu menu) {
+		MenuInflater inflater = getSupportMenuInflater();
+		inflater.inflate(R.menu.main, menu);
+		return true;
 	}
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
+		if (item.getItemId() == android.R.id.home) {
+			confirmAndQuit(new Runnable() {
+				@Override
+				public void run() {
+					navigateUp();
+				}
+			});
+			return true;
+		}
 		return MenuHelper.onOptionsItemSelected(this, item);
-	}
-
-	@Override
-	public void onSignInFailed() {
-		Toast.makeText(this, "Sign in failed", Toast.LENGTH_SHORT).show();
-	}
-
-	@Override
-	public void onSignInSucceeded() {
-		FindXApp app = (FindXApp) getApplication();
-		Intent settingsIntent = Games.getSettingsIntent(getApiClient());
-		app.setSettingsIntent(settingsIntent);
-	}
-
-	@Override
-	public GameHelper getHelper() {
-		return getGameHelper();
-	}
-
-	@Override
-	public Context getContext() {
-		return this;
 	}
 
 	private void undoLastMove(final ListView movesView) {
@@ -790,4 +799,18 @@ public class PuzzleActivity extends BaseGameActivity implements
 						});
 		builder.show();
 	}
+
+	private void navigateUp() {
+		if (puzzle.getStage() instanceof CustomStage) {
+			Intent customIntent = new Intent(PuzzleActivity.this,
+					CustomStageActivity.class);
+			NavUtils.navigateUpTo(PuzzleActivity.this, customIntent);
+			return;
+		}
+		Intent parentIntent = NavUtils.getParentActivityIntent(this);
+		parentIntent
+				.putExtra(StageActivity.STAGE_ID, puzzle.getStage().getId());
+		NavUtils.navigateUpTo(PuzzleActivity.this, parentIntent);
+	}
+
 }

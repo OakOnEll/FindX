@@ -9,12 +9,12 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import android.app.Dialog;
-import android.app.ListActivity;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.v4.app.NavUtils;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.AdapterView;
@@ -27,6 +27,9 @@ import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.TextView;
 
+import com.actionbarsherlock.app.SherlockListActivity;
+import com.actionbarsherlock.view.MenuItem;
+import com.oakonell.findx.MenuHelper;
 import com.oakonell.findx.R;
 import com.oakonell.findx.custom.model.CustomLevelBuilder;
 import com.oakonell.findx.custom.parse.ParseConnectivity.ParseUserExtra;
@@ -39,7 +42,7 @@ import com.parse.ParseObject;
 import com.parse.ParseQuery;
 import com.parse.ParseUser;
 
-public class CustomLevelSearchActivity extends ListActivity {
+public class CustomLevelSearchActivity extends SherlockListActivity {
 	private static final SortCriteria SORT_BY_CREATION_DATE = new SortCriteria(
 			2, "Creation date");
 	private static final SortCriteria SORT_BY_RATING = new SortCriteria(1,
@@ -349,4 +352,14 @@ public class CustomLevelSearchActivity extends ListActivity {
 		// TODO deal with update to this record
 	}
 
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		if (item.getItemId() == android.R.id.home) {
+			NavUtils.navigateUpFromSameTask(CustomLevelSearchActivity.this);
+			return true;
+		}
+		// TODO settings requires game context?!
+		return false;
+		//return MenuHelper.onOptionsItemSelected(CustomLevelSearchActivity.this, item);
+	}
 }

@@ -14,7 +14,6 @@ import org.w3c.dom.Element;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.ContentValues;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -25,9 +24,8 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Parcelable;
 import android.preference.PreferenceManager;
+import android.support.v4.app.NavUtils;
 import android.util.Base64;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
@@ -40,16 +38,15 @@ import android.widget.RatingBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.actionbarsherlock.app.ActionBar;
+import com.actionbarsherlock.view.MenuInflater;
+import com.actionbarsherlock.view.MenuItem;
 import com.cocosw.undobar.UndoBarController;
 import com.cocosw.undobar.UndoBarController.UndoListener;
-import com.google.android.gms.games.Games;
-import com.google.example.games.basegameutils.BaseGameActivity;
-import com.google.example.games.basegameutils.GameHelper;
 import com.oakonell.findx.Achievements;
-import com.oakonell.findx.Achievements.AchievementContext;
 import com.oakonell.findx.BackgroundMusicHelper;
-import com.oakonell.findx.ChooseStageActivity;
 import com.oakonell.findx.FindXApp;
+import com.oakonell.findx.GameActivity;
 import com.oakonell.findx.MenuHelper;
 import com.oakonell.findx.PuzzleActivity;
 import com.oakonell.findx.R;
@@ -89,8 +86,7 @@ import com.oakonell.utils.share.ShareHelper;
 import com.oakonell.utils.xml.XMLUtils;
 import com.parse.ParseUser;
 
-public class CustomStageActivity extends BaseGameActivity implements
-		AchievementContext {
+public class CustomStageActivity extends GameActivity {
 	private static final int DISMISS_BAR_DURATION = 2000;
 
 	private ArrayAdapter<Level> adapter;
@@ -103,19 +99,14 @@ public class CustomStageActivity extends BaseGameActivity implements
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.custom_stage);
 
+		final ActionBar ab = getSupportActionBar();
+		ab.setDisplayHomeAsUpEnabled(true);
+		ab.setDisplayUseLogoEnabled(true);
+		ab.setDisplayShowTitleEnabled(true);
+		ab.setTitle(R.string.custom_level_select);
+
 		// TODO do this in an AsyncTask
 		stage = Levels.getCustomStage();
-
-		ImageView search = (ImageView) findViewById(R.id.search);
-		search.setOnClickListener(new OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				Intent levelIntent = new Intent(CustomStageActivity.this,
-						CustomLevelSearchActivity.class);
-				startActivity(levelIntent);
-
-			}
-		});
 
 		GridView levelSelect = (GridView) findViewById(R.id.level_select);
 
@@ -234,26 +225,6 @@ public class CustomStageActivity extends BaseGameActivity implements
 
 		adapter.notifyDataSetChanged();
 
-		ImageView back = (ImageView) findViewById(R.id.back);
-		back.setOnClickListener(new OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				Intent levelIntent = new Intent(CustomStageActivity.this,
-						ChooseStageActivity.class);
-				startActivity(levelIntent);
-				CustomStageActivity.this.finish();
-			}
-		});
-
-		final ImageView buildCustom = (ImageView) findViewById(R.id.build_custom);
-		buildCustom.setOnClickListener(new OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				Intent levelIntent = new Intent(CustomStageActivity.this,
-						CustomPuzzleBuilderActivity.class);
-				startActivity(levelIntent);
-			}
-		});
 		// buildCustom.setFocusable(true);
 		// // give feedback on presses
 		// buildCustom.setOnTouchListener(new OnTouchListener() {
@@ -613,38 +584,6 @@ public class CustomStageActivity extends BaseGameActivity implements
 		super.onPause();
 	}
 
-	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
-		return MenuHelper.onCreateOptionsMenu(this, menu);
-	}
-
-	@Override
-	public boolean onOptionsItemSelected(MenuItem item) {
-		return MenuHelper.onOptionsItemSelected(this, item);
-	}
-
-	@Override
-	public void onSignInFailed() {
-		Toast.makeText(this, "Sign in failed", Toast.LENGTH_SHORT).show();
-	}
-
-	@Override
-	public void onSignInSucceeded() {
-		FindXApp app = (FindXApp) getApplication();
-		Intent settingsIntent = Games.getSettingsIntent(getApiClient());
-		app.setSettingsIntent(settingsIntent);
-	}
-
-	@Override
-	public GameHelper getHelper() {
-		return getGameHelper();
-	}
-
-	@Override
-	public Context getContext() {
-		return this;
-	}
-
 	private void showPopupMenu(final List<LevelMenuItem> menus,
 			View originatingView) {
 		// builder.setTitle("Modify Match");
@@ -780,5 +719,32 @@ public class CustomStageActivity extends BaseGameActivity implements
 
 		};
 		task.execute();
+	}
+
+	@Override
+	public boolean onCreateOptionsMenu(com.actionbarsherlock.view.Menu menu) {
+		MenuInflater inflater = getSupportMenuInflater();
+		inflater.inflate(R.menu.custom_stage_select, menu);
+		return true;
+	}
+
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		if (item.getItemId() == android.R.id.home) {
+			NavUtils.navigateUpFromSameTask(this);
+			return true;
+		} else if (item.getItemId() == R.id.build_custom) {
+			Intent levelIntent = new Intent(CustomStageActivity.this,
+					CustomPuzzleBuilderActivity.class);
+			startActivity(levelIntent);
+			return true;
+		} else if (item.getItemId() == R.id.search) {
+			Intent levelIntent = new Intent(CustomStageActivity.this,
+					CustomLevelSearchActivity.class);
+			startActivity(levelIntent);
+			return true;
+		}
+
+		return MenuHelper.onOptionsItemSelected(this, item);
 	}
 }

@@ -1,10 +1,8 @@
 package com.oakonell.findx;
 
-import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.Menu;
-import android.view.MenuItem;
+import android.support.v4.app.NavUtils;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
@@ -14,18 +12,15 @@ import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.RatingBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import com.google.android.gms.games.Games;
-import com.google.example.games.basegameutils.BaseGameActivity;
-import com.google.example.games.basegameutils.GameHelper;
-import com.oakonell.findx.Achievements.AchievementContext;
+import com.actionbarsherlock.app.ActionBar;
+import com.actionbarsherlock.view.MenuInflater;
+import com.actionbarsherlock.view.MenuItem;
 import com.oakonell.findx.model.Level;
 import com.oakonell.findx.model.Levels;
 import com.oakonell.findx.model.Stage;
 
-public class StageActivity extends BaseGameActivity implements
-		AchievementContext {
+public class StageActivity extends GameActivity {
 	public static final String STAGE_ID = "stageId";
 
 	private ArrayAdapter<Level> adapter;
@@ -37,6 +32,12 @@ public class StageActivity extends BaseGameActivity implements
 
 		setContentView(R.layout.stage);
 
+		final ActionBar ab = getSupportActionBar();
+		ab.setDisplayHomeAsUpEnabled(true);
+		ab.setDisplayUseLogoEnabled(true);
+		ab.setDisplayShowTitleEnabled(true);
+		ab.setTitle(R.string.selectLevel);
+
 		Intent intent = getIntent();
 		if (stage == null) {
 			String stageId = intent.getStringExtra(STAGE_ID);
@@ -47,6 +48,9 @@ public class StageActivity extends BaseGameActivity implements
 			stage = Levels.getStage(stageId);
 		}
 
+		TextView label = (TextView)findViewById(R.id.stage_label);
+		label.setText(stage.getTitleId());
+		
 		GridView levelSelect = (GridView) findViewById(R.id.level_select);
 
 		adapter = new ArrayAdapter<Level>(getApplication(),
@@ -109,16 +113,6 @@ public class StageActivity extends BaseGameActivity implements
 
 		adapter.notifyDataSetChanged();
 
-		ImageView back = (ImageView) findViewById(R.id.back);
-		back.setOnClickListener(new OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				Intent levelIntent = new Intent(StageActivity.this,
-						ChooseStageActivity.class);
-				startActivity(levelIntent);
-				StageActivity.this.finish();
-			}
-		});
 		BackgroundMusicHelper.onActivtyCreate(this, stage.getBgMusicId());
 	}
 
@@ -162,34 +156,19 @@ public class StageActivity extends BaseGameActivity implements
 	}
 
 	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
-		return MenuHelper.onCreateOptionsMenu(this, menu);
+	public boolean onCreateOptionsMenu(com.actionbarsherlock.view.Menu menu) {
+		MenuInflater inflater = getSupportMenuInflater();
+		inflater.inflate(R.menu.main, menu);
+		return true;
 	}
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
+		if (item.getItemId() == android.R.id.home) {
+			NavUtils.navigateUpFromSameTask(this);
+			return true;
+		}
 		return MenuHelper.onOptionsItemSelected(this, item);
 	}
 
-	@Override
-	public void onSignInFailed() {
-		Toast.makeText(this, "Sign in failed", Toast.LENGTH_SHORT).show();
-	}
-
-	@Override
-	public void onSignInSucceeded() {
-		FindXApp app = (FindXApp) getApplication();
-		Intent settingsIntent = Games.getSettingsIntent(getApiClient());
-		app.setSettingsIntent(settingsIntent);
-	}
-
-	@Override
-	public GameHelper getHelper() {
-		return getGameHelper();
-	}
-
-	@Override
-	public Context getContext() {
-		return this;
-	}
 }

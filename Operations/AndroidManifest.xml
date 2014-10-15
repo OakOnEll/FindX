@@ -16,7 +16,8 @@
     <application
         android:name=".FindXApp"
         android:icon="@drawable/ic_launcher_findx"
-        android:label="@string/app_name" >
+        android:label="@string/app_name"
+        android:theme="@style/CustomActionBarTheme" >
         <meta-data
             android:name="com.google.android.gms.version"
             android:value="@integer/google_play_services_version" />
@@ -38,15 +39,53 @@
         </activity>
         <activity
             android:name=".StageActivity"
-            android:label="@string/app_name" >
+            android:label="@string/app_name"
+            android:launchMode="singleTop"
+            android:parentActivityName="com.oakonell.findx.ChooseStageActivity" >
+
+            <!-- Parent activity meta-data to support 4.0 and lower -->
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.oakonell.findx.ChooseStageActivity" />
         </activity>
-        <activity android:name=".PuzzleActivity" >
+        <activity
+            android:name=".PuzzleActivity"
+            android:parentActivityName="com.oakonell.findx.StageActivity" >
+
+            <!-- Parent activity meta-data to support 4.0 and lower -->
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.oakonell.findx.StageActivity" />
         </activity>
-        <activity android:name=".custom.CustomStageActivity" >
+        <activity
+            android:name=".custom.CustomStageActivity"
+            android:launchMode="singleTop"
+            android:parentActivityName="com.oakonell.findx.ChooseStageActivity" >
+
+            <!-- Parent activity meta-data to support 4.0 and lower -->
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.oakonell.findx.ChooseStageActivity" />
         </activity>
-        <activity android:name=".custom.CustomPuzzleBuilderActivity" >
+        <activity
+            android:name=".custom.CustomPuzzleBuilderActivity"
+            android:launchMode="singleTop"
+            android:parentActivityName="com.oakonell.findx.custom.CustomStageActivity" >
+
+            <!-- Parent activity meta-data to support 4.0 and lower -->
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.oakonell.findx.custom.CustomStageActivity" />
         </activity>
-        <activity android:name="com.oakonell.findx.custom.parse.CustomLevelSearchActivity" >
+        <activity
+            android:name="com.oakonell.findx.custom.parse.CustomLevelSearchActivity"
+            android:launchMode="singleTop"
+            android:parentActivityName="com.oakonell.findx.custom.CustomStageActivity" >
+
+            <!-- Parent activity meta-data to support 4.0 and lower -->
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.oakonell.findx.custom.CustomStageActivity" />
         </activity>
         <activity android:name="com.oakonell.findx.custom.parse.CustomLevelDetailActivity" >
         </activity>
@@ -67,7 +106,7 @@
                 </category>
                 <category android:name="android.intent.category.BROWSABLE" >
                 </category>
-                <!-- android:pathPattern=".*LibriDroidId=" -->
+
                 <data
                     android:host="www.oakonell.com"
                     android:pathPrefix="/findx/share/"

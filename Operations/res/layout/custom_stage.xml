@@ -12,58 +12,6 @@
         android:orientation="vertical" >
 
         <LinearLayout
-            android:id="@+id/linearLayout1"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center_vertical"
-            android:weightSum="4" >
-
-            <ImageButton
-                android:id="@+id/back"
-                android:layout_width="30dp"
-                android:layout_height="30dp"
-                android:layout_gravity="center_vertical|center_horizontal|center"
-                android:layout_weight="1"
-                android:src="@android:drawable/ic_media_rew" />
-
-            <TextView
-                android:id="@+id/textView1"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_vertical|center_horizontal"
-                android:layout_weight="1"
-                android:gravity="center_horizontal"
-                android:text="@string/custom_level_select"
-                android:textAppearance="?android:attr/textAppearanceLarge" />
-
-            <ImageView
-                android:id="@+id/symmetric_image"
-                android:layout_width="30dp"
-                android:layout_height="30dp"
-                android:layout_gravity="center"
-                android:layout_weight="1"
-                android:src="@android:drawable/ic_media_rew"
-                android:visibility="invisible" />
-
-            <ImageView
-                android:id="@+id/build_custom"
-                style="@style/FindXButton"
-                android:layout_width="45dp"
-                android:layout_height="45dp"
-                android:layout_weight="1"
-                android:src="@android:drawable/ic_menu_add"
-                android:text="@string/build_custom" />
-
-            <ImageView
-                android:id="@+id/search"
-                style="@style/FindXButton"
-                android:layout_width="45dp"
-                android:layout_height="45dp"
-                android:layout_weight="1"
-                android:src="@android:drawable/ic_search_category_default" />
-        </LinearLayout>
-
-        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_weight="9"

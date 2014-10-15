@@ -4,8 +4,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
@@ -16,9 +14,10 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.actionbarsherlock.app.ActionBar;
+import com.actionbarsherlock.view.MenuInflater;
 import com.google.android.gms.common.SignInButton;
 import com.google.android.gms.games.Games;
-import com.google.example.games.basegameutils.BaseGameActivity;
 import com.google.example.games.basegameutils.GameHelper;
 import com.oakonell.findx.Achievements.AchievementContext;
 import com.oakonell.findx.custom.CustomStageActivity;
@@ -29,7 +28,7 @@ import com.oakonell.findx.model.Puzzle;
 import com.oakonell.findx.model.Stage;
 import com.oakonell.utils.activity.AppLaunchUtils;
 
-public class ChooseStageActivity extends BaseGameActivity implements
+public class ChooseStageActivity extends GameActivity implements
 		AchievementContext {
 	private ArrayAdapter<Stage> adapter;
 	private static final int RC_UNUSED = 0;
@@ -44,6 +43,11 @@ public class ChooseStageActivity extends BaseGameActivity implements
 		if (checkForPendingPuzzle()) {
 			return;
 		}
+
+		final ActionBar ab = getSupportActionBar();
+		ab.setDisplayHomeAsUpEnabled(false);
+		ab.setDisplayUseLogoEnabled(true);
+		ab.setDisplayShowTitleEnabled(true);
 
 		setContentView(R.layout.choose_stage);
 
@@ -121,11 +125,11 @@ public class ChooseStageActivity extends BaseGameActivity implements
 				stageButton.setText(stage.getTitleId());
 
 				stageButton.setOnClickListener(new OnClickListener() {
-					 @Override
-					 public void onClick(View view) {
-					 startStage(stage.getId());
-					 }
-					 });
+					@Override
+					public void onClick(View view) {
+						startStage(stage.getId());
+					}
+				});
 
 				ImageView lock = (ImageView) row.findViewById(R.id.lock);
 
@@ -198,12 +202,16 @@ public class ChooseStageActivity extends BaseGameActivity implements
 	}
 
 	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
-		return MenuHelper.onCreateOptionsMenu(this, menu);
+	public boolean onCreateOptionsMenu(com.actionbarsherlock.view.Menu menu) {
+		MenuInflater inflater = getSupportMenuInflater();
+		inflater.inflate(R.menu.main, menu);
+		return true;
 	}
 
 	@Override
-	public boolean onOptionsItemSelected(MenuItem item) {
+	public boolean onOptionsItemSelected(
+			com.actionbarsherlock.view.MenuItem item) {
+
 		return MenuHelper.onOptionsItemSelected(this, item);
 	}
 
