@@ -27,4 +27,9 @@ public abstract class AbstractOperation implements Operation {
 	public boolean canApply(Expression expr) {
 		return true;
 	}
+	
+	@Override
+	public boolean isBuilt() {
+		return true;
+	}
 }

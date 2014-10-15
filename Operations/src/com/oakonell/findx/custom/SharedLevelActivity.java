@@ -40,6 +40,7 @@ import com.oakonell.findx.model.ops.Divide;
 import com.oakonell.findx.model.ops.Multiply;
 import com.oakonell.findx.model.ops.Subtract;
 import com.oakonell.findx.model.ops.Swap;
+import com.oakonell.findx.model.ops.WildCard;
 import com.oakonell.utils.Utils;
 import com.oakonell.utils.xml.XMLUtils;
 
@@ -82,6 +83,17 @@ public class SharedLevelActivity extends SherlockFragmentActivity {
 				String typeString = XMLUtils.getTextContent(XMLUtils
 						.getChildElementByName(each, "t"));
 				OperationType type = OperationType.valueOf(typeString);
+
+				WildCard wildOp = null;
+				if (type == OperationType.WILD) {
+					String wildTypeString = XMLUtils.getTextContent(XMLUtils
+							.getChildElementByName(each, "wt"));
+					OperationType wildType = OperationType
+							.valueOf(wildTypeString);
+					wildOp = new WildCard();
+					type = wildType;
+				}
+
 				Operation op = null;
 				switch (type) {
 				case ADD:
@@ -100,6 +112,10 @@ public class SharedLevelActivity extends SherlockFragmentActivity {
 					op = new Swap();
 					break;
 				default:
+				}
+				if (wildOp != null) {
+					wildOp.setActual(op);
+					op = wildOp;
 				}
 				operations.add(op);
 			}

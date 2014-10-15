@@ -20,6 +20,7 @@ import com.oakonell.findx.model.ops.Square;
 import com.oakonell.findx.model.ops.SquareRoot;
 import com.oakonell.findx.model.ops.Subtract;
 import com.oakonell.findx.model.ops.Swap;
+import com.oakonell.findx.model.ops.WildCard;
 
 public class CustomLevelDBWriter {
 
@@ -202,6 +203,14 @@ public class CustomLevelDBWriter {
 				@Override
 				public void visitSquareRoot(SquareRoot squareRoot) {
 					// no data
+				}
+
+				@Override
+				public void visitWild(WildCard wild) {
+					opInfo.put(
+							DataBaseHelper.CustomLevelOperationsTable.WILD_TYPE,
+							wild.getActual().type().toString());
+					wild.getActual().accept(this);
 				}
 			};
 			each.accept(visitor);

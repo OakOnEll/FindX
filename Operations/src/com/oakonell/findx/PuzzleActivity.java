@@ -1,5 +1,6 @@
 package com.oakonell.findx;
 
+import java.util.Collections;
 import java.util.List;
 
 import android.app.Activity;
@@ -35,6 +36,8 @@ import com.actionbarsherlock.view.MenuItem;
 import com.oakonell.findx.DelayedTextView.SoundInfo;
 import com.oakonell.findx.DelayedTextView.TextViewInfo;
 import com.oakonell.findx.custom.CustomStageActivity;
+import com.oakonell.findx.custom.OperationBuilderDialog;
+import com.oakonell.findx.custom.OperationBuilderDialog.OperationBuiltContinuation;
 import com.oakonell.findx.custom.model.CustomLevel;
 import com.oakonell.findx.custom.model.CustomStage;
 import com.oakonell.findx.custom.parse.CustomLevelDetailActivity;
@@ -43,6 +46,7 @@ import com.oakonell.findx.model.Level;
 import com.oakonell.findx.model.Move;
 import com.oakonell.findx.model.Operation;
 import com.oakonell.findx.model.Puzzle;
+import com.oakonell.findx.model.ops.WildCard;
 import com.oakonell.utils.share.ShareHelper;
 
 public class PuzzleActivity extends GameActivity {
@@ -347,6 +351,12 @@ public class PuzzleActivity extends GameActivity {
 				if (puzzle.isSolved()) {
 					return;
 				}
+
+				if (!operation.isBuilt()) {
+					chooseWildOperation(operation, movesView);
+					return;
+				}
+
 				// soundManager.playSound(operation1.type());
 				// TODO adjust for moves not having starting equation as special
 				// move
@@ -373,6 +383,28 @@ public class PuzzleActivity extends GameActivity {
 		}
 		opButton.setText(Html.fromHtml(operation.toString()));
 		opButton.setVisibility(View.VISIBLE);
+	}
+
+	protected void chooseWildOperation(final Operation originalOperation,
+			final ListView movesView) {
+		if (!(originalOperation instanceof WildCard)) {
+			throw new IllegalArgumentException(
+					"Expected only a WildCard operation");
+		}
+		WildCard op = (WildCard) originalOperation;
+
+		OperationBuilderDialog expressionBuilder = new OperationBuilderDialog(
+				null);
+		expressionBuilder.buildExpression(this, originalOperation,
+				new OperationBuiltContinuation() {
+					@Override
+					public void operationBuilt(Operation newOperation) {
+						Collections.replaceAll(puzzle.getOperations(),
+								originalOperation, newOperation);
+						configureOperationButtons(movesView);
+					}
+				});
+
 	}
 
 	private boolean levelIsFinished;

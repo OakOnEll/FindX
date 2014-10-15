@@ -53,4 +53,8 @@ public class Swap implements Operation {
 		return true;
 	}
 
+	@Override
+	public boolean isBuilt() {
+		return true;
+	}
 }

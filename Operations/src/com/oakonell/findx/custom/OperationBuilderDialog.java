@@ -16,6 +16,7 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.Spinner;
 import android.widget.TextView;
 
@@ -34,6 +35,7 @@ import com.oakonell.findx.model.ops.Square;
 import com.oakonell.findx.model.ops.SquareRoot;
 import com.oakonell.findx.model.ops.Subtract;
 import com.oakonell.findx.model.ops.Swap;
+import com.oakonell.findx.model.ops.WildCard;
 
 public class OperationBuilderDialog {
 
@@ -54,6 +56,8 @@ public class OperationBuilderDialog {
 		dialog.setContentView(R.layout.operation_builder);
 		dialog.setTitle(R.string.edit_operation);
 
+		final CheckBox isWildCheck = (CheckBox) dialog
+				.findViewById(R.id.is_wild);
 		final Spinner operationSpinner = (Spinner) dialog
 				.findViewById(R.id.operation_spinner);
 		final ArrayAdapter<CharSequence> adapter = new ArrayAdapter<CharSequence>(
@@ -63,9 +67,11 @@ public class OperationBuilderDialog {
 
 		final List<OperationType> opTypes = new ArrayList<Operation.OperationType>();
 		for (OperationType each : Operation.OperationType.values()) {
+			if (each == OperationType.WILD)
+				continue;
+			if (each == OperationType.SQUARE)
+				continue;
 			opTypes.add(each);
-		}
-		for (OperationType each : opTypes) {
 			// TODO translate the op type enums
 			adapter.add(each.toString());
 		}
@@ -88,6 +94,16 @@ public class OperationBuilderDialog {
 					.type()));
 			adapter.notifyDataSetChanged();
 			OperationVisitor setter = new OperationVisitor() {
+				@Override
+				public void visitWild(WildCard wild) {
+					isWildCheck.setChecked(true);
+					operationSpinner.setSelection(opTypes.indexOf(wild
+							.getActual().type()));
+					if (wild.isBuilt()) {
+						wild.getActual().accept(this);
+					}
+				}
+
 				@Override
 				public void visitSwap(Swap swap) {
 				}
@@ -196,6 +212,10 @@ public class OperationBuilderDialog {
 				});
 
 		Button randomize = (Button) dialog.findViewById(R.id.random_op);
+		if (randomHelper == null) {
+			randomize.setVisibility(View.GONE);
+			isWildCheck.setEnabled(false);
+		}
 		randomize.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View view) {
@@ -305,6 +325,13 @@ public class OperationBuilderDialog {
 				default:
 					throw new RuntimeException("Unsupported operation type "
 							+ opType);
+				}
+
+				if (isWildCheck.isChecked()) {
+					WildCard wildOperation = new WildCard();
+					wildOperation.setActual(operation);
+					wildOperation.setIsBuilt(true);
+					operation = wildOperation;
 				}
 
 				continuation.operationBuilt(operation);

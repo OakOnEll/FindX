@@ -8,7 +8,7 @@ import android.provider.BaseColumns;
 public class DataBaseHelper extends SQLiteOpenHelper {
 
 	public static final String DATABASE_NAME = "findx.db";
-	private static final int DATABASE_VERSION = 10;
+	private static final int DATABASE_VERSION = 11;
 
 	public static final String CUSTOM_LEVEL_TABLE_NAME = "custom_level";
 
@@ -44,6 +44,7 @@ public class DataBaseHelper extends SQLiteOpenHelper {
 	public static class CustomLevelOperationsTable {
 		public static final String CUSTOM_LEVEL_ID = "level_id";
 		public static final String TYPE = "type";
+		public static final String WILD_TYPE = "wild_type";
 		public static final String SEQ_NUM = "sequence";
 
 		// expression columns
@@ -118,6 +119,7 @@ public class DataBaseHelper extends SQLiteOpenHelper {
 				+ " INTEGER PRIMARY KEY AUTOINCREMENT, "
 				+ CustomLevelOperationsTable.CUSTOM_LEVEL_ID + " INTEGER, "
 				+ CustomLevelOperationsTable.TYPE + " TEXT, "
+				+ CustomLevelOperationsTable.WILD_TYPE + " TEXT, "
 				+ CustomLevelOperationsTable.SEQ_NUM + " INTEGER, "
 				+ CustomLevelOperationsTable.X2_COEFF + " TEXT, "
 				+ CustomLevelOperationsTable.X_COEFF + " TEXT, "
@@ -158,6 +160,11 @@ public class DataBaseHelper extends SQLiteOpenHelper {
 
 	@Override
 	public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+		if (oldVersion < 11 && newVersion >= 11) {
+			db.execSQL("ALTER TABLE " + CUSTOM_LEVEL_OPERATIONS_TABLE_NAME
+					+ " ADD COLUMN " + CustomLevelOperationsTable.WILD_TYPE
+					+ " TEXT;");
+		}
 		if (oldVersion < 10 && newVersion >= 10) {
 			db.execSQL("ALTER TABLE " + CUSTOM_LEVEL_TABLE_NAME
 					+ " ADD COLUMN " + CustomLevelTable.LHS_X2_COEFF + " TEXT;");

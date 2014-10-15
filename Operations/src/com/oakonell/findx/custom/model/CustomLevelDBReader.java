@@ -25,6 +25,7 @@ import com.oakonell.findx.model.ops.Square;
 import com.oakonell.findx.model.ops.SquareRoot;
 import com.oakonell.findx.model.ops.Subtract;
 import com.oakonell.findx.model.ops.Swap;
+import com.oakonell.findx.model.ops.WildCard;
 
 public class CustomLevelDBReader {
 	private FractionFormat format = new FractionFormat();
@@ -171,6 +172,14 @@ public class CustomLevelDBReader {
 							.getColumnIndex(DataBaseHelper.CustomLevelOperationsTable.TYPE));
 			Long id = opQuery.getLong(opQuery.getColumnIndex(BaseColumns._ID));
 			OperationType type = OperationType.valueOf(typeString);
+			WildCard wildOp = null;
+			if (type == OperationType.WILD) {
+				wildOp = new WildCard();
+				typeString = opQuery
+						.getString(opQuery
+								.getColumnIndex(DataBaseHelper.CustomLevelOperationsTable.WILD_TYPE));
+				type = OperationType.valueOf(typeString);
+			}
 			Operation op;
 			switch (type) {
 			case ADD:
@@ -206,6 +215,10 @@ public class CustomLevelDBReader {
 				throw new RuntimeException("Unknown type " + type
 						+ " while reading custom level " + builder.getId());
 			}
+			if (wildOp != null) {
+				wildOp.setActual(op);
+				op = wildOp;
+			}
 			operationsById.put(id, op);
 			builder.addOperation(op);
 		}
@@ -216,7 +229,8 @@ public class CustomLevelDBReader {
 	private Fraction readFraction(Cursor query, String constColName) {
 		String constString = query
 				.getString(query.getColumnIndex(constColName));
-		if (constString == null) return Fraction.ZERO;
+		if (constString == null)
+			return Fraction.ZERO;
 		Fraction constVal = format.parse(constString);
 		return constVal;
 	}

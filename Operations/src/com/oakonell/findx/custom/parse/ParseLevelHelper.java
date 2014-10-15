@@ -25,6 +25,7 @@ import com.oakonell.findx.model.ops.Square;
 import com.oakonell.findx.model.ops.SquareRoot;
 import com.oakonell.findx.model.ops.Subtract;
 import com.oakonell.findx.model.ops.Swap;
+import com.oakonell.findx.model.ops.WildCard;
 import com.oakonell.utils.StringUtils;
 import com.parse.ParseException;
 import com.parse.ParseObject;
@@ -61,6 +62,7 @@ public class ParseLevelHelper {
 		final String classname = "LevelOperation";
 		final String level_field = "level";
 		final String type_field = "type";
+		final String wild_type_field = "wild_type";
 	}
 
 	public interface ParseLevelMove {
@@ -111,23 +113,32 @@ public class ParseLevelHelper {
 				ParseObject parseOp = new ParseObject(
 						ParseLevelOperation.classname);
 				parseOp.put(ParseLevelOperation.level_field, level);
-				parseOp.put(ParseLevelOperation.type_field, each.type()
-						.ordinal());
-				switch (each.type()) {
+				OperationType type = each.type();
+				parseOp.put(ParseLevelOperation.type_field, type.ordinal());
+				Operation op = each;
+				if (type == OperationType.WILD) {
+					WildCard wild = (WildCard) op;
+					op= wild.getActual();
+					type = op.type();
+					parseOp.put(ParseLevelOperation.wild_type_field,
+							type.ordinal());
+				}
+
+				switch (type) {
 				case ADD:
-					addExpression("", ((Add) each).getExpression(), parseOp);
+					addExpression("", ((Add) op).getExpression(), parseOp);
 					break;
 				case SUBTRACT:
-					addExpression("", ((Subtract) each).getExpression(),
+					addExpression("", ((Subtract) op).getExpression(),
 							parseOp);
 					break;
 				case MULTIPLY:
 					addExpression("", new Expression(Fraction.ZERO,
-							((Multiply) each).getFactor()), parseOp);
+							((Multiply) op).getFactor()), parseOp);
 					break;
 				case DIVIDE:
 					addExpression("", new Expression(Fraction.ZERO,
-							((Divide) each).getFactor()), parseOp);
+							((Divide) op).getFactor()), parseOp);
 					break;
 				case SWAP:
 					break;
@@ -244,6 +255,16 @@ public class ParseLevelHelper {
 		OperationType type = OperationType.values()[typeIndex];
 		Operation op = null;
 		Expression expr = readExpression("", each);
+
+		WildCard wildOp = null;
+		if (type == OperationType.WILD) {
+			wildOp = new WildCard();
+			int wildTypeIndex = each
+					.getInt(ParseLevelOperation.wild_type_field);
+			OperationType wildType = OperationType.values()[wildTypeIndex];
+			type = wildType;
+		}
+
 		switch (type) {
 		case ADD:
 			op = new Add(expr);
@@ -268,6 +289,10 @@ public class ParseLevelHelper {
 			break;
 		default:
 			throw new RuntimeException("Unexpected operator index " + typeIndex);
+		}
+		if (wildOp != null) {
+			wildOp.setActual(op);
+			op = wildOp;
 		}
 		return op;
 	}

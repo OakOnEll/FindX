@@ -75,6 +75,7 @@ import com.oakonell.findx.model.ops.Square;
 import com.oakonell.findx.model.ops.SquareRoot;
 import com.oakonell.findx.model.ops.Subtract;
 import com.oakonell.findx.model.ops.Swap;
+import com.oakonell.findx.model.ops.WildCard;
 import com.oakonell.utils.StringUtils;
 import com.oakonell.utils.Utils;
 import com.oakonell.utils.activity.dragndrop.DragController;
@@ -305,6 +306,15 @@ public class CustomStageActivity extends GameActivity {
 				op.appendChild(typeNode);
 				XMLUtils.setTextContent(typeNode, each.type().toString());
 				OperationVisitor visitor = new OperationVisitor() {
+
+					@Override
+					public void visitWild(WildCard wild) {
+						Element typeNode = doc.createElement("wt");
+						op.appendChild(typeNode);
+						XMLUtils.setTextContent(typeNode, wild.getActual()
+								.type().toString());
+						wild.getActual().accept(this);
+					}
 
 					@Override
 					public void visitSwap(Swap swap) {

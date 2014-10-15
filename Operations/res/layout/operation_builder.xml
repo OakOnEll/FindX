@@ -8,6 +8,12 @@
         android:layout_height="wrap_content"
         android:orientation="vertical" >
 
+        <CheckBox
+            android:id="@+id/is_wild"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Is WildCard" />
+
         <Spinner
             android:id="@+id/operation_spinner"
             android:layout_width="match_parent"

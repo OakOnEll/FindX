@@ -3,7 +3,7 @@ package com.oakonell.findx.model;
 
 public interface Operation {
     public enum OperationType {
-        ADD, SUBTRACT, MULTIPLY, DIVIDE, SWAP, SQUARE, SQUARE_ROOT;
+        ADD, SUBTRACT, MULTIPLY, DIVIDE, SWAP, SQUARE, SQUARE_ROOT, WILD;
     }
 
     Equation apply(Equation equation);
@@ -17,5 +17,8 @@ public interface Operation {
     boolean canApply(Equation equation);
     
     void accept(OperationVisitor visitor);
+
+    // Wild Cards are not built at the start
+	boolean isBuilt();
 
 }
