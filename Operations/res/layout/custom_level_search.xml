@@ -54,17 +54,14 @@
             android:layout_weight="1" />
     </LinearLayout>
 
-    <Button
-        android:id="@+id/download_checked"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Download checked" />
+    <!-- android:id="@+id/android:empty" -->
 
     <TextView
-        android:id="@+id/android:empty"
+        android:id="@+id/empty"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="No levels found" />
+        android:text="No levels found"
+        android:visibility="gone" />
 
     <ListView
         android:id="@android:id/list"

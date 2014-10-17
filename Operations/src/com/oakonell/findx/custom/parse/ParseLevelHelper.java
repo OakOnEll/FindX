@@ -118,7 +118,7 @@ public class ParseLevelHelper {
 				Operation op = each;
 				if (type == OperationType.WILD) {
 					WildCard wild = (WildCard) op;
-					op= wild.getActual();
+					op = wild.getActual();
 					type = op.type();
 					parseOp.put(ParseLevelOperation.wild_type_field,
 							type.ordinal());
@@ -129,8 +129,7 @@ public class ParseLevelHelper {
 					addExpression("", ((Add) op).getExpression(), parseOp);
 					break;
 				case SUBTRACT:
-					addExpression("", ((Subtract) op).getExpression(),
-							parseOp);
+					addExpression("", ((Subtract) op).getExpression(), parseOp);
 					break;
 				case MULTIPLY:
 					addExpression("", new Expression(Fraction.ZERO,
@@ -233,8 +232,9 @@ public class ParseLevelHelper {
 
 		final CustomLevelBuilder builder = new CustomLevelBuilder();
 
-		builder.setIsImported(!creator.getObjectId().equals(
-				ParseUser.getCurrentUser().getObjectId()));
+		ParseUser currentUser = ParseUser.getCurrentUser();
+		builder.setIsImported(currentUser == null
+				|| !creator.getObjectId().equals(currentUser.getObjectId()));
 		builder.setTitle(title);
 		builder.setAuthor(creator.getString(ParseUserExtra.nickname_field));
 		builder.setSolution(solution);

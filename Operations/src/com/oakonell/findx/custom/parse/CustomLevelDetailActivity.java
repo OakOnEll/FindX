@@ -8,7 +8,7 @@ import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.NavUtils;
 import android.text.Html;
 import android.text.format.DateUtils;
 import android.view.LayoutInflater;
@@ -23,6 +23,11 @@ import android.widget.RatingBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.actionbarsherlock.app.ActionBar;
+import com.actionbarsherlock.app.SherlockFragmentActivity;
+import com.actionbarsherlock.view.Menu;
+import com.actionbarsherlock.view.MenuInflater;
+import com.actionbarsherlock.view.MenuItem;
 import com.commonsware.cwac.merge.MergeAdapter;
 import com.oakonell.findx.PuzzleActivity;
 import com.oakonell.findx.R;
@@ -43,7 +48,7 @@ import com.parse.ParseObject;
 import com.parse.ParseQuery;
 import com.parse.ParseUser;
 
-public class CustomLevelDetailActivity extends FragmentActivity {
+public class CustomLevelDetailActivity extends SherlockFragmentActivity {
 	public static final String LEVEL_PARSE_ID = "levelParseId";
 	private MergeAdapter mainAdapter = new MergeAdapter();
 
@@ -75,6 +80,13 @@ public class CustomLevelDetailActivity extends FragmentActivity {
 		setContentView(R.layout.custom_level_detail);
 		LayoutInflater inflater = LayoutInflater.from(this);
 
+		final ActionBar ab = getSupportActionBar();
+		// the detail page can come from many parents, need to rely on user using back instead
+		ab.setDisplayHomeAsUpEnabled(false);
+		ab.setDisplayUseLogoEnabled(true);
+		ab.setDisplayShowTitleEnabled(true);
+		ab.setTitle("Level Detail");
+
 		levelId = getIntent().getStringExtra(LEVEL_PARSE_ID);
 
 		waiting = (ProgressBar) findViewById(R.id.waiting);
@@ -93,31 +105,6 @@ public class CustomLevelDetailActivity extends FragmentActivity {
 		ratingBar = (RatingBar) headerView.findViewById(R.id.ratingBar);
 		num_rankings = (TextView) headerView.findViewById(R.id.num_rankings);
 		// TODO use the rating bar on change as the edit trigger
-
-		final CustomLevelDBReader reader = new CustomLevelDBReader();
-		final long dbId = reader.findDbIdByServerId(this, levelId);
-		if (dbId > 0) {
-			Button download = (Button) headerView.findViewById(R.id.download);
-			download.setText("Play");
-			download.setOnClickListener(new OnClickListener() {
-				@Override
-				public void onClick(View v) {
-					// Ugh-ly..
-					CustomLevel theLevel = Levels.getCustomStage()
-							.getLevelByDBId(dbId);
-					finish();
-					startPuzzle(theLevel.getId());
-				}
-			});
-		} else {
-			Button download = (Button) headerView.findViewById(R.id.download);
-			download.setOnClickListener(new OnClickListener() {
-				@Override
-				public void onClick(View v) {
-					downloadAndStartPuzzle();
-				}
-			});
-		}
 
 		mainAdapter.addView(headerView);
 
@@ -434,10 +421,8 @@ public class CustomLevelDetailActivity extends FragmentActivity {
 			@Override
 			protected void onPostExecute(CustomLevelBuilder builder) {
 				dialog.dismiss();
-				finish();
 				CustomLevel newlevel = Levels.getCustomStage().getLevelByDBId(
 						builder.getId());
-				finish();
 				startPuzzle(newlevel.getId());
 			}
 		};
@@ -450,5 +435,41 @@ public class CustomLevelDetailActivity extends FragmentActivity {
 		levelIntent.putExtra(PuzzleActivity.PUZZLE_ID, levelId);
 		levelIntent.putExtra(PuzzleActivity.IS_CUSTOM, true);
 		startActivity(levelIntent);
+	}
+
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		MenuInflater inflater = getSupportMenuInflater();
+		inflater.inflate(R.menu.custom_level_detail, menu);
+
+		final CustomLevelDBReader reader = new CustomLevelDBReader();
+		final long dbId = reader.findDbIdByServerId(this, levelId);
+		MenuItem play = menu.findItem(R.id.menu_play);
+		MenuItem download = menu.findItem(R.id.menu_download);
+		if (dbId > 0) {
+			download.setVisible(false);
+		} else {
+			play.setVisible(false);
+		}
+		return true;
+	}
+
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		if (item.getItemId() == android.R.id.home) {
+			NavUtils.navigateUpFromSameTask(this);
+			return true;
+		} else if (item.getItemId() == R.id.menu_play) {
+			final CustomLevelDBReader reader = new CustomLevelDBReader();
+			final long dbId = reader.findDbIdByServerId(this, levelId);
+			// Ugh-ly..
+			CustomLevel theLevel = Levels.getCustomStage().getLevelByDBId(dbId);
+			startPuzzle(theLevel.getId());
+			return true;
+		} else if (item.getItemId() == R.id.menu_download) {
+			downloadAndStartPuzzle();
+			return true;
+		}
+		return super.onOptionsItemSelected(item);
 	}
 }

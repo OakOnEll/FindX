@@ -266,7 +266,12 @@ public class CustomPuzzleBuilderActivity extends GameActivity {
 		cancel.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				confirmAndLeave();
+				confirmAndLeave(new Runnable() {
+					@Override
+					public void run() {
+						CustomPuzzleBuilderActivity.this.finish();
+					}
+				});
 			}
 		});
 
@@ -565,7 +570,11 @@ public class CustomPuzzleBuilderActivity extends GameActivity {
 				});
 	}
 
-	private void confirmAndLeave() {
+	private void confirmAndLeave(final Runnable run) {
+		if (builder.getOperations().isEmpty() && builder.getMoves().size() <= 1) {
+			run.run();
+			return;
+		}
 		final AlertDialog alertDialog = new AlertDialog.Builder(this).create();
 		alertDialog.setTitle(R.string.confirm_lose_level_changes_title);
 		alertDialog.setMessage(getResources().getString(
@@ -576,7 +585,7 @@ public class CustomPuzzleBuilderActivity extends GameActivity {
 				new DialogInterface.OnClickListener() {
 					@Override
 					public void onClick(DialogInterface dialog, int which) {
-						CustomPuzzleBuilderActivity.this.finish();
+						run.run();
 						alertDialog.dismiss();
 					}
 				});
@@ -593,9 +602,13 @@ public class CustomPuzzleBuilderActivity extends GameActivity {
 
 	@Override
 	public void onBackPressed() {
-		confirmAndLeave();
+		confirmAndLeave(new Runnable() {
+			@Override
+			public void run() {
+				CustomPuzzleBuilderActivity.super.onBackPressed();
+			}
+		});
 	}
-
 
 	private void deleteMove(final Move item) {
 		// confirm to delete
@@ -659,11 +672,11 @@ public class CustomPuzzleBuilderActivity extends GameActivity {
 		alert.show();
 
 	}
-	
+
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		if (item.getItemId() == android.R.id.home) {
-			confirmAndQuit(new Runnable() {
+			confirmAndLeave(new Runnable() {
 				@Override
 				public void run() {
 					NavUtils.navigateUpFromSameTask(CustomPuzzleBuilderActivity.this);
@@ -674,7 +687,4 @@ public class CustomPuzzleBuilderActivity extends GameActivity {
 		return MenuHelper.onOptionsItemSelected(this, item);
 	}
 
-	private void confirmAndQuit(Runnable runnable) {
-		runnable.run();
-	}
 }

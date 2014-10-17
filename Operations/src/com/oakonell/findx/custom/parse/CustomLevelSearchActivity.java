@@ -10,6 +10,8 @@ import java.util.Set;
 
 import android.app.Dialog;
 import android.app.ProgressDialog;
+import android.app.SearchManager;
+import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -27,9 +29,15 @@ import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.TextView;
 
+import com.actionbarsherlock.app.ActionBar;
 import com.actionbarsherlock.app.SherlockListActivity;
+import com.actionbarsherlock.view.ActionMode;
+import com.actionbarsherlock.view.ActionMode.Callback;
+import com.actionbarsherlock.view.Menu;
+import com.actionbarsherlock.view.MenuInflater;
 import com.actionbarsherlock.view.MenuItem;
-import com.oakonell.findx.MenuHelper;
+import com.actionbarsherlock.widget.SearchView;
+import com.actionbarsherlock.widget.SearchView.OnCloseListener;
 import com.oakonell.findx.R;
 import com.oakonell.findx.custom.model.CustomLevelBuilder;
 import com.oakonell.findx.custom.parse.ParseConnectivity.ParseUserExtra;
@@ -37,6 +45,7 @@ import com.oakonell.findx.custom.parse.ParseCustomLevelSearchAdapter.CheckCallba
 import com.oakonell.findx.custom.parse.ParseLevelHelper.ParseCustomLevel;
 import com.oakonell.findx.model.Levels;
 import com.oakonell.utils.StringUtils;
+import com.oakonell.utils.Utils;
 import com.parse.ParseException;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
@@ -55,7 +64,8 @@ public class CustomLevelSearchActivity extends SherlockListActivity {
 	private boolean downloading = false;
 
 	private Map<String, Integer> checkedPositionByIds = new HashMap<String, Integer>();
-	private Button downloadChecked;
+
+	private ActionMode actionMode;
 
 	private static class SortCriteria {
 		final int val;
@@ -147,11 +157,11 @@ public class CustomLevelSearchActivity extends SherlockListActivity {
 			}
 			adapter.notifyDataSetChanged();
 			CustomLevelSearchActivity.this.progressDialog.dismiss();
-			TextView empty = (TextView) findViewById(android.R.id.empty);
+			TextView empty = (TextView) findViewById(R.id.empty);
 			if (levels.isEmpty()) {
 				empty.setVisibility(View.VISIBLE);
 			} else {
-				empty.setVisibility(View.INVISIBLE);
+				empty.setVisibility(View.GONE);
 			}
 
 		}
@@ -162,14 +172,13 @@ public class CustomLevelSearchActivity extends SherlockListActivity {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.custom_level_search);
-		downloadChecked = (Button) findViewById(R.id.download_checked);
-		downloadChecked.setOnClickListener(new OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				downloadChecked();
-			}
-		});
-		configureDownloadCheckedButton();
+
+		final ActionBar ab = getSupportActionBar();
+		ab.setDisplayHomeAsUpEnabled(true);
+		ab.setDisplayUseLogoEnabled(true);
+		ab.setDisplayShowTitleEnabled(true);
+		ab.setTitle("Shared Levels");
+
 		levels = new ArrayList<ParseObject>();
 
 		CheckCallback callback = new CheckCallback() {
@@ -177,6 +186,52 @@ public class CustomLevelSearchActivity extends SherlockListActivity {
 			public void checkStateChanged(int position, boolean isChecked) {
 				if (downloading)
 					return;
+
+				if (isChecked && actionMode == null) {
+					actionMode = startActionMode(new Callback() {
+
+						@Override
+						public boolean onCreateActionMode(
+								com.actionbarsherlock.view.ActionMode mode,
+								Menu menu) {
+							MenuInflater inflater = mode.getMenuInflater();
+							inflater.inflate(R.menu.custom_search_item_context,
+									menu);
+							return true;
+						}
+
+						@Override
+						public boolean onActionItemClicked(
+								com.actionbarsherlock.view.ActionMode mode,
+								MenuItem item) {
+							switch (item.getItemId()) {
+							case R.id.menu_download:
+								downloadChecked();
+								return true;
+							}
+							return false;
+						}
+
+						@Override
+						public boolean onPrepareActionMode(
+								com.actionbarsherlock.view.ActionMode mode,
+								Menu menu) {
+							return false;
+						}
+
+						@Override
+						public void onDestroyActionMode(
+								com.actionbarsherlock.view.ActionMode mode) {
+							// uncheck any, and redraw
+							checkedPositionByIds.clear();
+							adapter.notifyDataSetChanged();
+							actionMode = null;
+						}
+
+					});
+
+				}
+
 				ParseObject level = levels.get(position);
 				String id = level.getObjectId();
 				if (isChecked) {
@@ -184,7 +239,7 @@ public class CustomLevelSearchActivity extends SherlockListActivity {
 				} else {
 					checkedPositionByIds.remove(id);
 				}
-				configureDownloadCheckedButton();
+				conditionallyFinishActionMode();
 			}
 
 		};
@@ -193,19 +248,24 @@ public class CustomLevelSearchActivity extends SherlockListActivity {
 				checkedPositionByIds, callback);
 		setListAdapter(adapter);
 
-		TextView empty = (TextView) findViewById(android.R.id.empty);
-		empty.setVisibility(View.INVISIBLE);
+//		TextView empty = (TextView) findViewById(android.R.id.empty);
+//		empty.setVisibility(View.INVISIBLE);
 
 		ImageButton searchButton = (ImageButton) findViewById(R.id.search);
 		final EditText searchText = (EditText) findViewById(R.id.search_text);
-		searchButton.setOnClickListener(new OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				filter = searchText.getText().toString();
-				adapter.clear();
-				new RemoteDataTask().execute();
-			}
-		});
+		if (Utils.hasHoneycomb()) {
+			searchButton.setVisibility(View.GONE);
+			searchText.setVisibility(View.GONE);
+		} else {
+			searchButton.setOnClickListener(new OnClickListener() {
+				@Override
+				public void onClick(View v) {
+					filter = searchText.getText().toString();
+					adapter.clear();
+					new RemoteDataTask().execute();
+				}
+			});
+		}
 
 		Spinner sortBySpinner = (Spinner) findViewById(R.id.sort_by);
 
@@ -248,13 +308,10 @@ public class CustomLevelSearchActivity extends SherlockListActivity {
 		registerForContextMenu(getListView());
 	}
 
-	private void configureDownloadCheckedButton() {
-		downloadChecked.setEnabled(!checkedPositionByIds.isEmpty());
-		// if (checkedPositionByIds.isEmpty()) {
-		// downloadChecked.setVisibility(View.GONE);
-		// } else {
-		// downloadChecked.setVisibility(View.VISIBLE);
-		// }
+	private void conditionallyFinishActionMode() {
+		if (checkedPositionByIds.isEmpty() && actionMode != null) {
+			actionMode.finish();
+		}
 	}
 
 	protected void downloadChecked() {
@@ -309,16 +366,17 @@ public class CustomLevelSearchActivity extends SherlockListActivity {
 			protected void onPostExecute(Void result) {
 				adapter.notifyDataSetChanged();
 				Levels.resetCustomStage();
-				configureDownloadCheckedButton();
 				downloading = false;
 				progress.dismiss();
+				conditionallyFinishActionMode();
+				actionMode.finish();
 			}
 
 			@Override
 			protected void onCancelled() {
 				adapter.notifyDataSetChanged();
 				Levels.resetCustomStage();
-				configureDownloadCheckedButton();
+				conditionallyFinishActionMode();
 				downloading = false;
 				progress.dismiss();
 			}
@@ -340,6 +398,7 @@ public class CustomLevelSearchActivity extends SherlockListActivity {
 	protected void onListItemClick(ListView l, View v, final int position,
 			long id) {
 		super.onListItemClick(l, v, position, id);
+
 		// TODO this should bring up the detailed view on the level
 		// show operations, comments, and modifiable rating bar
 		ParseObject level = levels.get(position);
@@ -352,6 +411,85 @@ public class CustomLevelSearchActivity extends SherlockListActivity {
 		// TODO deal with update to this record
 	}
 
+	public boolean onCreateOptionsMenu(Menu menu) {
+		getSupportMenuInflater().inflate(R.menu.custom_search, menu);
+
+		if (Utils.hasHoneycomb()) {
+			enableActionBarSearch(menu);
+		}
+		return true;
+	}
+
+	private void enableActionBarSearch(Menu menu) {
+		SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
+		final MenuItem searchMenuItem = menu.findItem(R.id.menu_search);
+		final SearchView searchView = (SearchView) searchMenuItem
+				.getActionView();
+		// final View searchIcon = searchMenuItem.getActionView().findViewById(
+		// R.id.abs__search_mag_icon);
+
+		if (null != searchView) {
+			searchView.setSearchableInfo(searchManager
+					.getSearchableInfo(getComponentName()));
+			searchView.setIconifiedByDefault(false);
+			searchView.setQueryHint("Search Titles, Authors");
+		}
+
+		searchMenuItem
+				.setOnActionExpandListener(new MenuItem.OnActionExpandListener() {
+					@Override
+					public boolean onMenuItemActionExpand(MenuItem item) {
+						return true;
+					}
+
+					@Override
+					public boolean onMenuItemActionCollapse(MenuItem item) {
+						if (filter != null) {
+							filter = null;
+							adapter.clear();
+							new RemoteDataTask().execute();
+						}
+						return true;
+					}
+				});
+
+		SearchView.OnQueryTextListener queryTextListener = new SearchView.OnQueryTextListener() {
+			// boolean wasSearched;
+
+			public boolean onQueryTextChange(String newText) {
+				// if (newText.equals("") && wasSearched) {
+				// searchIcon.setVisibility(View.VISIBLE);
+				// }
+				// this is your adapter that will be filtered
+				// adapter.getFilter().filter(newText);
+				return true;
+			}
+
+			public boolean onQueryTextSubmit(String query) {
+				// searchIcon.setVisibility(View.GONE);
+				// wasSearched = true;
+				searchView.clearFocus();
+				filter = query;
+				adapter.clear();
+				new RemoteDataTask().execute();
+				// // this is your adapter that will be filtered
+				// adapter.getFilter().filter(query);
+				return true;
+			}
+		};
+		searchView.setOnQueryTextListener(queryTextListener);
+		searchView.setOnCloseListener(new OnCloseListener() {
+			@Override
+			public boolean onClose() {
+				// searchIcon.setVisibility(View.VISIBLE);
+				filter = null;
+				adapter.clear();
+				new RemoteDataTask().execute();
+				return true;
+			}
+		});
+	}
+
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		if (item.getItemId() == android.R.id.home) {
@@ -360,6 +498,8 @@ public class CustomLevelSearchActivity extends SherlockListActivity {
 		}
 		// TODO settings requires game context?!
 		return false;
-		//return MenuHelper.onOptionsItemSelected(CustomLevelSearchActivity.this, item);
+		// return
+		// MenuHelper.onOptionsItemSelected(CustomLevelSearchActivity.this,
+		// item);
 	}
 }

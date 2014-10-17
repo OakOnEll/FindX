@@ -101,20 +101,7 @@ public class PuzzleActivity extends GameActivity {
 			String puzzleId = intent.getStringExtra(PUZZLE_ID);
 			puzzle = new Puzzle(puzzleId);
 		}
-		Button detailsButton = (Button) findViewById(R.id.details);
-		if (puzzle.getLevel() instanceof CustomLevel) {
-			CustomLevel cLevel = (CustomLevel) puzzle.getLevel();
-			if (cLevel.savedToServer()) {
-				detailsButton.setVisibility(View.VISIBLE);
-			}
-		}
-		detailsButton.setOnClickListener(new OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				showLevelDetails();
-			}
 
-		});
 		fromCustom = intent.getBooleanExtra(IS_CUSTOM, false);
 
 		BackgroundMusicHelper.onActivtyCreate(this, puzzle.getStage()
@@ -627,7 +614,6 @@ public class PuzzleActivity extends GameActivity {
 			return;
 		}
 		confirmAndQuit(new Runnable() {
-
 			@Override
 			public void run() {
 				PuzzleActivity.super.onBackPressed();
@@ -733,9 +719,15 @@ public class PuzzleActivity extends GameActivity {
 
 	@Override
 	public boolean onCreateOptionsMenu(com.actionbarsherlock.view.Menu menu) {
-		MenuInflater inflater = getSupportMenuInflater();
-		inflater.inflate(R.menu.main, menu);
-		return true;
+		if (puzzle.getStage() instanceof CustomStage  && ((CustomLevel)puzzle.getLevel()).savedToServer()) {
+			MenuInflater inflater = getSupportMenuInflater();
+			inflater.inflate(R.menu.custom_puzzle, menu);
+			return true;
+		} else {
+			MenuInflater inflater = getSupportMenuInflater();
+			inflater.inflate(R.menu.main, menu);
+			return true;
+		}
 	}
 
 	@Override
@@ -744,9 +736,13 @@ public class PuzzleActivity extends GameActivity {
 			confirmAndQuit(new Runnable() {
 				@Override
 				public void run() {
+					saveState = false;
 					navigateUp();
 				}
 			});
+			return true;
+		} else if (item.getItemId() == R.id.menu_details) {
+			showLevelDetails();
 			return true;
 		}
 		return MenuHelper.onOptionsItemSelected(this, item);
@@ -767,6 +763,7 @@ public class PuzzleActivity extends GameActivity {
 			@Override
 			public void run() {
 				puzzle.undo();
+				configureOperationButtons(movesView);
 				adapter.notifyDataSetChanged();
 				handleUndoEnabling();
 				handleRestartEnabling();

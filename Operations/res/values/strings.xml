@@ -11,7 +11,7 @@
     <string name="achievements_not_available">Please sign in to view achievements.</string>
     
     <!-- settings -->
-    <string name="menu_settings">Settings</string>
+    <string name="menu_settings">Settings</string>    
     <string name="pref_reset_preferences_key">reset_preferences</string>
     <string name="pref_other_category">Other</string>
     <string name="pref_about_key">about</string>
@@ -129,7 +129,11 @@
     <string name="cannot_edit_imported_levels">Cannot edit imported levels</string>
     <string name="cannot_copy_imported_levels">Cannot copy imported levels</string>
     <string name="share_custom_level_title">Sharing custom level %t</string>
-
+    <string name="menu_details">Details</string>
+    <string name="menu_play">Play</string>
+    <string name="menu_download">Download</string>
+    
+    
     <!-- BaseGameUtils strings -->
         <string name="gamehelper_sign_in_failed">Failed to sign in. Please check your network connection and try again.</string>
     <string name="gamehelper_app_misconfigured">The application is incorrectly configured. Check that the package name and signing certificate match the client ID created in Developer Console. Also, if the application is not yet published, check that the account you are trying to sign in with is listed as a tester account. See logs for more information.</string>

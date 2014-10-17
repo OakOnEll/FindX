@@ -13,12 +13,14 @@ public class Puzzle {
 	private Level level;
 	private int numUndosLeft;
 	private List<Move> moves = new ArrayList<Move>();
+	private List<Operation> operations;
 
 	public Puzzle(String puzzleId) {
 		level = Levels.get(puzzleId);
 		if (level == null) {
 			throw new IllegalArgumentException("No level with id=" + puzzleId);
 		}
+		operations = new ArrayList<Operation>(level.getOperations());
 		numUndosLeft = 2;
 	}
 
@@ -27,6 +29,7 @@ public class Puzzle {
 		level = Levels.get(puzzleId);
 		moves.clear();
 		Equation startEquation = level.getEquation();
+		// TODO huh, the save state needs to include the wild card operations
 		List<Operation> operations = level.getOperations();
 		Equation equation = startEquation;
 		for (int index : opIndices) {
@@ -62,7 +65,7 @@ public class Puzzle {
 	}
 
 	public List<Operation> getOperations() {
-		return level.getOperations();
+		return operations;
 	}
 
 	public boolean undo() {
@@ -114,7 +117,7 @@ public class Puzzle {
 
 	private int getOperatorIndex(Move move) {
 		int index = 0;
-		for (Operation each : level.getOperations()) {
+		for (Operation each : getOperations()) {
 			if (each.equals(move.getOperation())) {
 				return index;
 			}
