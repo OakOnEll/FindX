@@ -214,7 +214,7 @@ public class OperationBuilderDialog {
 		Button randomize = (Button) dialog.findViewById(R.id.random_op);
 		if (randomHelper == null) {
 			randomize.setVisibility(View.GONE);
-			isWildCheck.setEnabled(false);
+			isWildCheck.setVisibility(View.GONE);
 		}
 		randomize.setOnClickListener(new OnClickListener() {
 			@Override

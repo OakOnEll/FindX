@@ -41,6 +41,7 @@ import com.oakonell.findx.model.Equation;
 import com.oakonell.findx.model.Levels;
 import com.oakonell.findx.model.Move;
 import com.oakonell.findx.model.Operation;
+import com.oakonell.findx.model.ops.WildCard;
 import com.oakonell.utils.NumberPicker;
 
 public class CustomPuzzleBuilderActivity extends GameActivity {
@@ -84,6 +85,11 @@ public class CustomPuzzleBuilderActivity extends GameActivity {
 			builder.setTitle(getText(R.string.copy_prefix) + builder.getTitle());
 		}
 
+		for (Operation each : builder.getOperations()) {
+			if (!(each instanceof WildCard)) continue;
+			((WildCard)each).setIsBuilt(true);
+		}
+		
 		final ListView movesView = (ListView) findViewById(R.id.moves);
 
 		adapter = new ArrayAdapter<Move>(getApplication(), R.layout.move_build,
