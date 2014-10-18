@@ -1592,12 +1592,13 @@ containing a value of this type.
         public static final int popup_item=0x7f03002e;
         public static final int puzzle=0x7f03002f;
         public static final int search_solution_progress=0x7f030030;
-        public static final int share_row=0x7f030031;
-        public static final int sherlock_spinner_dropdown_item=0x7f030032;
-        public static final int sherlock_spinner_item=0x7f030033;
-        public static final int stage=0x7f030034;
-        public static final int stage_select_grid_item=0x7f030035;
-        public static final int undobar=0x7f030036;
+        public static final int search_term=0x7f030031;
+        public static final int share_row=0x7f030032;
+        public static final int sherlock_spinner_dropdown_item=0x7f030033;
+        public static final int sherlock_spinner_item=0x7f030034;
+        public static final int stage=0x7f030035;
+        public static final int stage_select_grid_item=0x7f030036;
+        public static final int undobar=0x7f030037;
     }
     public static final class menu {
         public static final int custom_level_detail=0x7f0f0000;
@@ -2076,10 +2077,11 @@ containing a value of this type.
         public static final int Widget_Sherlock_TextView_SpinnerItem=0x7f090045;
     }
     public static final class xml {
-        public static final int preferences=0x7f050000;
-        public static final int prefs_about=0x7f050001;
-        public static final int prefs_account=0x7f050002;
-        public static final int prefs_develop=0x7f050003;
+        public static final int custom_search=0x7f050000;
+        public static final int preferences=0x7f050001;
+        public static final int prefs_about=0x7f050002;
+        public static final int prefs_account=0x7f050003;
+        public static final int prefs_develop=0x7f050004;
     }
     public static final class styleable {
         /** Attributes that can be used with a AdsAttrs.

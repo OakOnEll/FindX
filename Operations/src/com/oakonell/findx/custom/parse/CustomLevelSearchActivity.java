@@ -1,30 +1,48 @@
 package com.oakonell.findx.custom.parse;
 
+import java.io.BufferedWriter;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Scanner;
 import java.util.Set;
 
 import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.app.SearchManager;
+import android.app.SearchableInfo;
 import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
+import android.database.MatrixCursor;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.NavUtils;
+import android.support.v4.widget.CursorAdapter;
+import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
+import android.widget.AutoCompleteTextView;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -38,6 +56,7 @@ import com.actionbarsherlock.view.MenuInflater;
 import com.actionbarsherlock.view.MenuItem;
 import com.actionbarsherlock.widget.SearchView;
 import com.actionbarsherlock.widget.SearchView.OnCloseListener;
+import com.actionbarsherlock.widget.SearchView.OnSuggestionListener;
 import com.oakonell.findx.R;
 import com.oakonell.findx.custom.model.CustomLevelBuilder;
 import com.oakonell.findx.custom.parse.ParseConnectivity.ParseUserExtra;
@@ -56,6 +75,9 @@ public class CustomLevelSearchActivity extends SherlockListActivity {
 			2, "Creation date");
 	private static final SortCriteria SORT_BY_RATING = new SortCriteria(1,
 			"Average Rating");
+	private static final String SEARCH_FILE = "recent_search_terms.txt";
+	private static final int MAX_TERMS = 100;
+
 	private ParseCustomLevelSearchAdapter adapter;
 	private List<ParseObject> levels;
 	private Dialog progressDialog;
@@ -248,8 +270,8 @@ public class CustomLevelSearchActivity extends SherlockListActivity {
 				checkedPositionByIds, callback);
 		setListAdapter(adapter);
 
-//		TextView empty = (TextView) findViewById(android.R.id.empty);
-//		empty.setVisibility(View.INVISIBLE);
+		// TextView empty = (TextView) findViewById(android.R.id.empty);
+		// empty.setVisibility(View.INVISIBLE);
 
 		ImageButton searchButton = (ImageButton) findViewById(R.id.search);
 		final EditText searchText = (EditText) findViewById(R.id.search_text);
@@ -429,10 +451,13 @@ public class CustomLevelSearchActivity extends SherlockListActivity {
 		// R.id.abs__search_mag_icon);
 
 		if (null != searchView) {
-			searchView.setSearchableInfo(searchManager
-					.getSearchableInfo(getComponentName()));
+			SearchableInfo searchableInfo = searchManager
+					.getSearchableInfo(getComponentName());						
+			searchView.setSearchableInfo(searchableInfo);
 			searchView.setIconifiedByDefault(false);
 			searchView.setQueryHint("Search Titles, Authors");
+			((AutoCompleteTextView)searchView.findViewById(R.id.abs__search_src_text)).setThreshold(0);
+
 		}
 
 		searchMenuItem
@@ -462,10 +487,16 @@ public class CustomLevelSearchActivity extends SherlockListActivity {
 				// }
 				// this is your adapter that will be filtered
 				// adapter.getFilter().filter(newText);
+				suggestSearchTerms(searchView, newText);
 				return true;
 			}
 
 			public boolean onQueryTextSubmit(String query) {
+				// remove, if exists, to allow this to be added to the bottom,
+				// as most recently used
+				searchTerms.remove(query);
+				searchTerms.add(query);
+
 				// searchIcon.setVisibility(View.GONE);
 				// wasSearched = true;
 				searchView.clearFocus();
@@ -478,6 +509,27 @@ public class CustomLevelSearchActivity extends SherlockListActivity {
 			}
 		};
 		searchView.setOnQueryTextListener(queryTextListener);
+		searchView.setOnSuggestionListener(new OnSuggestionListener() {
+			@Override
+			public boolean onSuggestionSelect(int position) {
+				String selected = getSuggestion(position);
+				searchView.setQuery(selected, true);
+				return true;
+			}
+			
+			private String getSuggestion(int position) {
+				Cursor cursor = (Cursor) searchView.getSuggestionsAdapter().getItem(
+				    position);
+				String suggest1 = cursor.getString(cursor
+				    .getColumnIndex("text"));
+				return suggest1;
+				}
+			
+			@Override
+			public boolean onSuggestionClick(int position) {
+				return onSuggestionSelect(position);
+			}
+		});
 		searchView.setOnCloseListener(new OnCloseListener() {
 			@Override
 			public boolean onClose() {
@@ -488,6 +540,84 @@ public class CustomLevelSearchActivity extends SherlockListActivity {
 				return true;
 			}
 		});
+	}
+
+	private Set<String> searchTerms = new LinkedHashSet<String>();
+
+	@Override
+	protected void onResume() {
+		super.onResume();
+		try {
+			FileInputStream stream = openFileInput(SEARCH_FILE);
+			Scanner scanner = new Scanner(stream);
+			while (scanner.hasNext()) {
+				String term = scanner.next();
+				searchTerms.add(term);
+			}
+			scanner.close();
+		} catch (FileNotFoundException e) {
+			// ignore, use an empty LRU
+		}
+
+	}
+
+	@Override
+	protected void onPause() {
+		super.onPause();
+		if (searchTerms.isEmpty())
+			return;
+
+		try {
+			FileOutputStream stream = openFileOutput(SEARCH_FILE,
+					Context.MODE_PRIVATE);
+			// trim the searched set
+			int numToRemove = searchTerms.size() - MAX_TERMS;
+			Iterator<String> iter = searchTerms.iterator();
+			while (numToRemove > 0) {
+				iter.remove();
+			}
+			OutputStreamWriter ow = new OutputStreamWriter(stream);
+			BufferedWriter writer = new BufferedWriter(ow);
+			for (String each : searchTerms) {
+				writer.write(each);
+				writer.newLine();
+			}
+			writer.close();
+		} catch (IOException e) {
+			Log.e("CustomLevelSearchActivity", "Error writing search terms", e);
+		}
+
+	}
+
+	protected void suggestSearchTerms(SearchView searchView, String newText) {
+		List<String> items = new ArrayList<String>();
+		String newTextUpperCase = newText.toUpperCase();
+		for (String each : searchTerms) {
+			if (each.toUpperCase().startsWith(newTextUpperCase)) {
+				items.add(each);
+			}
+		}
+		Collections.reverse(items);
+
+		// Load data from list to cursor
+		MatrixCursor cursor = createCursor(items);
+
+		searchView
+				.setSuggestionsAdapter(new ExampleAdapter(this, cursor, items));
+	}
+
+	private MatrixCursor createCursor(List<String> items) {
+		String[] columns = new String[] { "_id", "text" };
+
+		MatrixCursor cursor = new MatrixCursor(columns);
+
+		for (int i = 0; i < items.size(); i++) {
+			Object[] temp = new Object[] { 0, "default" };
+			temp[0] = i;
+			temp[1] = items.get(i);
+			cursor.addRow(temp);
+		}
+		return cursor;
 	}
 
 	@Override
@@ -502,4 +632,48 @@ public class CustomLevelSearchActivity extends SherlockListActivity {
 		// MenuHelper.onOptionsItemSelected(CustomLevelSearchActivity.this,
 		// item);
 	}
+
+	public class ExampleAdapter extends CursorAdapter {
+		private List<String> items;
+		
+		
+		public ExampleAdapter(Context context, Cursor cursor, List<String> items) {
+			super(context, cursor, false);
+			this.items = items;
+		}
+
+		@Override
+		public void bindView(View view, Context context, Cursor cursor) {
+			// Show list item data from cursor
+			TextView text = (TextView) view.getTag();
+			text.setText(items.get(cursor.getPosition()));
+			// Alternatively show data direct from database
+			// text.setText(cursor.getString(cursor.getColumnIndex("column_name")));
+		}
+
+		@Override
+		public View newView(Context context, Cursor cursor, ViewGroup parent) {
+			LayoutInflater inflater = (LayoutInflater) context
+					.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+			View view = inflater.inflate(R.layout.search_term, parent, false);
+			final TextView text = (TextView) view.findViewById(R.id.text);
+			view.setTag(text);
+			ImageView delete = (ImageView) view.findViewById(R.id.cancel);
+			delete.setOnClickListener(new OnClickListener() {
+				@Override
+				public void onClick(View v) {
+					CharSequence term = text.getText();
+					searchTerms.remove(term);
+					items.remove(term);
+
+					MatrixCursor cursor = createCursor(items);
+					changeCursor(cursor);
+					notifyDataSetChanged();
+				}
+			});
+			return view;
+		}
+
+	}
+
 }

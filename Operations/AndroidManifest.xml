@@ -81,7 +81,9 @@
             android:name="com.oakonell.findx.custom.parse.CustomLevelSearchActivity"
             android:launchMode="singleTop"
             android:parentActivityName="com.oakonell.findx.custom.CustomStageActivity" >
-
+            <meta-data
+                android:name="android.app.searchable"
+                android:resource="@xml/custom_search" />
             <!-- Parent activity meta-data to support 4.0 and lower -->
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
