@@ -1392,7 +1392,7 @@ containing a value of this type.
         public static final int byLabel=0x7f0b009a;
         public static final int calc_min_moves=0x7f0b0065;
         public static final int cancel=0x7f0b0068;
-        public static final int check=0x7f0b0076;
+        public static final int check=0x7f0b0077;
         public static final int classic=0x7f0b0011;
         public static final int comment=0x7f0b006b;
         public static final int commenter=0x7f0b0074;
@@ -1463,7 +1463,7 @@ containing a value of this type.
         public static final int normal=0x7f0b0001;
         public static final int num_moves=0x7f0b008c;
         public static final int num_rankings=0x7f0b0071;
-        public static final int num_ratings=0x7f0b0077;
+        public static final int num_ratings=0x7f0b0076;
         public static final int ok=0x7f0b00ab;
         public static final int op1=0x7f0b005c;
         public static final int op2=0x7f0b005d;
