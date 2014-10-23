@@ -9,17 +9,22 @@
     </item>
     <item
         android:id="@+id/menu_download"
-        android:icon="@android:drawable/ic_menu_save"
+        android:icon="@drawable/download_icon_433"
         android:showAsAction="always"
         android:title="@string/menu_download">
     </item>
+    <item
+        android:id="@+id/menu_flag"
+        android:icon="@drawable/flag_icon_27013"
+        android:showAsAction="always"
+        android:title="Flag Inappropriate"/>
     <!--
           <item
         android:id="@+id/menu_settings_id"
         android:icon="@android:drawable/ic_menu_preferences"
         android:showAsAction="ifRoom"
         android:title="@string/menu_settings">
-    </item>
+    </item>
     -->
 
 </menu>

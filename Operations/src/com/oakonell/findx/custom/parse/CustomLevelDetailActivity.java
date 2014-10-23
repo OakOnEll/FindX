@@ -81,7 +81,8 @@ public class CustomLevelDetailActivity extends SherlockFragmentActivity {
 		LayoutInflater inflater = LayoutInflater.from(this);
 
 		final ActionBar ab = getSupportActionBar();
-		// the detail page can come from many parents, need to rely on user using back instead
+		// the detail page can come from many parents, need to rely on user
+		// using back instead
 		ab.setDisplayHomeAsUpEnabled(false);
 		ab.setDisplayUseLogoEnabled(true);
 		ab.setDisplayShowTitleEnabled(true);
@@ -429,6 +430,25 @@ public class CustomLevelDetailActivity extends SherlockFragmentActivity {
 		task.execute();
 	}
 
+	protected void flagAndCloseLevel() {
+		final ProgressDialog dialog = ProgressDialog.show(this,
+				"Flagging level", "Please wait...");
+		AsyncTask<Void, Void, Void> task = new AsyncTask<Void, Void, Void>() {
+			@Override
+			protected Void doInBackground(Void... params) {
+				ParseLevelHelper.flagLevel(level);
+				return null;
+			}
+
+			@Override
+			protected void onPostExecute(Void arg) {
+				dialog.dismiss();
+				CustomLevelDetailActivity.this.finish();
+			}
+		};
+		task.execute();
+	}
+
 	private void startPuzzle(final String levelId) {
 		Intent levelIntent = new Intent(CustomLevelDetailActivity.this,
 				PuzzleActivity.class);
@@ -468,6 +488,9 @@ public class CustomLevelDetailActivity extends SherlockFragmentActivity {
 			return true;
 		} else if (item.getItemId() == R.id.menu_download) {
 			downloadAndStartPuzzle();
+			return true;
+		} else if (item.getItemId() == R.id.menu_flag) {
+			flagAndCloseLevel();
 			return true;
 		}
 		return super.onOptionsItemSelected(item);

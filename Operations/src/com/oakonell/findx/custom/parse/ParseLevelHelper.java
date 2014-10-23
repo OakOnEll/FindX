@@ -56,6 +56,8 @@ public class ParseLevelHelper {
 
 		final String lhs_expr_prefix = "lhs_";
 		final String rhs_expr_prefix = "rhs_";
+
+		final String num_flags = "numFlags";
 	}
 
 	public interface ParseLevelOperation {
@@ -80,6 +82,12 @@ public class ParseLevelHelper {
 		final String rating_field = "rating";
 	}
 
+	public interface ParseCustomLevelFlag {
+		final String classname = "LevelFlag";
+		final String level_field = "level";
+		final String flaggedBy_field = "flaggedBy";
+	}
+
 	public static String postLevel(CustomLevel theLevel) {
 		try {
 			ParseUser parseUser = ParseUser.getCurrentUser();
@@ -87,6 +95,8 @@ public class ParseLevelHelper {
 			ParseObject level = new ParseObject(ParseCustomLevel.classname);
 			level.put(ParseCustomLevel.title_field, theLevel.getName());
 			level.put(ParseCustomLevel.createdBy_field, parseUser);
+
+			level.put(ParseCustomLevel.num_flags, 0);
 
 			Equation startEquation = theLevel.getEquation();
 			Equation equation = startEquation;
@@ -381,5 +391,21 @@ public class ParseLevelHelper {
 
 		};
 		task.execute();
+	}
+
+	public static void flagLevel(ParseObject level) {
+		ParseUser parseUser = ParseUser.getCurrentUser();
+		ParseObject flaggedLevel = new ParseObject(
+				ParseCustomLevelFlag.classname);
+		flaggedLevel.put(ParseCustomLevelFlag.flaggedBy_field, parseUser);
+		flaggedLevel.put(ParseCustomLevelFlag.level_field, level);
+
+		level.increment(ParseCustomLevel.num_flags);
+		try {
+			level.save();
+			flaggedLevel.save();
+		} catch (ParseException e) {
+			throw new RuntimeException("Error flagging level", e);
+		}
 	}
 }

@@ -28,7 +28,6 @@ import android.database.Cursor;
 import android.database.MatrixCursor;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.v4.app.NavUtils;
 import android.support.v4.widget.CursorAdapter;
 import android.util.Log;
@@ -62,6 +61,7 @@ import com.oakonell.findx.custom.model.CustomLevelBuilder;
 import com.oakonell.findx.custom.parse.ParseConnectivity.ParseUserExtra;
 import com.oakonell.findx.custom.parse.ParseCustomLevelSearchAdapter.CheckCallback;
 import com.oakonell.findx.custom.parse.ParseLevelHelper.ParseCustomLevel;
+import com.oakonell.findx.custom.parse.ParseLevelHelper.ParseCustomLevelFlag;
 import com.oakonell.findx.model.Levels;
 import com.oakonell.utils.StringUtils;
 import com.oakonell.utils.Utils;
@@ -138,6 +138,8 @@ public class CustomLevelSearchActivity extends SherlockListActivity {
 				query = new ParseQuery<ParseObject>(ParseCustomLevel.classname);
 			}
 
+			query.whereLessThan(ParseCustomLevel.num_flags, 3);
+
 			// TODO use a constant for create at
 			if (sort == SORT_BY_CREATION_DATE) {
 				query.orderByDescending("_created_at");
@@ -151,8 +153,42 @@ public class CustomLevelSearchActivity extends SherlockListActivity {
 			try {
 				levels = query.find();
 			} catch (ParseException e) {
+				throw new RuntimeException("Error finding levels", e);
+			}
+
+			if (!levels.isEmpty()) {
+				// TODO this will be non-scalable for large numbers of flagged
+				// levels
+				// find my flagged levels, to avoid showing them
+				ParseQuery<ParseObject> myFlaggedQuery = new ParseQuery<ParseObject>(
+						ParseCustomLevelFlag.classname);
+				myFlaggedQuery.whereEqualTo(
+						ParseCustomLevelFlag.flaggedBy_field,
+						ParseUser.getCurrentUser());
+				List<ParseObject> flagged;
+				try {
+					flagged = myFlaggedQuery.find();
+				} catch (ParseException e) {
+					throw new RuntimeException("Error finding levels", e);
+				}
+				if (flagged.isEmpty())
+					return null;
+
+				Set<String> flaggedIds = new HashSet<String>();
+				for (ParseObject each : flagged) {
+					flaggedIds.add(each.getParseObject(ParseCustomLevelFlag.level_field).getObjectId());
+				}
+
+				for (Iterator<ParseObject> iter = levels.iterator(); iter
+						.hasNext();) {
+					ParseObject level = iter.next();
+					if (flaggedIds.contains(level.getObjectId())) {
+						iter.remove();
+					}
+				}
 
 			}
+
 			return null;
 		}
 
@@ -230,6 +266,8 @@ public class CustomLevelSearchActivity extends SherlockListActivity {
 							case R.id.menu_download:
 								downloadChecked();
 								return true;
+							case R.id.menu_flag:
+								flagChecked();
 							}
 							return false;
 						}
@@ -336,8 +374,63 @@ public class CustomLevelSearchActivity extends SherlockListActivity {
 		}
 	}
 
+	private void flagChecked() {
+		final int max = checkedPositionByIds.size();
+		final ProgressDialog progress = ProgressDialog.show(this,
+				"Flagging Inappropriate levels", "Flagging 0/" + max + "...");
+		downloading = true;
+		AsyncTask<Void, Integer, Void> task = new AsyncTask<Void, Integer, Void>() {
+			private Set<ParseObject> flagged = new HashSet<ParseObject>();
+
+			@Override
+			protected Void doInBackground(Void... params) {
+				Set<Entry<String, Integer>> entrySet = new HashSet<Map.Entry<String, Integer>>(
+						checkedPositionByIds.entrySet());
+				int i = 0;
+				for (Entry<String, Integer> entry : entrySet) {
+					i++;
+					publishProgress(i);
+					Integer position = entry.getValue();
+					ParseObject level = adapter.getItem(position);
+					ParseLevelHelper.flagLevel(level);
+					levels.remove(level);
+					flagged.add(level);
+					checkedPositionByIds.remove(entry.getKey());
+				}
+				return null;
+			}
+
+			@Override
+			protected void onProgressUpdate(Integer... values) {
+				progress.setMessage("Flagging " + values[0] + "/" + max + "...");
+			}
+
+			@Override
+			protected void onPostExecute(Void result) {
+				finishFlagging(progress);
+			}
+
+			private void finishFlagging(final ProgressDialog progress) {
+				for (ParseObject level : flagged) {
+					adapter.remove(level);
+				}
+				adapter.notifyDataSetChanged();
+				Levels.resetCustomStage();
+				downloading = false;
+				progress.dismiss();
+				conditionallyFinishActionMode();
+			}
+
+			@Override
+			protected void onCancelled() {
+				finishFlagging(progress);
+			}
+
+		};
+		task.execute();
+	}
+
 	protected void downloadChecked() {
-		final Handler handler = new Handler();
 		final int max = checkedPositionByIds.size();
 		final ProgressDialog progress = ProgressDialog.show(this,
 				"Downloading levels", "Downloading 0/" + max + "...");
@@ -391,7 +484,6 @@ public class CustomLevelSearchActivity extends SherlockListActivity {
 				downloading = false;
 				progress.dismiss();
 				conditionallyFinishActionMode();
-				actionMode.finish();
 			}
 
 			@Override
@@ -452,11 +544,12 @@ public class CustomLevelSearchActivity extends SherlockListActivity {
 
 		if (null != searchView) {
 			SearchableInfo searchableInfo = searchManager
-					.getSearchableInfo(getComponentName());						
+					.getSearchableInfo(getComponentName());
 			searchView.setSearchableInfo(searchableInfo);
 			searchView.setIconifiedByDefault(false);
 			searchView.setQueryHint("Search Titles, Authors");
-			((AutoCompleteTextView)searchView.findViewById(R.id.abs__search_src_text)).setThreshold(0);
+			((AutoCompleteTextView) searchView
+					.findViewById(R.id.abs__search_src_text)).setThreshold(0);
 
 		}
 
@@ -516,15 +609,15 @@ public class CustomLevelSearchActivity extends SherlockListActivity {
 				searchView.setQuery(selected, true);
 				return true;
 			}
-			
+
 			private String getSuggestion(int position) {
-				Cursor cursor = (Cursor) searchView.getSuggestionsAdapter().getItem(
-				    position);
+				Cursor cursor = (Cursor) searchView.getSuggestionsAdapter()
+						.getItem(position);
 				String suggest1 = cursor.getString(cursor
-				    .getColumnIndex("text"));
+						.getColumnIndex("text"));
 				return suggest1;
-				}
-			
+			}
+
 			@Override
 			public boolean onSuggestionClick(int position) {
 				return onSuggestionSelect(position);
@@ -635,8 +728,7 @@ public class CustomLevelSearchActivity extends SherlockListActivity {
 
 	public class ExampleAdapter extends CursorAdapter {
 		private List<String> items;
-		
-		
+
 		public ExampleAdapter(Context context, Cursor cursor, List<String> items) {
 			super(context, cursor, false);
 			this.items = items;
