@@ -42,8 +42,8 @@ import com.oakonell.findx.custom.model.CustomLevel;
 import com.oakonell.findx.custom.model.CustomStage;
 import com.oakonell.findx.custom.parse.CustomLevelDetailActivity;
 import com.oakonell.findx.data.DataBaseHelper;
+import com.oakonell.findx.model.IMove;
 import com.oakonell.findx.model.Level;
-import com.oakonell.findx.model.Move;
 import com.oakonell.findx.model.Operation;
 import com.oakonell.findx.model.Puzzle;
 import com.oakonell.findx.model.ops.WildCard;
@@ -68,7 +68,7 @@ public class PuzzleActivity extends GameActivity {
 	private boolean saveState = true;
 	private boolean fromCustom = false;
 
-	private ArrayAdapter<Move> adapter;
+	private ArrayAdapter<IMove> adapter;
 	private SoundManager soundManager;
 	private Typeface chalkFont;
 
@@ -213,7 +213,7 @@ public class PuzzleActivity extends GameActivity {
 	}
 
 	private void initializeAdapter(final ListView movesView) {
-		adapter = new ArrayAdapter<Move>(getApplication(), R.layout.move,
+		adapter = new ArrayAdapter<IMove>(getApplication(), R.layout.move,
 				puzzle.getMoves()) {
 
 			@Override
@@ -225,7 +225,7 @@ public class PuzzleActivity extends GameActivity {
 				}
 				row.setVisibility(View.VISIBLE);
 
-				Move item = getItem(position);
+				IMove item = getItem(position);
 
 				DelayedTextView moveNum = (DelayedTextView) row
 						.findViewById(R.id.move_num);
@@ -240,9 +240,9 @@ public class PuzzleActivity extends GameActivity {
 					eq.setTypeface(chalkFont);
 				}
 
-				String moveNumString = (position + 1) + "";
-				Operation operation = item.getOperation();
-				List<Move> moves = puzzle.getMoves();
+				String moveNumString = item.getMoveNumText();
+				String moveText = item.getDescriptiontext();
+				List<IMove> moves = puzzle.getMoves();
 				int index = moves.indexOf(item);
 				Log.i("Puzzle", (inputRow == null ? "inputRow is null" : "")
 						+ ", for move " + index + " out of " + moves.size()
@@ -260,7 +260,7 @@ public class PuzzleActivity extends GameActivity {
 							true);
 
 					TextViewInfo eqInfo = new TextViewInfo();
-					eqInfo.text = item.getEndEquation().toString();
+					eqInfo.text = item.getEndEquationString();
 					eqInfo.textView = eq;
 					eqInfo.animationFinished = new Runnable() {
 						@Override
@@ -270,7 +270,7 @@ public class PuzzleActivity extends GameActivity {
 					};
 
 					TextViewInfo opInfo = new TextViewInfo();
-					opInfo.text = operation != null ? operation.toString() : "";
+					opInfo.text = moveText;
 					opInfo.textView = op;
 					opInfo.next = eqInfo;
 
@@ -286,10 +286,8 @@ public class PuzzleActivity extends GameActivity {
 					// eq.setText(item.getEndEquation().toString());
 				} else {
 					moveNum.writeText(Html.fromHtml(moveNumString));
-					op.writeText(Html.fromHtml((operation != null ? operation
-							.toString() : "")));
-					eq.writeText(Html
-							.fromHtml(item.getEndEquation().toString()));
+					op.writeText(Html.fromHtml(moveText));
+					eq.writeText(Html.fromHtml(item.getEndEquationString()));
 				}
 				return row;
 			}
@@ -330,7 +328,7 @@ public class PuzzleActivity extends GameActivity {
 	}
 
 	private void configureOperationButton(final ListView movesView,
-			final List<Move> moves, final ArrayAdapter<Move> adapter,
+			final List<IMove> moves, final ArrayAdapter<IMove> adapter,
 			final Operation operation, TextView opButton) {
 		opButton.setOnClickListener(new OnClickListener() {
 			@Override
@@ -355,7 +353,7 @@ public class PuzzleActivity extends GameActivity {
 				handleRestartEnabling();
 
 				// adapter.notifyDataSetChanged();
-				movesView.setSelection(moves.size() - 1);
+				movesView.setSelection(puzzle.getNumMoves());
 
 				if (puzzle.isSolved()) {
 					levelIsFinished = true;
@@ -579,7 +577,7 @@ public class PuzzleActivity extends GameActivity {
 
 					String text = parametrizedText.replaceAll("%l", levelName);
 					text = text.replaceAll("%m", ""
-							+ (puzzle.getMoves().size() - 1));
+							+ (puzzle.getNumMoves()));
 					text = text.replaceAll("%u", "" + puzzle.getUndosUsed());
 					text = text.replaceAll("%d",
 							"" + puzzle.getMultilineDescription());
@@ -719,7 +717,8 @@ public class PuzzleActivity extends GameActivity {
 
 	@Override
 	public boolean onCreateOptionsMenu(com.actionbarsherlock.view.Menu menu) {
-		if (puzzle.getStage() instanceof CustomStage  && ((CustomLevel)puzzle.getLevel()).savedToServer()) {
+		if (puzzle.getStage() instanceof CustomStage
+				&& ((CustomLevel) puzzle.getLevel()).savedToServer()) {
 			MenuInflater inflater = getSupportMenuInflater();
 			inflater.inflate(R.menu.custom_puzzle, menu);
 			return true;

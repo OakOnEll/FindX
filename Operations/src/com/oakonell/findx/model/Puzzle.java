@@ -1,19 +1,28 @@
 package com.oakonell.findx.model;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+
+import org.apache.commons.math3.fraction.Fraction;
 
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
 import com.oakonell.findx.data.DataBaseHelper;
+import com.oakonell.findx.model.ops.Multiply;
+import com.oakonell.findx.model.ops.SquareRoot;
 
 public class Puzzle {
 	private Level level;
 	private int numUndosLeft;
-	private List<Move> moves = new ArrayList<Move>();
+	private List<IMove> moves = new ArrayList<IMove>();
 	private List<Operation> operations;
+
+	private Equation equationInWaiting;
+	private Equation currentEquation;
+	private int numMoves = 0;
 
 	public Puzzle(String puzzleId) {
 		level = Levels.get(puzzleId);
@@ -22,6 +31,7 @@ public class Puzzle {
 		}
 		operations = new ArrayList<Operation>(level.getOperations());
 		numUndosLeft = 2;
+		currentEquation = level.getEquation();
 	}
 
 	public void initialize(String puzzleId, List<Integer> opIndices,
@@ -30,16 +40,16 @@ public class Puzzle {
 		moves.clear();
 		Equation startEquation = level.getEquation();
 		// TODO huh, the save state needs to include the wild card operations
-		List<Operation> operations = level.getOperations();
+		List<Operation> operations = new ArrayList<Operation>(
+				level.getOperations());
 		Equation equation = startEquation;
 		for (int index : opIndices) {
 			if (index >= operations.size()) {
 				throw new IllegalArgumentException(
 						"Operator index out of bounds: " + index);
 			}
-			Move move = new Move(equation, operations.get(index));
-			moves.add(move);
-			equation = move.getEndEquation();
+			numMoves++;
+			apply(operations.get(index));
 		}
 		numUndosLeft = 2 - numUndosUsed;
 	}
@@ -60,7 +70,7 @@ public class Puzzle {
 		return level.getMinMoves();
 	}
 
-	public List<Move> getMoves() {
+	public List<IMove> getMoves() {
 		return moves;
 	}
 
@@ -69,6 +79,7 @@ public class Puzzle {
 	}
 
 	public boolean undo() {
+		// TODO deal with undoing square root
 		if (moves.size() > 0) {
 			moves.remove(moves.size() - 1);
 			numUndosLeft--;
@@ -101,7 +112,8 @@ public class Puzzle {
 				levelInfo);
 
 		int seq = 1;
-		for (Move each : moves) {
+		for (IMove each : moves) {
+			// TODO save wild card
 			ContentValues moveInfo = new ContentValues();
 			moveInfo.put(DataBaseHelper.CurrentLevelMovesTable.LEVEL_ID,
 					getId());
@@ -115,13 +127,14 @@ public class Puzzle {
 		}
 	}
 
-	private int getOperatorIndex(Move move) {
+	private int getOperatorIndex(IMove move) {
 		int index = 0;
 		for (Operation each : getOperations()) {
-			if (each.equals(move.getOperation())) {
-				return index;
-			}
-			index++;
+			throw new RuntimeException("Implement me!");
+			// if (each.equals(move.getOperation())) {
+			// return index;
+			// }
+			// index++;
 		}
 		return -1;
 	}
@@ -204,11 +217,11 @@ public class Puzzle {
 	}
 
 	public void updateRating() {
-		level.possibilyUpdateRating(moves.size(), getUndosUsed());
+		level.possibilyUpdateRating(getNumMoves(), getUndosUsed());
 	}
 
 	public int getRating() {
-		return level.calculateRating(moves.size(), getUndosUsed());
+		return level.calculateRating(getNumMoves(), getUndosUsed());
 	}
 
 	public int getExistingRating() {
@@ -232,10 +245,7 @@ public class Puzzle {
 	}
 
 	public Equation getCurrentEquation() {
-		if (moves.isEmpty()) {
-			return level.getEquation();
-		}
-		return moves.get(moves.size() - 1).getEndEquation();
+		return currentEquation;
 	}
 
 	public void apply(Operation operation) {
@@ -243,19 +253,50 @@ public class Puzzle {
 			throw new RuntimeException("Operation " + operation
 					+ " is not a valid operation for puzzle " + getId());
 		}
-		Equation startEquation;
-		if (moves.isEmpty()) {
-			startEquation = level.getEquation();
+		Equation startEquation = currentEquation;
+
+		numMoves++;
+		Move move = new Move(startEquation, operation, numMoves);
+		currentEquation = move.getEndEquation();
+		if (operation instanceof SquareRoot) {
+			moves.add(new MultipleSolutionMove(move.getDescriptiontext(),
+					currentEquation.getLhs().toString() + " = ± ( "
+							+ currentEquation.getRhs().toString() + " )",
+					numMoves));
+			moves.add(new SecondaryEquationMove(move.getEndEquation(), 1));
+			// conditionally switch this no longer useful operator to a
+			// multiply(-1) if one is not already present...
+			boolean hasMutiplyNeg1 = false;
+			for (Operation each : operations) {
+				if (each instanceof Multiply) {
+					if (((Multiply) each).getFactor().compareTo(Fraction.ONE) != 0) {
+						hasMutiplyNeg1 = true;
+					}
+				}
+			}
+			Multiply negateOp = new Multiply(-1);
+			if (!hasMutiplyNeg1) {
+				Collections.replaceAll(operations, operation, negateOp);
+			}
+			equationInWaiting = new Equation(move.getEndEquation().getLhs(),
+					negateOp.apply(move.getEndEquation().getRhs()));
 		} else {
-			startEquation = moves.get(moves.size() - 1).getEndEquation();
+			moves.add(move);
 		}
-		Move move = new Move(startEquation, operation);
-		moves.add(move);
+		if (move.getEndEquation().isSolved() && equationInWaiting != null) {
+			moves.add(new SecondaryEquationMove(equationInWaiting, 2));
+			currentEquation = equationInWaiting;
+			equationInWaiting = null;
+		}
 	}
 
 	public boolean isSolved() {
-		return !moves.isEmpty()
-				&& moves.get(moves.size() - 1).getEndEquation().isSolved();
+		return equationInWaiting == null && !moves.isEmpty()
+				&& moves.get(moves.size() - 1).isSolved();
+	}
+
+	public int getNumMoves() {
+		return numMoves;
 	}
 
 }

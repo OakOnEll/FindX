@@ -2,6 +2,7 @@ package com.oakonell.findx.model.ops;
 
 import org.apache.commons.math3.fraction.Fraction;
 
+import com.oakonell.findx.model.Equation;
 import com.oakonell.findx.model.Expression;
 import com.oakonell.findx.model.Operation;
 import com.oakonell.findx.model.OperationVisitor;
@@ -34,6 +35,24 @@ public class Square extends AbstractOperation {
 	}
 
 	@Override
+	public boolean canApply(Equation equation) {
+		if (!canApply(equation.getLhs()) && canApply(equation.getRhs()))
+			return false;
+
+		boolean leftHasAnyX = equation.getLhs().getXCoefficient()
+				.compareTo(Fraction.ZERO) != 0
+				|| equation.getLhs().getX2Coefficient()
+						.compareTo(Fraction.ZERO) != 0;
+
+		boolean rightHasAnyX = equation.getRhs().getXCoefficient()
+				.compareTo(Fraction.ZERO) != 0
+				|| equation.getRhs().getX2Coefficient()
+						.compareTo(Fraction.ZERO) != 0;
+
+		return !leftHasAnyX || !rightHasAnyX;
+	}
+
+	@Override
 	public boolean canApply(Expression expr) {
 		return expr.getX2Coefficient().equals(Fraction.ZERO);
 	}
@@ -42,7 +61,6 @@ public class Square extends AbstractOperation {
 	public void accept(OperationVisitor visitor) {
 		visitor.visitSquare(this);
 	}
-
 
 	@Override
 	public String toString() {
