@@ -5,16 +5,13 @@ import java.util.List;
 
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.os.Handler;
-import android.preference.PreferenceManager;
 import android.support.v4.app.NavUtils;
 import android.text.Html;
 import android.util.Log;
@@ -27,7 +24,6 @@ import android.view.animation.Animation.AnimationListener;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
-import android.widget.RatingBar;
 import android.widget.TextView;
 
 import com.actionbarsherlock.app.ActionBar;
@@ -43,11 +39,9 @@ import com.oakonell.findx.custom.model.CustomStage;
 import com.oakonell.findx.custom.parse.CustomLevelDetailActivity;
 import com.oakonell.findx.data.DataBaseHelper;
 import com.oakonell.findx.model.IMove;
-import com.oakonell.findx.model.Level;
 import com.oakonell.findx.model.Operation;
 import com.oakonell.findx.model.Puzzle;
 import com.oakonell.findx.model.ops.WildCard;
-import com.oakonell.utils.share.ShareHelper;
 
 public class PuzzleActivity extends GameActivity {
 	private static final int FINISHED_DELAY_MS = 250;
@@ -55,21 +49,19 @@ public class PuzzleActivity extends GameActivity {
 	public static final String IS_CUSTOM = "custom";
 
 	private static final int BOO_LENGTH_MS = 1500;
-	private static final int ERASE_LENGTH_MS = 1500;
+	protected static final int ERASE_LENGTH_MS = 1500;
 	private static final int UNDO_ERASE_MS = 700;
 
-	private static enum Sounds {
+	public static enum Sounds {
 		APPLAUSE, BOO, ERASE, UNDO, CHALK;
 	}
 
-	private static final int DIALOG_LEVEL_FINISHED = 1;
-
 	private Puzzle puzzle;
-	private boolean saveState = true;
-	private boolean fromCustom = false;
+	protected boolean saveState = true;
+	protected boolean fromCustom = false;
 
 	private ArrayAdapter<IMove> adapter;
-	private SoundManager soundManager;
+	protected SoundManager soundManager;
 	private Typeface chalkFont;
 
 	private boolean animateNewMove;
@@ -212,6 +204,8 @@ public class PuzzleActivity extends GameActivity {
 
 	}
 
+	int moveSeen;
+
 	private void initializeAdapter(final ListView movesView) {
 		adapter = new ArrayAdapter<IMove>(getApplication(), R.layout.move,
 				puzzle.getMoves()) {
@@ -247,7 +241,7 @@ public class PuzzleActivity extends GameActivity {
 				Log.i("Puzzle", (inputRow == null ? "inputRow is null" : "")
 						+ ", for move " + index + " out of " + moves.size()
 						+ " moves: animate = " + animateNewMove);
-				if (index != -1 && index == moves.size() - 1 && animateNewMove) {
+				if (index != -1 && index >= moveSeen && animateNewMove) {
 					// clear it out- it is a reused view
 					moveNum.writeText(Html.fromHtml(""));
 					op.writeText(Html.fromHtml(""));
@@ -289,6 +283,8 @@ public class PuzzleActivity extends GameActivity {
 					op.writeText(Html.fromHtml(moveText));
 					eq.writeText(Html.fromHtml(item.getEndEquationString()));
 				}
+				if (index > moveSeen)
+					moveSeen = index;
 				return row;
 			}
 
@@ -420,10 +416,12 @@ public class PuzzleActivity extends GameActivity {
 	}
 
 	protected void levelFinished() {
-		showDialog(DIALOG_LEVEL_FINISHED);
+		LevelSolvedDialogFragment frag = new LevelSolvedDialogFragment();
+		frag.initialize(puzzle, this);
+		frag.show(getSupportFragmentManager(), "solved");
 	}
 
-	private void restart(boolean animate) {
+	public void restart(boolean animate) {
 		Runnable restart = new Runnable() {
 			@Override
 			public void run() {
@@ -470,138 +468,6 @@ public class PuzzleActivity extends GameActivity {
 		});
 
 		panel.startAnimation(animation);
-	}
-
-	@Override
-	protected Dialog onCreateDialog(int id) {
-		switch (id) {
-		case DIALOG_LEVEL_FINISHED:
-			final Dialog dialog = new Dialog(this, R.style.LevelCompleteDialog);
-			dialog.setCancelable(false);
-
-			dialog.setContentView(R.layout.level_finished);
-			dialog.setTitle(R.string.level_finished_title);
-
-			int rating = puzzle.getRating();
-			int existingRating = puzzle.getExistingRating();
-
-			FindXApp app = (FindXApp) getApplication();
-			app.getAchievements().testAndSetLevelCompleteAchievements(this,
-					puzzle);
-
-			puzzle.updateRating();
-
-			TextView finishText = (TextView) dialog
-					.findViewById(R.id.level_finish_text);
-			soundManager.playSound(Sounds.APPLAUSE);
-			if (rating > existingRating) {
-				if (existingRating > 0) {
-					finishText.setText(R.string.level_new_record);
-				} else {
-					finishText.setText(R.string.level_solved);
-				}
-			} else if (rating == existingRating) {
-				finishText.setText(R.string.level_record_tied);
-			} else {
-				finishText.setText(R.string.level_solved);
-			}
-
-			RatingBar ratingBar = (RatingBar) dialog.findViewById(R.id.rating);
-			ratingBar.setRating(rating);
-			ratingBar.setEnabled(false);
-
-			Button retry = (Button) dialog.findViewById(R.id.retry);
-			retry.setOnClickListener(new OnClickListener() {
-				@Override
-				public void onClick(View v) {
-					dialog.dismiss();
-					restart(true);
-				}
-			});
-
-			Button nextLevelButton = (Button) dialog
-					.findViewById(R.id.next_level);
-			final Level nextLevel = puzzle.getNextLevel();
-			if (nextLevel == null) {
-				nextLevelButton.setEnabled(false);
-			} else {
-				nextLevelButton.setOnClickListener(new OnClickListener() {
-					@Override
-					public void onClick(View v) {
-						saveState = false;
-						dialog.dismiss();
-						Runnable nextLevelRunnable = new Runnable() {
-							@Override
-							public void run() {
-								BackgroundMusicHelper
-										.continueMusicOnNextActivity();
-								Intent nextLevelIntent = new Intent(
-										PuzzleActivity.this,
-										PuzzleActivity.class);
-								nextLevelIntent.putExtra(PUZZLE_ID,
-										nextLevel.getId());
-								nextLevelIntent.putExtra(IS_CUSTOM, fromCustom);
-								PuzzleActivity.this
-										.startActivity(nextLevelIntent);
-								finish();
-							}
-						};
-						soundManager.playSound(Sounds.ERASE);
-						animateFade(PuzzleActivity.this
-								.findViewById(R.id.main_layout),
-								PuzzleActivity.this, ERASE_LENGTH_MS,
-								nextLevelRunnable);
-					}
-				});
-			}
-
-			Button share = (Button) dialog.findViewById(R.id.share);
-			share.setOnClickListener(new OnClickListener() {
-
-				@Override
-				public void onClick(View v) {
-					SharedPreferences preferences = PreferenceManager
-							.getDefaultSharedPreferences(PuzzleActivity.this);
-					String defaultText = PuzzleActivity.this
-							.getString(R.string.default_level_finish_share_message);
-					String levelName = puzzle.getId() + "-" + puzzle.getName();
-
-					String titleText = PuzzleActivity.this
-							.getString(R.string.level_finish_share_level_finish_title);
-					titleText = titleText.replaceAll("%l", levelName);
-
-					String parametrizedText = preferences.getString(
-							PuzzleActivity.this
-									.getString(R.string.pref_default_share_level_finish_key),
-							defaultText);
-
-					String text = parametrizedText.replaceAll("%l", levelName);
-					text = text.replaceAll("%m", ""
-							+ (puzzle.getNumMoves()));
-					text = text.replaceAll("%u", "" + puzzle.getUndosUsed());
-					text = text.replaceAll("%d",
-							"" + puzzle.getMultilineDescription());
-
-					ShareHelper.share(PuzzleActivity.this, titleText, text);
-				}
-			});
-
-			Button mainMenu = (Button) dialog.findViewById(R.id.goto_main_menu);
-			mainMenu.setOnClickListener(new OnClickListener() {
-				@Override
-				public void onClick(View v) {
-					saveState = false;
-					launchLevelSelect();
-					finish();
-				}
-
-			});
-
-			return dialog;
-		default:
-			return null;
-		}
-
 	}
 
 	@Override
@@ -692,7 +558,7 @@ public class PuzzleActivity extends GameActivity {
 		adapter.notifyDataSetChanged();
 	}
 
-	private void launchLevelSelect() {
+	protected void launchLevelSelect() {
 		Class<? extends Activity> toLaunch = StageActivity.class;
 		if (fromCustom) {
 			toLaunch = CustomStageActivity.class;

@@ -257,8 +257,8 @@ public class Puzzle {
 
 		numMoves++;
 		Move move = new Move(startEquation, operation, numMoves);
-		currentEquation = move.getEndEquation();
-		if (operation instanceof SquareRoot) {
+		currentEquation = move.getEndEquation();		
+		if (operation instanceof SquareRoot && !currentEquation.getRhs().isZero()) {
 			moves.add(new MultipleSolutionMove(move.getDescriptiontext(),
 					currentEquation.getLhs().toString() + " = ± ( "
 							+ currentEquation.getRhs().toString() + " )",
@@ -292,7 +292,7 @@ public class Puzzle {
 
 	public boolean isSolved() {
 		return equationInWaiting == null && !moves.isEmpty()
-				&& moves.get(moves.size() - 1).isSolved();
+				&& currentEquation.isSolved();
 	}
 
 	public int getNumMoves() {

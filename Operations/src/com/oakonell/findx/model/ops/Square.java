@@ -39,15 +39,8 @@ public class Square extends AbstractOperation {
 		if (!canApply(equation.getLhs()) && canApply(equation.getRhs()))
 			return false;
 
-		boolean leftHasAnyX = equation.getLhs().getXCoefficient()
-				.compareTo(Fraction.ZERO) != 0
-				|| equation.getLhs().getX2Coefficient()
-						.compareTo(Fraction.ZERO) != 0;
-
-		boolean rightHasAnyX = equation.getRhs().getXCoefficient()
-				.compareTo(Fraction.ZERO) != 0
-				|| equation.getRhs().getX2Coefficient()
-						.compareTo(Fraction.ZERO) != 0;
+		boolean leftHasAnyX = !equation.getLhs().isConstantOnly();
+		boolean rightHasAnyX = !equation.getRhs().isConstantOnly();
 
 		return !leftHasAnyX || !rightHasAnyX;
 	}

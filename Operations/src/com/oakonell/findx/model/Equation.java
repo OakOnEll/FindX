@@ -75,7 +75,7 @@ public class Equation {
 		return lhs.getXCoefficient().equals(Fraction.ONE)
 				&& lhs.getConstant().equals(Fraction.ZERO)
 				&& lhs.getX2Coefficient().equals(Fraction.ZERO)
-				&& rhs.getXCoefficient().equals(Fraction.ZERO);
+				&& rhs.isConstantOnly();
 	}
 
 }

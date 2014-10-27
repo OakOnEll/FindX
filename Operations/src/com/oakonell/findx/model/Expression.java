@@ -46,6 +46,22 @@ public class Expression {
 		return constant;
 	}
 
+	public boolean hasXCoefficient() {
+		return xCoefficient.compareTo(Fraction.ZERO) != 0;
+	}
+
+	public boolean hasX2Coefficient() {
+		return x2Coefficient.compareTo(Fraction.ZERO) != 0;
+	}
+
+	public boolean isConstantOnly() {
+		return !hasX2Coefficient() && !hasXCoefficient();
+	}
+
+	public boolean hasConstant() {
+		return constant.compareTo(Fraction.ZERO) != 0;
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -162,6 +178,10 @@ public class Expression {
 			}
 		}
 		return str;
+	}
+
+	public boolean isZero() {
+		return !hasX2Coefficient() && !hasXCoefficient() && !hasConstant();
 	}
 
 }
