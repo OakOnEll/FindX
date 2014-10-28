@@ -8,18 +8,24 @@
         android:id="@+id/frame"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal" >
+        android:layout_gravity="center_horizontal"
+        android:clipChildren="false"
+        android:clipToPadding="false" >
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
+            android:clipChildren="false"
+            android:clipToPadding="false"
             android:orientation="vertical" >
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_margin="5dp"
                 android:clipChildren="false"
+                android:clipToPadding="false"
                 android:gravity="center_horizontal" >
 
                 <TextView
@@ -32,6 +38,7 @@
                     android:id="@+id/lhs_x2coeff_lbl"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:gravity="center_horizontal"
                     android:text="x^2"
                     android:textAppearance="?android:attr/textAppearanceMedium" />
 
@@ -53,6 +60,7 @@
                     android:id="@+id/lhs_xcoeff_lbl"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:gravity="center_horizontal"
                     android:text="x"
                     android:textAppearance="?android:attr/textAppearanceMedium" />
 
@@ -86,6 +94,7 @@
                     android:id="@+id/rhs_x2coeff_lbl"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:gravity="center_horizontal"
                     android:text="x^2"
                     android:textAppearance="?android:attr/textAppearanceMedium" />
 
@@ -107,6 +116,7 @@
                     android:id="@+id/rhs_xcoeff_lbl"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:gravity="center_horizontal"
                     android:text="x"
                     android:textAppearance="?android:attr/textAppearanceMedium" />
 
@@ -123,6 +133,13 @@
                     android:layout_height="wrap_content"
                     android:text="3"
                     android:textAppearance="?android:attr/textAppearanceMedium" />
+
+                <TextView
+                    android:id="@+id/check"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text=""
+                    android:textAppearance="?android:attr/textAppearanceMedium" />
             </LinearLayout>
 
             <LinearLayout
@@ -130,6 +147,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
                 android:clipChildren="false"
+                android:clipToPadding="false"
                 android:gravity="center_horizontal" >
 
                 <TextView
@@ -153,6 +171,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
                 android:clipChildren="false"
+                android:clipToPadding="false"
                 android:gravity="center_horizontal"
                 android:visibility="gone" >
 

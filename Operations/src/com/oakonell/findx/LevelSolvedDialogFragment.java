@@ -25,6 +25,7 @@ import android.view.animation.ScaleAnimation;
 import android.view.animation.TranslateAnimation;
 import android.widget.Button;
 import android.widget.FrameLayout;
+import android.widget.LinearLayout;
 import android.widget.RatingBar;
 import android.widget.TextView;
 
@@ -32,6 +33,7 @@ import com.actionbarsherlock.app.SherlockDialogFragment;
 import com.oakonell.findx.PuzzleActivity.Sounds;
 import com.oakonell.findx.model.Equation;
 import com.oakonell.findx.model.Expression;
+import com.oakonell.findx.model.Expression.UseParenthesis;
 import com.oakonell.findx.model.Level;
 import com.oakonell.findx.model.Puzzle;
 import com.oakonell.utils.StringUtils;
@@ -40,6 +42,7 @@ import com.oakonell.utils.share.ShareHelper;
 public class LevelSolvedDialogFragment extends SherlockDialogFragment {
 	private Puzzle puzzle;
 	private PuzzleActivity activity;
+	private Handler handler = new Handler();
 
 	public void initialize(Puzzle puzzle, PuzzleActivity activity) {
 		this.puzzle = puzzle;
@@ -52,6 +55,42 @@ public class LevelSolvedDialogFragment extends SherlockDialogFragment {
 		int delay = 1000;
 
 		checkSolutionAnimation(delay);
+
+	}
+
+	private static class EmptyAnimationListener implements AnimationListener {
+		private final LinkedList<Runnable> continuations;
+
+		EmptyAnimationListener() {
+			this.continuations = null;
+		}
+
+		EmptyAnimationListener(LinkedList<Runnable> continuations) {
+			this.continuations = continuations;
+		}
+
+		@Override
+		public final void onAnimationStart(Animation animation) {
+		}
+
+		@Override
+		public final void onAnimationRepeat(Animation animation) {
+		}
+
+		@Override
+		public final void onAnimationEnd(Animation animation) {
+			onTheAnimationEnd(animation);
+			if (continuations != null) {
+				Runnable runnable = continuations.poll();
+				if (runnable != null) {
+					runnable.run();
+				}
+			}
+		}
+
+		protected void onTheAnimationEnd(Animation animation) {
+			// subclasses override
+		}
 
 	}
 
@@ -83,7 +122,6 @@ public class LevelSolvedDialogFragment extends SherlockDialogFragment {
 
 		// haven't been able to get this to run at the right time, so the
 		// positions return valid numbers
-		Handler handler = new Handler();
 		handler.postDelayed(new Runnable() {
 			@Override
 			public void run() {
@@ -236,8 +274,8 @@ public class LevelSolvedDialogFragment extends SherlockDialogFragment {
 	private void initializeSolutions(View view) {
 		TextView sol1 = (TextView) view.findViewById(R.id.x_sol1);
 
-		sol1.setText(puzzle.getCurrentEquation().getRhs().getConstant()
-				.toString());
+		sol1.setText(Expression.fractionToString(puzzle.getCurrentEquation()
+				.getRhs().getConstant(), UseParenthesis.NO));
 
 		// TODO handle second solution
 		View secondSolution = view.findViewById(R.id.sol2_layout);
@@ -248,6 +286,8 @@ public class LevelSolvedDialogFragment extends SherlockDialogFragment {
 			final Expression lhs, final Expression rhs,
 			final ExpressionViews lhsViews, final ExpressionViews rhsViews) {
 
+		final TextView solutionCheck = (TextView) view.findViewById(R.id.check);
+		solutionCheck.setText("");
 		final LinkedList<Runnable> animations = new LinkedList<Runnable>();
 		// animate left hand side
 		animations.add(new Runnable() {
@@ -267,7 +307,10 @@ public class LevelSolvedDialogFragment extends SherlockDialogFragment {
 		animations.add(new Runnable() {
 			@Override
 			public void run() {
-				// TODO show green check
+				// check mark
+				solutionCheck.setText(Html
+						.fromHtml("<font color=\"#32cd32\"><big><bold>\u2713</bold></big></font>"));
+
 			}
 
 		});
@@ -401,25 +444,32 @@ public class LevelSolvedDialogFragment extends SherlockDialogFragment {
 		ScaleAnimation grow = new ScaleAnimation(1, 2, 1, 2,
 				Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF,
 				0.5f);
-		grow.setAnimationListener(new AnimationListener() {
+		grow.setAnimationListener(new EmptyAnimationListener() {
 			@Override
-			public void onAnimationStart(Animation animation) {
-			}
-
-			@Override
-			public void onAnimationRepeat(Animation animation) {
-			}
-
-			@Override
-			public void onAnimationEnd(Animation animation) {
+			public void onTheAnimationEnd(Animation animation) {
 				// firstView.setBackgroundDrawable(original);
 				// secondView.setBackgroundDrawable(original);
 				// addView.setBackgroundDrawable(original);
 
 				firstView.setVisibility(View.GONE);
 				addView.setVisibility(View.GONE);
-				secondView.setText(sum.toString());
-				animations.poll().run();
+				secondView.setText(Expression.fractionToString(sum,
+						UseParenthesis.NO));
+
+				// TODO conditionally animate moving to common denominator..
+
+				final ScaleAnimation shrink = new ScaleAnimation(2, 1, 2, 1,
+						Animation.RELATIVE_TO_SELF, 0.5f,
+						Animation.RELATIVE_TO_SELF, 0.5f);
+				shrink.setDuration(1500);
+				shrink.setAnimationListener(new EmptyAnimationListener(
+						animations));
+				handler.postDelayed(new Runnable() {
+					@Override
+					public void run() {
+						secondView.startAnimation(shrink);
+					}
+				}, 10);
 			}
 		});
 
@@ -434,7 +484,7 @@ public class LevelSolvedDialogFragment extends SherlockDialogFragment {
 		leftGrow.setDuration(1500);
 		rightGrow.setDuration(1500);
 
-		// int newBack = Color.LTGRAY;
+		// int newBack = Color.BLACK;
 		// firstView.setBackgroundColor(newBack);
 		// secondView.setBackgroundColor(newBack);
 		// addView.setBackgroundColor(newBack);
@@ -455,25 +505,27 @@ public class LevelSolvedDialogFragment extends SherlockDialogFragment {
 				0.5f);
 		final AtomicBoolean bool = new AtomicBoolean(false);
 		grow.setDuration(1500);
-		grow.setAnimationListener(new AnimationListener() {
+		grow.setAnimationListener(new EmptyAnimationListener() {
 			@Override
-			public void onAnimationStart(Animation animation) {
-			}
-
-			@Override
-			public void onAnimationRepeat(Animation animation) {
-			}
-
-			@Override
-			public void onAnimationEnd(Animation animation) {
+			public void onTheAnimationEnd(Animation animation) {
 				if (!bool.compareAndSet(false, true))
 					return;
-				if (x2Coefficient.compareTo(Fraction.ONE) != 0) {
-					x2coeff_lbl.setText("(" + sol1_2.toString() + ")");
-				} else {
-					x2coeff_lbl.setText(sol1_2.toString());
-				}
-				animations.poll().run();
+				boolean useParens = x2Coefficient.compareTo(Fraction.ONE) != 0;
+				x2coeff_lbl.setText(Expression.fractionToString(sol1_2,
+						useParens ? UseParenthesis.FORCE : UseParenthesis.NO));
+
+				final ScaleAnimation shrink = new ScaleAnimation(2, 1, 2, 1,
+						Animation.RELATIVE_TO_SELF, 0.5f,
+						Animation.RELATIVE_TO_SELF, 0.5f);
+				shrink.setDuration(1500);
+				shrink.setAnimationListener(new EmptyAnimationListener(
+						animations));
+				handler.postDelayed(new Runnable() {
+					@Override
+					public void run() {
+						x2coeff_lbl.startAnimation(shrink);
+					}
+				}, 10);
 			}
 		});
 
@@ -492,8 +544,18 @@ public class LevelSolvedDialogFragment extends SherlockDialogFragment {
 			final Fraction sol1, final Fraction xCoefficient,
 			final TextView xcoeff_add, final TextView xcoeff,
 			final TextView xcoeff_lbl, final LinkedList<Runnable> animations) {
+		Fraction aCoeff = xCoefficient;
+		if (xCoefficient.compareTo(Fraction.ZERO) < 0 && xcoeff_add != null
+				&& xcoeff_add.getVisibility() == View.VISIBLE) {
+			aCoeff = aCoeff.negate();
+		}
+		final Fraction coeff = aCoeff;
+
 		if (xCoefficient.compareTo(Fraction.ONE) == 0
 				|| xCoefficient.compareTo(Fraction.MINUS_ONE) == 0) {
+			xcoeff_lbl.setText(Expression.fractionToString(
+					sol1.multiply(coeff), UseParenthesis.NO));
+			xcoeff.setVisibility(View.GONE);
 			Runnable continuation = animations.poll();
 			continuation.run();
 			return;
@@ -504,27 +566,25 @@ public class LevelSolvedDialogFragment extends SherlockDialogFragment {
 				Animation.RELATIVE_TO_SELF, 1f, Animation.RELATIVE_TO_SELF,
 				0.5f);
 		leftGrow.setDuration(1500);
-		leftGrow.setAnimationListener(new AnimationListener() {
+		leftGrow.setAnimationListener(new EmptyAnimationListener() {
 			@Override
-			public void onAnimationStart(Animation animation) {
-			}
-
-			@Override
-			public void onAnimationRepeat(Animation animation) {
-			}
-
-			@Override
-			public void onAnimationEnd(Animation animation) {
-				Fraction coeff = xCoefficient;
-				if (xCoefficient.compareTo(Fraction.ZERO) < 0
-						&& xcoeff_add != null
-						&& xcoeff_add.getVisibility() == View.VISIBLE) {
-					coeff = coeff.negate();
-				}
-				xcoeff_lbl.setText(sol1.multiply(coeff).toString());
+			public void onTheAnimationEnd(Animation animation) {
+				xcoeff_lbl.setText(Expression.fractionToString(
+						sol1.multiply(coeff), UseParenthesis.NO));
 				xcoeff.setVisibility(View.GONE);
-				Runnable continuation = animations.poll();
-				continuation.run();
+
+				final ScaleAnimation shrink = new ScaleAnimation(2, 1, 2, 1,
+						Animation.RELATIVE_TO_SELF, 0.5f,
+						Animation.RELATIVE_TO_SELF, 0.5f);
+				shrink.setDuration(1500);
+				shrink.setAnimationListener(new EmptyAnimationListener(
+						animations));
+				handler.postDelayed(new Runnable() {
+					@Override
+					public void run() {
+						xcoeff_lbl.startAnimation(shrink);
+					}
+				}, 10);
 			}
 		});
 
@@ -555,6 +615,9 @@ public class LevelSolvedDialogFragment extends SherlockDialogFragment {
 		int[] sourceLocation = new int[2];
 		sol1VIew.getLocationOnScreen(sourceLocation);
 
+		final LinearLayout.LayoutParams origTargetParms = (LinearLayout.LayoutParams) target
+				.getLayoutParams();
+
 		View parent = view.findViewById(R.id.frame);
 		int[] parentLocation = new int[2];
 		parent.getLocationOnScreen(parentLocation);
@@ -564,73 +627,66 @@ public class LevelSolvedDialogFragment extends SherlockDialogFragment {
 		params.leftMargin = sourceLocation[0] - parentLocation[0];
 		params.topMargin = sourceLocation[1] - parentLocation[1];
 		anim_text.setLayoutParams(params);
-		anim_text.setText(sol1.toString());
+		anim_text.setText(Expression.fractionToString(sol1, UseParenthesis.NO));
+
+		// pre-adjust the size of 'x' to hold the solution
+
+		LinearLayout.LayoutParams targetParms = new LinearLayout.LayoutParams(
+				Math.max(sol1VIew.getWidth(), target.getWidth()), Math.max(
+						sol1VIew.getHeight(), target.getHeight()));
+		target.setLayoutParams(targetParms);
 
 		float x = targetLocation[0] - sourceLocation[0];
 		float y = targetLocation[1] - sourceLocation[1];
 		// AnimationSet animSet = new AnimationSet(true);
 		TranslateAnimation move = new TranslateAnimation(0, x, 0, y);
 		move.setDuration(1500);
-		move.setAnimationListener(new AnimationListener() {
+		move.setAnimationListener(new EmptyAnimationListener() {
 			@Override
-			public void onAnimationStart(Animation animation) {
-				anim_text.setVisibility(View.VISIBLE);
-			}
-
-			@Override
-			public void onAnimationRepeat(Animation animation) {
-
-			}
-
-			@Override
-			public void onAnimationEnd(Animation animation) {
+			public void onTheAnimationEnd(Animation animation) {
 				// if (fraction.compareTo(object))
 				// TODO pretty up the injection of the x value
-				if (fraction.compareTo(Fraction.ONE) != 0
+				boolean useParens = fraction.compareTo(Fraction.ONE) != 0
 						|| (sol1.compareTo(Fraction.ZERO) < 0 && !StringUtils
-								.isEmpty(suffix))) {
-					target.setText(Html.fromHtml("(" + sol1 + ")" + suffix));
-				} else {
-					target.setText(Html.fromHtml(sol1 + suffix));
-				}
-				ScaleAnimation grow = new ScaleAnimation(1, 2, 1, 2,
+								.isEmpty(suffix));
+				target.setText(Html.fromHtml(Expression.fractionToString(sol1,
+						useParens ? UseParenthesis.FORCE : UseParenthesis.NO)
+						+ suffix));
+
+				target.setLayoutParams(origTargetParms);
+				anim_text.setVisibility(View.GONE);
+
+				final ScaleAnimation shrink = new ScaleAnimation(2, 1, 2, 1,
 						Animation.RELATIVE_TO_SELF, 0.5f,
 						Animation.RELATIVE_TO_SELF, 0.5f);
-				grow.setDuration(1500);
-				grow.setAnimationListener(new AnimationListener() {
-
+				shrink.setDuration(1500);
+				shrink.setAnimationListener(new EmptyAnimationListener(
+						animations));
+				handler.postDelayed(new Runnable() {
 					@Override
-					public void onAnimationStart(Animation animation) {
-
+					public void run() {
+						target.startAnimation(shrink);
 					}
-
-					@Override
-					public void onAnimationRepeat(Animation animation) {
-
-					}
-
-					@Override
-					public void onAnimationEnd(Animation animation) {
-						Runnable continuation = animations.poll();
-						if (continuation != null) {
-							continuation.run();
-						}
-					}
-				});
-				target.startAnimation(grow);
-				anim_text.setVisibility(View.GONE);
+				}, 10);
 			}
 		});
+
+		ScaleAnimation grow = new ScaleAnimation(1, 2, 1, 2,
+				Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF,
+				0.5f);
+		grow.setDuration(1500);
+
 		AnimationSet set = new AnimationSet(true);
 		set.addAnimation(move);
-		if (sol1.toString().length() > 4) {
-			ScaleAnimation shrink = new ScaleAnimation(1, 0.5f, 1, 0.5f,
-					Animation.RELATIVE_TO_SELF, 0f, Animation.RELATIVE_TO_SELF,
-					0f);
-			shrink.setDuration(1500);
-			set.addAnimation(shrink);
-		}
+		// if (sol1.toString().length() > 4) {
+		// ScaleAnimation shrink = new ScaleAnimation(1, 0.5f, 1, 0.5f,
+		// Animation.RELATIVE_TO_SELF, 0f, Animation.RELATIVE_TO_SELF,
+		// 0f);
+		// shrink.setDuration(1500);
+		// set.addAnimation(shrink);
+		// }
 		anim_text.startAnimation(set);
+		target.startAnimation(grow);
 	}
 
 	private void initializeExpressionView(Expression lhs,
@@ -661,11 +717,9 @@ public class LevelSolvedDialogFragment extends SherlockDialogFragment {
 			} else if (x2Coeff.compareTo(Fraction.MINUS_ONE) == 0) {
 				lhsViews.x2coeff.setText("-");
 			} else {
-				if (x2Coeff.getDenominator() != 1) {
-					lhsViews.x2coeff.setText("(" + x2Coeff.toString() + ")");
-				} else {
-					lhsViews.x2coeff.setText(x2Coeff.toString());
-				}
+				boolean useParens = x2Coeff.getDenominator() != 1;
+				lhsViews.x2coeff.setText(Expression.fractionToString(x2Coeff,
+						useParens ? UseParenthesis.FORCE : UseParenthesis.NO));
 			}
 		}
 
@@ -692,12 +746,10 @@ public class LevelSolvedDialogFragment extends SherlockDialogFragment {
 			} else if (xCoefficient.compareTo(Fraction.MINUS_ONE) == 0) {
 				lhsViews.xcoeff.setText("-");
 			} else {
-				if (xCoefficient.getDenominator() != 1) {
-					lhsViews.xcoeff
-							.setText("(" + xCoefficient.toString() + ")");
-				} else {
-					lhsViews.xcoeff.setText(xCoefficient.toString());
-				}
+				boolean useParens = xCoefficient.getDenominator() != 1;
+				lhsViews.xcoeff.setText(Expression.fractionToString(
+						xCoefficient, useParens ? UseParenthesis.FORCE
+								: UseParenthesis.NO));
 			}
 		}
 
@@ -714,9 +766,11 @@ public class LevelSolvedDialogFragment extends SherlockDialogFragment {
 		}
 		lhsViews.const_add.setText(sign);
 		if (constant.compareTo(Fraction.ZERO) == 0 && hadAny) {
+			lhsViews.const_add.setVisibility(View.GONE);
 			lhsViews.constant.setVisibility(View.GONE);
 		} else {
-			lhsViews.constant.setText(constant.toString());
+			lhsViews.constant.setText(Expression.fractionToString(constant,
+					UseParenthesis.NO));
 		}
 
 	}

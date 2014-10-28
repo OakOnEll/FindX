@@ -80,6 +80,7 @@ public class Puzzle {
 
 	public boolean undo() {
 		// TODO deal with undoing square root
+		// TODO deal with current equation
 		if (moves.size() > 0) {
 			moves.remove(moves.size() - 1);
 			numUndosLeft--;
@@ -257,15 +258,23 @@ public class Puzzle {
 
 		numMoves++;
 		Move move = new Move(startEquation, operation, numMoves);
-		currentEquation = move.getEndEquation();		
-		if (operation instanceof SquareRoot && !currentEquation.getRhs().isZero()) {
-			moves.add(new MultipleSolutionMove(move.getDescriptiontext(),
-					currentEquation.getLhs().toString() + " = ± ( "
-							+ currentEquation.getRhs().toString() + " )",
-					numMoves));
-			moves.add(new SecondaryEquationMove(move.getEndEquation(), 1));
-			// conditionally switch this no longer useful operator to a
-			// multiply(-1) if one is not already present...
+		currentEquation = move.getEndEquation();
+		if (operation instanceof SquareRoot) {
+			Multiply negateOp = new Multiply(-1);
+			if (!currentEquation.getRhs().isZero()) {
+				moves.add(new MultipleSolutionMove(move.getDescriptiontext(),
+						currentEquation.getLhs().toString() + " = ± ( "
+								+ currentEquation.getRhs().toString() + " )",
+						numMoves));
+				moves.add(new SecondaryEquationMove(move.getEndEquation(), 1));
+				// conditionally switch this no longer useful operator to a
+				// multiply(-1) if one is not already present...
+				equationInWaiting = new Equation(
+						move.getEndEquation().getLhs(), negateOp.apply(move
+								.getEndEquation().getRhs()));
+			} else {
+				moves.add(move);
+			}
 			boolean hasMutiplyNeg1 = false;
 			for (Operation each : operations) {
 				if (each instanceof Multiply) {
@@ -274,12 +283,9 @@ public class Puzzle {
 					}
 				}
 			}
-			Multiply negateOp = new Multiply(-1);
 			if (!hasMutiplyNeg1) {
 				Collections.replaceAll(operations, operation, negateOp);
 			}
-			equationInWaiting = new Equation(move.getEndEquation().getLhs(),
-					negateOp.apply(move.getEndEquation().getRhs()));
 		} else {
 			moves.add(move);
 		}

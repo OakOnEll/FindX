@@ -10,6 +10,10 @@ public class Expression {
 	private final Fraction xCoefficient;
 	private final Fraction constant;
 
+	public enum UseParenthesis {
+		FORCE, DEFAULT, NO
+	}
+
 	public Expression(int constant) {
 		this(Fraction.ZERO, Fraction.ZERO, new Fraction(constant));
 	}
@@ -126,9 +130,10 @@ public class Expression {
 				} else {
 					builder.append(" + ");
 				}
-				builder.append(fractionToString(value.abs(), true));
+				builder.append(fractionToString(value.abs(),
+						UseParenthesis.DEFAULT));
 			} else {
-				builder.append(fractionToString(value, true));
+				builder.append(fractionToString(value, UseParenthesis.DEFAULT));
 			}
 		}
 
@@ -149,29 +154,38 @@ public class Expression {
 		if (hadX) {
 			if (constant.compareTo(Fraction.ZERO) > 0) {
 				builder.append(" + ");
-				builder.append(fractionToString(constant, false));
+				builder.append(fractionToString(constant, UseParenthesis.NO));
 			} else if (constant.compareTo(Fraction.ZERO) < 0) {
 				builder.append(" - ");
-				builder.append(fractionToString(constant.negate(), false));
+				builder.append(fractionToString(constant.negate(),
+						UseParenthesis.NO));
 			}
 		} else {
-			builder.append(fractionToString(constant, false));
+			builder.append(fractionToString(constant, UseParenthesis.NO));
 		}
 
 		return builder.toString();
 	}
 
-	private String fractionToString(Fraction f, boolean paren) {
+	public static String fractionToString(Fraction f, UseParenthesis useParen) {
 		String str = null;
 		if (f.getDenominator() == 1) {
-			str = Integer.toString(f.getNumerator());
+			if (useParen == UseParenthesis.FORCE) {
+				str = "(" + Integer.toString(f.getNumerator()) + ")";
+			} else {
+				str = Integer.toString(f.getNumerator());
+			}
 		} else if (f.getNumerator() == 0) {
-			str = "0";
+			if (useParen == UseParenthesis.FORCE) {
+				str = "(0)";
+			} else {
+				str = "0";
+			}
 		} else {
 			String sign = f.getNumerator() > 0 ? "" : "-";
 			int num = Math.abs(f.getNumerator());
 			int den = f.getDenominator();
-			if (paren) {
+			if (useParen != UseParenthesis.NO) {
 				str = sign + "(" + num + "/" + den + ")";
 			} else {
 				str = sign + num + "/" + den;
