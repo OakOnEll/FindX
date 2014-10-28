@@ -312,13 +312,13 @@ public final class R {
 		public static final int abs__title = 0x7f0b0033;
 		public static final int abs__up = 0x7f0b001d;
 		public static final int app_name_id = 0x7f0b0024;
-		public static final int decrement = 0x7f0b00b8;
+		public static final int decrement = 0x7f0b00ba;
 		public static final int disableHome = 0x7f0b001b;
 		public static final int edit_query = 0x7f0b003e;
 		public static final int homeAsUp = 0x7f0b0018;
-		public static final int icon = 0x7f0b00d6;
+		public static final int icon = 0x7f0b00d8;
 		public static final int icon_image = 0x7f0b0088;
-		public static final int increment = 0x7f0b00b7;
+		public static final int increment = 0x7f0b00b9;
 		public static final int label = 0x7f0b0069;
 		public static final int linearLayout1 = 0x7f0b0022;
 		public static final int listMode = 0x7f0b0014;
@@ -334,7 +334,7 @@ public final class R {
 		public static final int showHome = 0x7f0b0017;
 		public static final int showTitle = 0x7f0b0019;
 		public static final int tabMode = 0x7f0b0015;
-		public static final int text = 0x7f0b00b6;
+		public static final int text = 0x7f0b00b8;
 		public static final int textView1 = 0x7f0b0054;
 		public static final int urlId = 0x7f0b0026;
 		public static final int useLogo = 0x7f0b0016;
