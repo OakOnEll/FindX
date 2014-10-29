@@ -24,6 +24,8 @@ public class Puzzle {
 	private Equation currentEquation;
 	private int numMoves = 0;
 
+	private Fraction firstSolution = null;
+
 	public Puzzle(String puzzleId) {
 		level = Levels.get(puzzleId);
 		if (level == null) {
@@ -249,6 +251,14 @@ public class Puzzle {
 		return currentEquation;
 	}
 
+	public Fraction[] getSolutions() {
+		Fraction sol = getCurrentEquation().getRhs().getConstant();
+		if (firstSolution != null) {
+			return new Fraction[] { firstSolution, sol };
+		}
+		return new Fraction[] { sol };
+	}
+
 	public void apply(Operation operation) {
 		if (!getOperations().contains(operation)) {
 			throw new RuntimeException("Operation " + operation
@@ -291,6 +301,7 @@ public class Puzzle {
 		}
 		if (move.getEndEquation().isSolved() && equationInWaiting != null) {
 			moves.add(new SecondaryEquationMove(equationInWaiting, 2));
+			firstSolution = move.getEndEquation().getRhs().getConstant();
 			currentEquation = equationInWaiting;
 			equationInWaiting = null;
 		}
