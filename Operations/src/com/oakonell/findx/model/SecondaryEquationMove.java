@@ -29,4 +29,8 @@ public class SecondaryEquationMove implements IMove {
 		return "";
 	}
 
+	public Equation getStartEquation() {
+		return equation;
+	}
+
 }

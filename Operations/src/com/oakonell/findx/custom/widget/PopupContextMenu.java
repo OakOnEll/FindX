@@ -178,7 +178,7 @@ public class PopupContextMenu implements DialogInterface.OnCancelListener,
 
             if (convertView == null) {
                 TextView temp = new TextView(context);
-                AbsListView.LayoutParams param = new AbsListView.LayoutParams(AbsListView.LayoutParams.FILL_PARENT,
+                AbsListView.LayoutParams param = new AbsListView.LayoutParams(AbsListView.LayoutParams.MATCH_PARENT,
                         AbsListView.LayoutParams.WRAP_CONTENT);
                 temp.setLayoutParams(param);
                 temp.setPadding((int) toPixel(res, 15), 0, (int) toPixel(res, 15), 0);

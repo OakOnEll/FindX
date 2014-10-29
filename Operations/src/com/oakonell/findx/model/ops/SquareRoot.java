@@ -33,8 +33,8 @@ public class SquareRoot extends AbstractOperation {
 
 		if ((possibleAb2.compareTo(Fraction.ZERO) != 0)
 				&& possibleAb2.compareTo(ab2.negate()) == 0) {
-			// try a negative
-			// TODO can't tell between the two a or b being negative?
+			//  can't tell between the two a or b being negative?
+			// choose this way- later operator handling will allow switching the negative term
 			return new Expression(a, b.negate());
 		}
 

@@ -9,5 +9,6 @@ public interface IMove {
 	boolean isSolved();
 
 	String getMoveNumText();
+	
 
 }

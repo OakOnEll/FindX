@@ -4,7 +4,9 @@
     android:versionCode="5"
     android:versionName="2.0" >
 
-    <uses-sdk android:minSdkVersion="9" />
+    <uses-sdk
+        android:minSdkVersion="9"
+        android:targetSdkVersion="21" />
 
     <uses-permission android:name="android.permission.VIBRATE" />
     <!-- For parse.com data access and google play -->

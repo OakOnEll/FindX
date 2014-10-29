@@ -1,7 +1,5 @@
 package com.oakonell.findx.custom;
 
-import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
 import android.view.Gravity;
@@ -36,8 +34,8 @@ public class PopupMenuDialogFragment extends DialogFragment {
 			Bundle savedInstanceState) {
 
 		getDialog().getWindow().requestFeature(Window.FEATURE_NO_TITLE);
-//		getDialog().getWindow().setBackgroundDrawable(
-//				new ColorDrawable(Color.TRANSPARENT));
+		// getDialog().getWindow().setBackgroundDrawable(
+		// new ColorDrawable(Color.TRANSPARENT));
 
 		Window window = getDialog().getWindow();
 

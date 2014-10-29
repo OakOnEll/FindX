@@ -40,11 +40,9 @@ public class Puzzle {
 			int numUndosUsed) {
 		level = Levels.get(puzzleId);
 		moves.clear();
-		Equation startEquation = level.getEquation();
 		// TODO huh, the save state needs to include the wild card operations
 		List<Operation> operations = new ArrayList<Operation>(
 				level.getOperations());
-		Equation equation = startEquation;
 		for (int index : opIndices) {
 			if (index >= operations.size()) {
 				throw new IllegalArgumentException(
@@ -82,9 +80,28 @@ public class Puzzle {
 
 	public boolean undo() {
 		// TODO deal with undoing square root
+		// need to restore the operator if it was one undone
 		// TODO deal with current equation
 		if (moves.size() > 0) {
-			moves.remove(moves.size() - 1);
+			IMove removed = moves.remove(moves.size() - 1);
+			IMove previous = moves.isEmpty() ? null : moves
+					.get(moves.size() - 1);
+			if (removed instanceof SecondaryEquationMove) {
+				if (previous instanceof Move) {
+					throw new RuntimeException("Can't undo beyond a solution");
+				}
+				// remove extra one
+				moves.remove(moves.size() - 1);
+				if (moves.isEmpty()) {
+					currentEquation = level.getEquation();
+				} else {
+					Move move = (Move) moves.get(moves.size() - 1);
+					currentEquation = move.getEndEquation();
+				}
+			} else {
+				currentEquation = ((Move) removed).getStartEquation();
+			}
+			numMoves--;
 			numUndosLeft--;
 			return true;
 		}
@@ -96,7 +113,15 @@ public class Puzzle {
 	}
 
 	public boolean canUndo() {
-		return moves.size() > 0 && numUndosLeft > 0;
+		if (numUndosLeft <= 0)
+			return false;
+		if (moves.isEmpty())
+			return false;
+		if ((moves.get(moves.size() - 1) instanceof SecondaryEquationMove)
+				&& (moves.get(moves.size() - 2) instanceof Move)) {
+			return false;
+		}
+		return true;
 	}
 
 	public Level getNextLevel() {

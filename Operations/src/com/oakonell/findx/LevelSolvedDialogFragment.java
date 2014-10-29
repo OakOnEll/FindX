@@ -1,6 +1,5 @@
 package com.oakonell.findx;
 
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -8,13 +7,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.commons.math3.fraction.Fraction;
 
-import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.preference.PreferenceManager;
@@ -444,7 +440,6 @@ public class LevelSolvedDialogFragment extends SherlockDialogFragment {
 		}
 
 		// sum terms
-		// TODO
 		if (expr.hasX2Coefficient()) {
 			if (expr.hasXCoefficient()) {
 				// x2 + x terms
@@ -529,7 +524,7 @@ public class LevelSolvedDialogFragment extends SherlockDialogFragment {
 				// secondView.setBackgroundDrawable(original);
 				// addView.setBackgroundDrawable(original);
 
-				// TODO conditionally animate moving to common denominator..
+				// conditionally animate moving to common denominator..
 				final Runnable setAndShrink = new Runnable() {
 					@Override
 					public void run() {
@@ -623,8 +618,7 @@ public class LevelSolvedDialogFragment extends SherlockDialogFragment {
 					handler.postDelayed(new Runnable() {
 						@Override
 						public void run() {
-							// TODO need to pause the first and add views, as
-							// well?
+							// need to pause the first and add views, as well
 							firstView.startAnimation(leftPause);
 							addView.startAnimation(pause);
 							secondView.startAnimation(rightPause);
@@ -914,8 +908,7 @@ public class LevelSolvedDialogFragment extends SherlockDialogFragment {
 		move.setAnimationListener(new EmptyAnimationListener() {
 			@Override
 			public void onTheAnimationEnd(Animation animation) {
-				// if (fraction.compareTo(object))
-				// TODO pretty up the injection of the x value
+				// pretty up the injection of the x value
 				boolean useParens = coeff.compareTo(Fraction.ONE) != 0
 						|| (solution.compareTo(Fraction.ZERO) < 0 && !StringUtils
 								.isEmpty(suffix));
@@ -1119,22 +1112,4 @@ public class LevelSolvedDialogFragment extends SherlockDialogFragment {
 		activity.finish();
 	}
 
-	@SuppressLint("NewApi")
-	public static int getBackgroundColor(TextView textView) {
-		ColorDrawable drawable = (ColorDrawable) textView.getBackground();
-		if (Build.VERSION.SDK_INT >= 11) {
-			return drawable.getColor();
-		}
-		try {
-			Field field = drawable.getClass().getDeclaredField("mState");
-			field.setAccessible(true);
-			Object object = field.get(drawable);
-			field = object.getClass().getDeclaredField("mUseColor");
-			field.setAccessible(true);
-			return field.getInt(object);
-		} catch (Exception e) {
-			// TODO: handle exception
-		}
-		return 0;
-	}
 }
