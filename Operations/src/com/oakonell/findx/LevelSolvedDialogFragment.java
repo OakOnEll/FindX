@@ -687,7 +687,7 @@ public class LevelSolvedDialogFragment extends SherlockDialogFragment {
 				boolean useParens = x2Coefficient.compareTo(Fraction.ONE) != 0;
 				exprViews.x2coeff_lbl.setText(Expression.fractionToString(
 						sol1_2, useParens ? UseParenthesis.FORCE
-								: UseParenthesis.NO));
+								: UseParenthesis.NO, true));
 
 				final ScaleAnimation pause = new ScaleAnimation(2, 2, 2, 2,
 						Animation.RELATIVE_TO_SELF, 0.5f,
@@ -914,7 +914,7 @@ public class LevelSolvedDialogFragment extends SherlockDialogFragment {
 								.isEmpty(suffix));
 				target.setText(Html.fromHtml(Expression.fractionToString(
 						solution, useParens ? UseParenthesis.FORCE
-								: UseParenthesis.NO)
+								: UseParenthesis.NO, true)
 						+ suffix));
 
 				target.setLayoutParams(origTargetParms);

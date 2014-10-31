@@ -168,6 +168,11 @@ public class Expression {
 	}
 
 	public static String fractionToString(Fraction f, UseParenthesis useParen) {
+		return fractionToString(f, useParen, false);
+	}
+
+	public static String fractionToString(Fraction f, UseParenthesis useParen,
+			boolean signInsideParen) {
 		String str = null;
 		if (f.getDenominator() == 1) {
 			if (useParen == UseParenthesis.FORCE) {
@@ -186,7 +191,13 @@ public class Expression {
 			int num = Math.abs(f.getNumerator());
 			int den = f.getDenominator();
 			if (useParen != UseParenthesis.NO) {
-				str = sign + "(" + num + "/" + den + ")";
+				if (signInsideParen) {
+					// huh, when used with x replacement from level solved
+					// dialog, the sign should be inside?
+					str = "(" + sign + num + "/" + den + ")";
+				} else {
+					str = sign + "(" + num + "/" + den + ")";
+				}
 			} else {
 				str = sign + num + "/" + den;
 			}
