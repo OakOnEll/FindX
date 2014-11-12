@@ -6,6 +6,8 @@ import java.util.List;
 
 import javax.annotation.concurrent.Immutable;
 
+import org.apache.commons.math3.fraction.Fraction;
+
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -20,17 +22,23 @@ public class Level {
 	private final String name;
 	private final Equation equation;
 	private final List<Operation> operations;
-	private final List<Integer> solutionOpIndices;
+	private final LevelSolution solution;
 
 	public Level(Stage stage, String name, Equation equation,
 			List<Operation> operations, List<Integer> solutionOpIndices) {
+		this(stage, name, equation, operations, new LevelSolution(
+				solutionOpIndices, equation, operations));
+	}
+
+	public Level(Stage stage, String name, Equation equation,
+			List<Operation> operations, LevelSolution levelSolution) {
 		this.stage = stage;
 		id = stage.getId() + "-" + (stage.getLevels().size() + 1);
 		this.name = name;
 		this.equation = equation;
 		this.operations = operations;
 
-		this.solutionOpIndices = solutionOpIndices;
+		solution = levelSolution;
 	}
 
 	public String getId() {
@@ -58,7 +66,7 @@ public class Level {
 	}
 
 	public int getMinMoves() {
-		return solutionOpIndices.size();
+		return solution.getNumMoves();
 	}
 
 	public int getRating() {
@@ -174,11 +182,83 @@ public class Level {
 		return stage;
 	}
 
-	public List<Operation> getSolutionOperations() {
-		List<Operation> result = new ArrayList<Operation>();
-		for (int i : solutionOpIndices) {
-			result.add(operations.get(i));
+	public List<Fraction> getSolutions() {
+		return solution.getSolutions();
+	}
+
+	public LevelSolution getLevelSolution() {
+		return solution;
+	}
+
+	public static class LevelSolution {
+		private final List<Integer> firstOperations;
+
+		private final Equation secondaryEquation1;
+		private final List<Integer> secondaryOperations1;
+
+		private final Equation secondaryEquation2;
+		private final List<Integer> secondaryOperations2;
+
+		private final List<Fraction> solutions;
+
+		public LevelSolution(List<Integer> solutionOpIndices,
+				Equation startEquation, List<Operation> operations) {
+			this.firstOperations = solutionOpIndices;
+			Equation equation = startEquation;
+			for (Integer index : solutionOpIndices) {
+				equation = operations.get(index).apply(equation);
+			}
+			solutions = new ArrayList<Fraction>();
+			solutions.add(equation.getRhs().getConstant());
+			this.secondaryEquation1 = null;
+			this.secondaryOperations1 = null;
+			this.secondaryEquation2 = null;
+			this.secondaryOperations2 = null;
 		}
-		return result;
+
+		public LevelSolution(List<Fraction> solutions, List<Integer> first,
+				Equation secondaryEquation1,
+				List<Integer> secondaryOperations1, //
+				Equation secondaryEquation2, List<Integer> secondaryOperations2) {
+			this.firstOperations = first;
+			this.secondaryEquation1 = secondaryEquation1;
+			this.secondaryOperations1 = secondaryOperations1;
+			this.secondaryEquation2 = secondaryEquation2;
+			this.secondaryOperations2 = secondaryOperations2;
+			this.solutions = solutions;
+		}
+
+		public List<Fraction> getSolutions() {
+			return solutions;
+		}
+
+		public List<Integer> getFirstOperations() {
+			return firstOperations;
+		}
+
+		public Equation getSecondaryEquation1() {
+			return secondaryEquation1;
+		}
+
+		public List<Integer> getSecondaryOperations1() {
+			return secondaryOperations1;
+		}
+
+		public Equation getSecondaryEquation2() {
+			return secondaryEquation2;
+		}
+
+		public List<Integer> getSecondaryOperations2() {
+			return secondaryOperations2;
+		}
+
+		public int getNumMoves() {
+			int numMoves = firstOperations.size();
+			if (secondaryOperations1 != null) {
+				return numMoves + secondaryOperations1.size()
+						+ secondaryOperations2.size();
+			}
+			return numMoves;
+		}
 	}
 }

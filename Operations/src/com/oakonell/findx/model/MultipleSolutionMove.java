@@ -1,13 +1,15 @@
 package com.oakonell.findx.model;
 
-public class MultipleSolutionMove implements IMove {
-	private final String description;
+public class MultipleSolutionMove implements IMoveWithOperation {
+	private final Operation operation;
 	private final String equation;
-	private final int moveNum;
+	private final Equation startEquation;
+	private int moveNum;
 
-	public MultipleSolutionMove(String descriptiontext, String equation,
+	public MultipleSolutionMove(Equation startEquation, Operation operation, String equation,
 			int moveNum) {
-		this.description = descriptiontext;
+		this.startEquation = startEquation;
+		this.operation = operation;
 		this.equation = equation;
 		this.moveNum = moveNum;
 	}
@@ -19,7 +21,7 @@ public class MultipleSolutionMove implements IMove {
 
 	@Override
 	public String getDescriptiontext() {
-		return description;
+		return operation.toString();
 	}
 
 	@Override
@@ -32,4 +34,25 @@ public class MultipleSolutionMove implements IMove {
 		return moveNum + "";
 	}
 
+	public void incrementMoveNum() {
+		moveNum++;
+	}
+
+	public void decrementMoveNum() {
+		moveNum--;
+	}
+
+	public Operation getOperation() {
+		return operation;
+	}
+
+	public String toString() {
+		return "move " + moveNum + ": " + "   ---    " + operation.toString()
+				+ "   ->   " + getEndEquationString();
+	}
+
+	@Override
+	public Equation getStartEquation() {
+		return startEquation;
+	}
 }

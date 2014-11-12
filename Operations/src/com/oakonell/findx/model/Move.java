@@ -3,10 +3,10 @@ package com.oakonell.findx.model;
 import javax.annotation.concurrent.Immutable;
 
 @Immutable
-public class Move implements IMove {
+public class Move implements IMoveWithOperation {
 	private final Equation start;
 	private final Operation op;
-	private final int moveNum;
+	private int moveNum;
 
 	public Move(Equation start, Operation op) {
 		// TODO fix the custom level builder to properly set the move num
@@ -39,10 +39,10 @@ public class Move implements IMove {
 	@Override
 	public String toString() {
 		if (op == null) {
-			return "move: " + start.toString();
+			return "move " + moveNum + ": " + start.toString();
 		}
-		return "move: " + start.toString() + "   ---    " + op.toString()
-				+ "   ->   " + getEndEquation().toString();
+		return "move " + moveNum + ": " + start.toString() + "   ---    "
+				+ op.toString() + "   ->   " + getEndEquation().toString();
 	}
 
 	@Override
@@ -53,7 +53,9 @@ public class Move implements IMove {
 	@Override
 	public String getEndEquationString() {
 		if (isSolved()) {
-			return getEndEquation().toString() + " <font color=\"#32cd32\"><big><bold>\u2713</bold></big></font>  ";// check mark
+			return getEndEquation().toString()
+					+ " <font color=\"#32cd32\"><big><bold>\u2713</bold></big></font>";// check
+																							// mark
 		}
 		return getEndEquation().toString();
 
@@ -67,6 +69,14 @@ public class Move implements IMove {
 	@Override
 	public String getMoveNumText() {
 		return moveNum + "";
+	}
+
+	public void incrementMoveNum() {
+		moveNum++;
+	}
+
+	public void decrementMoveNum() {
+		moveNum--;
 	}
 
 }

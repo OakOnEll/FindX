@@ -33,8 +33,9 @@ public class SquareRoot extends AbstractOperation {
 
 		if ((possibleAb2.compareTo(Fraction.ZERO) != 0)
 				&& possibleAb2.compareTo(ab2.negate()) == 0) {
-			//  can't tell between the two a or b being negative?
-			// choose this way- later operator handling will allow switching the negative term
+			// can't tell between the two a or b being negative?
+			// choose this way- later operator handling will allow switching the
+			// negative term
 			return new Expression(a, b.negate());
 		}
 
@@ -45,7 +46,6 @@ public class SquareRoot extends AbstractOperation {
 		return new Expression(a, b);
 	}
 
-	
 	@Override
 	public boolean canApply(Expression expr) {
 		Fraction aSquared = expr.getX2Coefficient();
@@ -55,14 +55,14 @@ public class SquareRoot extends AbstractOperation {
 		try {
 			Fraction a = squareRoot(aSquared);
 			Fraction b = squareRoot(bSquared);
-			
+
 			Fraction possibleAb2 = a.multiply(b).multiply(2);
 
 			if ((possibleAb2.compareTo(Fraction.ZERO) != 0)
 					&& possibleAb2.compareTo(ab2.negate()) == 0) {
 				return true;
 			}
-			
+
 			return a.multiply(b).multiply(2).equals(ab2);
 		} catch (NotIntegerSquareRoot e) {
 			return false;
@@ -84,7 +84,6 @@ public class SquareRoot extends AbstractOperation {
 	public OperationType type() {
 		return OperationType.SQUARE_ROOT;
 	}
-
 
 	private Fraction squareRoot(Fraction aSquared) throws NotIntegerSquareRoot {
 		int numIntRoot = integerRoot(aSquared.getNumerator());
@@ -119,4 +118,26 @@ public class SquareRoot extends AbstractOperation {
 		return "Square Root";
 	}
 
+	@Override
+	public Operation afterUsed() {
+		return Multiply.NEGATE;
+	}
+
+	public boolean equals(Object obj) {
+		if (this == obj) {
+			return true;
+		}
+		if (obj == null) {
+			return false;
+		}
+		if (getClass() != obj.getClass()) {
+			return false;
+		}
+		return true;
+	}
+
+	@Override
+	public int hashCode() {
+		return 11;
+	}
 }

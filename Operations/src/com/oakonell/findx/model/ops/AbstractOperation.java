@@ -32,4 +32,10 @@ public abstract class AbstractOperation implements Operation {
 	public boolean isBuilt() {
 		return true;
 	}
+
+	@Override
+	public Operation afterUsed() {
+		return this;
+	}
+
 }

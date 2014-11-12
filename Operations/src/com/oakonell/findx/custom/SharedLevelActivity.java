@@ -173,9 +173,8 @@ public class SharedLevelActivity extends SherlockFragmentActivity {
 			TextView authorView = (TextView) findViewById(R.id.author);
 			authorView.setText(author);
 			titleView.setText(title);
-			equationView.setText(builder.getMoves().get(0).getStartEquation()
-					.toString());
-			numMoves.setText((builder.getMoves().size() - 1) + "");
+			equationView.setText(builder.getCurrentStartEquation().toString());
+			numMoves.setText((builder.getNumMoves()) + "");
 
 			int numOps = operations.size();
 			op1View.setText(operations.get(0).toString());

@@ -10,6 +10,8 @@ import com.oakonell.findx.model.OperationVisitor;
 
 @Immutable
 public class Multiply extends AbstractOperation {
+	public static final Multiply NEGATE = new Multiply(-1);
+
 	private final Fraction factor;
 
 	public Multiply(int factor) {
@@ -96,6 +98,5 @@ public class Multiply extends AbstractOperation {
 	public void accept(OperationVisitor visitor) {
 		visitor.visitMultiply(this);
 	}
-
 
 }

@@ -140,4 +140,6 @@
     <string name="gamehelper_license_failed">License check failed.</string>
     <string name="gamehelper_unknown_error">Unknown error.</string>
     
+    <string name="stage4_title">Stage 4</string>
+    
 </resources>

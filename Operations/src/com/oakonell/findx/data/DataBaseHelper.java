@@ -8,7 +8,7 @@ import android.provider.BaseColumns;
 public class DataBaseHelper extends SQLiteOpenHelper {
 
 	public static final String DATABASE_NAME = "findx.db";
-	private static final int DATABASE_VERSION = 11;
+	private static final int DATABASE_VERSION = 14;
 
 	public static final String CUSTOM_LEVEL_TABLE_NAME = "custom_level";
 
@@ -29,6 +29,7 @@ public class DataBaseHelper extends SQLiteOpenHelper {
 
 		// solution
 		public static final String SOLUTION = "solution";
+		public static final String SOLUTION2 = "solution2";
 
 		public static final String IS_OPTIMAL = "is_optimal";
 
@@ -57,6 +58,7 @@ public class DataBaseHelper extends SQLiteOpenHelper {
 
 	public static class CustomLevelMovesTable {
 		public static final String CUSTOM_LEVEL_ID = "level_id";
+		public static final String MOVE_TYPE = "move_type";
 		public static final String SEQ_NUM = "sequence";
 		public static final String OPERATION_ID = "op_id";
 	}
@@ -74,6 +76,17 @@ public class DataBaseHelper extends SQLiteOpenHelper {
 	public static class CurrentLevelTable {
 		public static final String LEVEL_ID = "level_id";
 		public static final String NUM_UNDOS_USED = "num_undos_used";
+	}
+
+	public static final String CURRENT_LEVEL_WILD_TABLE_NAME = "current_level_wilds";
+
+	public static class CurrentLevelWildTable {
+		public static final String LEVEL_ID = "level_id";
+		public static final String INDEX = "op_index";
+		public static final String TYPE = "type";
+		public static final String X2_COEFF = "x2_coeff";
+		public static final String X_COEFF = "x_coeff";
+		public static final String CONST = "const";
 	}
 
 	public static final String CURRENT_LEVEL_MOVES_TABLE_NAME = "current_level_moves";
@@ -106,6 +119,7 @@ public class DataBaseHelper extends SQLiteOpenHelper {
 				+ CustomLevelTable.RHS_CONST + " TEXT, " +
 
 				CustomLevelTable.SOLUTION + " TEXT, " +
+				CustomLevelTable.SOLUTION2 + " TEXT, " +
 
 				CustomLevelTable.IS_IMPORTED + " INTEGER, "
 				+ CustomLevelTable.AUTHOR + " STRING, "
@@ -130,6 +144,7 @@ public class DataBaseHelper extends SQLiteOpenHelper {
 				+ " (" + BaseColumns._ID
 				+ " INTEGER PRIMARY KEY AUTOINCREMENT, "
 				+ CustomLevelMovesTable.CUSTOM_LEVEL_ID + " INTEGER, "
+				+ CustomLevelMovesTable.MOVE_TYPE + " INTEGER, "
 				+ CustomLevelMovesTable.OPERATION_ID + " INTEGER, "
 				+ CustomLevelMovesTable.SEQ_NUM + " INTEGER " + ");";
 		sqLiteDatabase.execSQL(createTableString);
@@ -156,10 +171,41 @@ public class DataBaseHelper extends SQLiteOpenHelper {
 				+ CurrentLevelMovesTable.OP_INDEX + " INTEGER " + ");";
 		sqLiteDatabase.execSQL(createTableString);
 
+		createWildTable(sqLiteDatabase);
+	}
+
+	private void createWildTable(SQLiteDatabase sqLiteDatabase) {
+		String createTableString;
+		createTableString = "CREATE TABLE " + CURRENT_LEVEL_WILD_TABLE_NAME
+				+ " (" + BaseColumns._ID
+				+ " INTEGER PRIMARY KEY AUTOINCREMENT, "
+				+ CurrentLevelWildTable.LEVEL_ID + " TEXT, "
+				+ CurrentLevelWildTable.INDEX + " INTEGER, "
+				+ CurrentLevelWildTable.TYPE + " TEXT, "
+				+ CurrentLevelWildTable.X2_COEFF + " TEXT, "
+				+ CurrentLevelWildTable.X_COEFF + " TEXT, "
+				+ CurrentLevelWildTable.CONST + " TEXT " + ");";
+		sqLiteDatabase.execSQL(createTableString);
 	}
 
 	@Override
 	public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+		if (oldVersion < 14 && newVersion >= 14) {
+			db.execSQL("ALTER TABLE " + CUSTOM_LEVEL_MOVES_TABLE_NAME
+					+ " ADD COLUMN " + CustomLevelMovesTable.MOVE_TYPE
+					+ " INTEGER;");
+			db.execSQL("UPDATE " + CUSTOM_LEVEL_MOVES_TABLE_NAME
+					+ " SET " + CustomLevelMovesTable.MOVE_TYPE
+					+ " = 0 ;");			
+			db.execSQL("ALTER TABLE " + CUSTOM_LEVEL_TABLE_NAME
+					+ " ADD COLUMN " + CustomLevelTable.SOLUTION2 + " TEXT;");
+
+		}
+		if (oldVersion < 13 && newVersion >= 13) {
+			db.execSQL("DROP TABLE IF EXISTS " + CURRENT_LEVEL_WILD_TABLE_NAME
+					+ ";");
+			createWildTable(db);
+		}
 		if (oldVersion < 11 && newVersion >= 11) {
 			db.execSQL("ALTER TABLE " + CUSTOM_LEVEL_OPERATIONS_TABLE_NAME
 					+ " ADD COLUMN " + CustomLevelOperationsTable.WILD_TYPE
@@ -187,17 +233,6 @@ public class DataBaseHelper extends SQLiteOpenHelper {
 			db.execSQL("ALTER TABLE " + CUSTOM_LEVEL_TABLE_NAME
 					+ " ADD COLUMN " + CustomLevelTable.AUTHOR + " STRING;");
 		}
-		// db.execSQL("DROP TABLE IF EXISTS " + CURRENT_LEVEL_STATE_TABLE_NAME +
-		// ";");
-		// db.execSQL("DROP TABLE IF EXISTS " + CURRENT_LEVEL_MOVES_TABLE_NAME +
-		// ";");
-		// db.execSQL("DROP TABLE IF EXISTS " +
-		// CUSTOM_LEVEL_OPERATIONS_TABLE_NAME + ";");
-		// db.execSQL("DROP TABLE IF EXISTS " + CUSTOM_LEVEL_TABLE_NAME + ";");
-		//
-		// db.execSQL("DROP TABLE IF EXISTS " + LEVEL_PROGRESS_TABLE_NAME +
-		// ";");
-		// onCreate(db);
 	}
 
 }

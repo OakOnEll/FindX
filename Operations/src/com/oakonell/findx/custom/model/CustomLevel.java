@@ -16,9 +16,8 @@ public class CustomLevel extends Level {
 		// long dbId, int sequence, Stage stage, String id, String name,
 		// Equation equation, List<Operation> operations,
 		// int maxMoves, int minMoves) {
-		super(stage, builder.getTitle(), builder.getMoves().get(0)
-				.getStartEquation(), builder.getOperations(), builder
-				.getMoveOperationIndices());
+		super(stage, builder.getTitle(), builder.getCurrentStartEquation(),
+				builder.getOperations(), builder.getLevelSolution());
 		dbId = builder.getId();
 		sequence = builder.getSequence();
 		isImported = builder.isImported();
@@ -49,6 +48,7 @@ public class CustomLevel extends Level {
 	public String getServerId() {
 		return serverId;
 	}
+
 	public void setServerId(String id) {
 		this.serverId = id;
 	}

@@ -1,7 +1,8 @@
 package com.oakonell.findx.custom.model;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
+
+import org.apache.commons.math3.fraction.Fraction;
 
 import android.content.ContentValues;
 import android.content.Context;
@@ -10,6 +11,8 @@ import android.provider.BaseColumns;
 
 import com.oakonell.findx.data.DataBaseHelper;
 import com.oakonell.findx.model.Equation;
+import com.oakonell.findx.model.IMove;
+import com.oakonell.findx.model.IMoveWithOperation;
 import com.oakonell.findx.model.Move;
 import com.oakonell.findx.model.Operation;
 import com.oakonell.findx.model.OperationVisitor;
@@ -56,9 +59,8 @@ public class CustomLevelDBWriter {
 				DataBaseHelper.CustomLevelMovesTable.CUSTOM_LEVEL_ID + "=?",
 				new String[] { dbId });
 
-		Map<Operation, Long> operationIds = new HashMap<Operation, Long>();
-		addOperations(builder, db, builder.getId(), operationIds);
-		addMoves(builder, db, builder.getId(), operationIds);
+		addOperations(builder, db, builder.getId());
+		addMoves(builder, db, builder.getId());
 	}
 
 	private void add(CustomLevelBuilder builder, SQLiteDatabase db) {
@@ -68,20 +70,24 @@ public class CustomLevelDBWriter {
 				levelInfo);
 		builder.setId(id);
 
-		Map<Operation, Long> operationIds = new HashMap<Operation, Long>();
-		addOperations(builder, db, id, operationIds);
-		addMoves(builder, db, id, operationIds);
+		addOperations(builder, db, id);
+		int movesWritten = addMoves(builder, db, id);
+		if (builder.getNumMoves() != movesWritten) {
+			throw new RuntimeException(
+					"Number of moves do not match: builder says "
+							+ builder.getNumMoves() + ", but wrote "
+							+ movesWritten);
+		}
 	}
 
 	private ContentValues buildMainValues(CustomLevelBuilder builder) {
 		ContentValues levelInfo = new ContentValues();
 
-		Move start = builder.getMoves().get(0);
+		Move start = (Move) builder.getMoves().get(0);
 		Equation startEquation = start.getStartEquation();
 		levelInfo.put(DataBaseHelper.CustomLevelTable.NAME, builder.getTitle());
-		// TODO calculate minimum moves, if possible
-		levelInfo.put(DataBaseHelper.CustomLevelTable.MIN_MOVES, builder
-				.getMoves().size() - 1);
+		levelInfo.put(DataBaseHelper.CustomLevelTable.MIN_MOVES,
+				builder.getNumMoves());
 
 		levelInfo.put(DataBaseHelper.CustomLevelTable.LHS_CONST, startEquation
 				.getLhs().getConstant().toString());
@@ -96,6 +102,7 @@ public class CustomLevelDBWriter {
 				startEquation.getRhs().getXCoefficient().toString());
 		levelInfo.put(DataBaseHelper.CustomLevelTable.RHS_X2_COEFF,
 				startEquation.getRhs().getX2Coefficient().toString());
+
 		levelInfo.put(DataBaseHelper.CustomLevelTable.IS_OPTIMAL,
 				builder.isOptimized());
 		levelInfo.put(DataBaseHelper.CustomLevelTable.IS_IMPORTED,
@@ -107,32 +114,56 @@ public class CustomLevelDBWriter {
 
 		levelInfo.put(DataBaseHelper.CustomLevelTable.SOLUTION, builder
 				.getSolution().toString());
+		// put secondary solution as well
+		Fraction secondarySolution = builder.getSecondarySolution();
+		levelInfo.put(DataBaseHelper.CustomLevelTable.SOLUTION2,
+				secondarySolution != null ? secondarySolution.toString() : "");
+
 		levelInfo.put(DataBaseHelper.CustomLevelTable.SEQ_NUM,
 				builder.getSequence());
 		return levelInfo;
 	}
 
-	private void addMoves(CustomLevelBuilder builder, SQLiteDatabase db,
-			long id, Map<Operation, Long> operationIds) {
-		int j = 0;
-		for (Move each : builder.getMoves()) {
+	private int addMoves(CustomLevelBuilder builder, SQLiteDatabase db, long id) {
+		int numMoves = 0;
+		numMoves += addMovesOfType(db, id, builder.getOperations(),
+				builder.getPrimaryMoves(), 0);
+		numMoves += addMovesOfType(db, id, builder.getOperations(),
+				builder.getSecondary1Moves(), 1);
+		numMoves += addMovesOfType(db, id, builder.getOperations(),
+				builder.getSecondary2Moves(), 2);
+		return numMoves;
+	}
+
+	private int addMovesOfType(SQLiteDatabase db, long id,
+			List<Operation> operations, List<IMove> moves, int moveType) {
+		int index = 0;
+		int numWritten = 0;
+		for (IMove iEach : moves) {
+			if (!(iEach instanceof IMoveWithOperation)) {
+				continue;
+			}
+			IMoveWithOperation each = (IMoveWithOperation) iEach;
 			Operation operation = each.getOperation();
 			if (operation == null) {
 				continue;
 			}
 			ContentValues opInfo = new ContentValues();
 			opInfo.put(DataBaseHelper.CustomLevelMovesTable.CUSTOM_LEVEL_ID, id);
-			opInfo.put(DataBaseHelper.CustomLevelMovesTable.SEQ_NUM, j);
+			opInfo.put(DataBaseHelper.CustomLevelMovesTable.MOVE_TYPE, moveType);
+			opInfo.put(DataBaseHelper.CustomLevelMovesTable.SEQ_NUM, index);
 			opInfo.put(DataBaseHelper.CustomLevelMovesTable.OPERATION_ID,
-					operationIds.get(operation));
+					operations.indexOf(operation));
 			db.insert(DataBaseHelper.CUSTOM_LEVEL_MOVES_TABLE_NAME, null,
 					opInfo);
-			j++;
+			numWritten++;
+			index++;
 		}
+		return numWritten;
 	}
 
 	private void addOperations(CustomLevelBuilder builder, SQLiteDatabase db,
-			long id, Map<Operation, Long> operationIds) {
+			long id) {
 		int i = 0;
 		for (Operation each : builder.getOperations()) {
 			final ContentValues opInfo = new ContentValues();
@@ -218,7 +249,6 @@ public class CustomLevelDBWriter {
 			long opId = db.insert(
 					DataBaseHelper.CUSTOM_LEVEL_OPERATIONS_TABLE_NAME, null,
 					opInfo);
-			operationIds.put(each, opId);
 			i++;
 		}
 	}

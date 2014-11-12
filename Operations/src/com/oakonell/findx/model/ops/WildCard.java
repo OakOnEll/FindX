@@ -74,4 +74,10 @@ public class WildCard implements Operation {
 	public void setIsBuilt(boolean isBuilt) {
 		this.isBuilt = isBuilt;
 	}
+
+	@Override
+	public Operation afterUsed() {
+		return actual;
+	}
+
 }

@@ -106,6 +106,8 @@ public class CustomLevelSearchActivity extends SherlockListActivity {
 	}
 
 	private class RemoteDataTask extends AsyncTask<Void, Void, Void> {
+		private static final String PARSE_CREATED_AT_PROPERTY_NAME = "_created_at";
+
 		// Override this method to do custom remote calls
 		protected Void doInBackground(Void... params) {
 			// Gets the current list of todos in sorted order
@@ -140,9 +142,8 @@ public class CustomLevelSearchActivity extends SherlockListActivity {
 
 			query.whereLessThan(ParseCustomLevel.num_flags, 3);
 
-			// TODO use a constant for create at
 			if (sort == SORT_BY_CREATION_DATE) {
-				query.orderByDescending("_created_at");
+				query.orderByDescending(PARSE_CREATED_AT_PROPERTY_NAME);
 			} else if (sort == SORT_BY_RATING) {
 				query.orderByDescending(ParseCustomLevel.avg_rating_field);
 			} else {
@@ -176,7 +177,8 @@ public class CustomLevelSearchActivity extends SherlockListActivity {
 
 				Set<String> flaggedIds = new HashSet<String>();
 				for (ParseObject each : flagged) {
-					flaggedIds.add(each.getParseObject(ParseCustomLevelFlag.level_field).getObjectId());
+					flaggedIds.add(each.getParseObject(
+							ParseCustomLevelFlag.level_field).getObjectId());
 				}
 
 				for (Iterator<ParseObject> iter = levels.iterator(); iter

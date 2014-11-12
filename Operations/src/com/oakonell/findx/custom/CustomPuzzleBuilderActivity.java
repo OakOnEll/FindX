@@ -31,13 +31,16 @@ import com.oakonell.findx.MenuHelper;
 import com.oakonell.findx.R;
 import com.oakonell.findx.custom.OperationBuilderDialog.OperationBuiltContinuation;
 import com.oakonell.findx.custom.model.CustomLevelBuilder;
-import com.oakonell.findx.custom.model.CustomLevelBuilder.OptimizedListener;
 import com.oakonell.findx.custom.model.RandomHelper;
+import com.oakonell.findx.custom.model.TempCorrectLevelBuilder.OptimizedListener;
 import com.oakonell.findx.custom.widget.FractionEditText;
 import com.oakonell.findx.custom.widget.FractionEditText.OnFractionChanged;
 import com.oakonell.findx.custom.widget.PopupContextMenu;
 import com.oakonell.findx.custom.widget.PopupContextMenu.ButtonContextMenuOnClickListener;
 import com.oakonell.findx.model.Equation;
+import com.oakonell.findx.model.Expression;
+import com.oakonell.findx.model.Expression.UseParenthesis;
+import com.oakonell.findx.model.IMove;
 import com.oakonell.findx.model.Levels;
 import com.oakonell.findx.model.Move;
 import com.oakonell.findx.model.Operation;
@@ -47,12 +50,15 @@ import com.oakonell.utils.NumberPicker;
 public class CustomPuzzleBuilderActivity extends GameActivity {
 	public static final String LEVEL_ID = "id";
 	public static final String COPY = "copy";
+
 	private static final int MAX_OPERATORS = 5;
+
 	protected static final double LARGE_SEARCH_SPACE = Math.pow(5, 12);
 	private CustomLevelBuilder builder = new CustomLevelBuilder();
 
-	ArrayAdapter<Move> adapter;
+	private ArrayAdapter<IMove> adapter;
 	private FractionEditText xSolution;
+	private TextView xSecondarySolution;
 	private Button saveButton;
 	private EditText title;
 	private TextView addOperator;
@@ -86,14 +92,15 @@ public class CustomPuzzleBuilderActivity extends GameActivity {
 		}
 
 		for (Operation each : builder.getOperations()) {
-			if (!(each instanceof WildCard)) continue;
-			((WildCard)each).setIsBuilt(true);
+			if (!(each instanceof WildCard))
+				continue;
+			((WildCard) each).setIsBuilt(true);
 		}
-		
+
 		final ListView movesView = (ListView) findViewById(R.id.moves);
 
-		adapter = new ArrayAdapter<Move>(getApplication(), R.layout.move_build,
-				builder.getMoves()) {
+		adapter = new ArrayAdapter<IMove>(getApplication(),
+				R.layout.move_build, builder.getMoves()) {
 
 			@Override
 			public View getView(int position, View row, ViewGroup parent) {
@@ -102,7 +109,7 @@ public class CustomPuzzleBuilderActivity extends GameActivity {
 							parent, false);
 				}
 
-				final Move item = getItem(position);
+				final IMove item = getItem(position);
 
 				TextView moveNum = (TextView) row.findViewById(R.id.move_num);
 				View upButton = row.findViewById(R.id.up);
@@ -110,13 +117,13 @@ public class CustomPuzzleBuilderActivity extends GameActivity {
 				TextView op = (TextView) row.findViewById(R.id.operation);
 
 				if (position > 0) {
-					moveNum.setText(position + "");
-					if (position > 1) {
+					moveNum.setText(item.getMoveNumText());
+					if (builder.canMoveUp(item)) {
 						upButton.setVisibility(View.VISIBLE);
 					} else {
 						upButton.setVisibility(View.INVISIBLE);
 					}
-					if (position < builder.getMoves().size() - 1) {
+					if (builder.canMoveDown(item)) {
 						downButton.setVisibility(View.VISIBLE);
 					} else {
 						downButton.setVisibility(View.INVISIBLE);
@@ -142,10 +149,23 @@ public class CustomPuzzleBuilderActivity extends GameActivity {
 						public void onClick(View view) {
 							PopupContextMenu menuDialog = new PopupContextMenu(
 									CustomPuzzleBuilderActivity.this, 2);
-							menuDialog.addItem(getResources(),
-									R.string.edit_move, 2);
-							menuDialog.addItem(getResources(),
-									R.string.delete_move, 3);
+							if (!(item instanceof Move)) {
+								return;
+							}
+							final Move move = (Move) item;
+							boolean hasAny = false;
+							if (builder.canEditMove(item)) {
+								menuDialog.addItem(getResources(),
+										R.string.edit_move, 2);
+								hasAny = true;
+							}
+							if (builder.canDeleteMove(item)) {
+								menuDialog.addItem(getResources(),
+										R.string.delete_move, 3);
+								hasAny = true;
+							}
+							if (!hasAny)
+								return;
 							menuDialog
 									.setOnClickListener(new ButtonContextMenuOnClickListener() {
 										@Override
@@ -153,7 +173,7 @@ public class CustomPuzzleBuilderActivity extends GameActivity {
 											switch (menuId) {
 											case 2:
 												// edit
-												editMove(item);
+												editMove(move);
 												break;
 											case 3:
 												// delete
@@ -166,6 +186,7 @@ public class CustomPuzzleBuilderActivity extends GameActivity {
 											}
 										}
 									});
+
 							Dialog menu = menuDialog
 									.createMenu(getText(R.string.move_menu_title));
 							menu.show();
@@ -178,13 +199,10 @@ public class CustomPuzzleBuilderActivity extends GameActivity {
 					op.setOnClickListener(null);
 				}
 
-				Operation operation = item.getOperation();
-
-				op.setText(Html.fromHtml(operation != null ? operation
-						.toString() : ""));
+				op.setText(Html.fromHtml(item.getDescriptiontext()));
 
 				TextView eq = (TextView) row.findViewById(R.id.equation);
-				eq.setText(Html.fromHtml(item.getEndEquation().toString()));
+				eq.setText(Html.fromHtml(item.getEndEquationString()));
 
 				return row;
 			}
@@ -201,8 +219,6 @@ public class CustomPuzzleBuilderActivity extends GameActivity {
 
 		});
 
-		handleOperatorButtons();
-
 		Button addRandomMoves = (Button) findViewById(R.id.add_random_moves);
 		addRandomMoves.setOnClickListener(new OnClickListener() {
 			@Override
@@ -212,6 +228,7 @@ public class CustomPuzzleBuilderActivity extends GameActivity {
 		});
 
 		xSolution = (FractionEditText) findViewById(R.id.x_equals);
+		xSecondarySolution = (TextView) findViewById(R.id.x_equals_secondary);
 		title = (EditText) findViewById(R.id.title);
 
 		xSolution.setOnFractionChanged(new OnFractionChanged() {
@@ -222,16 +239,13 @@ public class CustomPuzzleBuilderActivity extends GameActivity {
 
 			@Override
 			public void fractionChanged(FractionEditText view, Fraction fraction) {
-				handleSaveButtonEnablement();
 				builder.setSolution(fraction);
-				handleOperatorButtons();
-				adapter.notifyDataSetChanged();
+				updateUI();
 			}
 		});
 
 		movesView.setAdapter(adapter);
 
-		xSolution.setFraction(builder.getSolution());
 		title.setText(builder.getTitle());
 		title.addTextChangedListener(new TextWatcher() {
 			@Override
@@ -251,8 +265,8 @@ public class CustomPuzzleBuilderActivity extends GameActivity {
 					return;
 				}
 				title.setError(null);
-				handleSaveButtonEnablement();
 				builder.setTitle(editable.toString());
+				handleSaveButtonEnablement();
 			}
 		});
 
@@ -304,7 +318,7 @@ public class CustomPuzzleBuilderActivity extends GameActivity {
 			task.setParent(this);
 		}
 
-		handleSaveButtonEnablement();
+		updateUI();
 	}
 
 	protected void promptToOptimizeOrSave() {
@@ -348,7 +362,7 @@ public class CustomPuzzleBuilderActivity extends GameActivity {
 
 	private void promptAndLaunchOptimizer() {
 		int branchRatio = builder.getOperations().size();
-		int depth = builder.getMoves().size();
+		int depth = builder.getNumMoves();
 		if (Math.pow(branchRatio, depth) > LARGE_SEARCH_SPACE) {
 			// provide a warning that may take a while
 			new AlertDialog.Builder(this)
@@ -415,9 +429,7 @@ public class CustomPuzzleBuilderActivity extends GameActivity {
 	private void addRandomMoves(int numMoves) {
 		randomHelper.addRandomMoves(builder, numMoves);
 		// finish up
-		handleSaveButtonEnablement();
-		handleOperatorButtons();
-		adapter.notifyDataSetChanged();
+		updateUI();
 	}
 
 	private void handleSaveButtonEnablement() {
@@ -431,7 +443,7 @@ public class CustomPuzzleBuilderActivity extends GameActivity {
 			saveButton.setEnabled(false);
 			return;
 		}
-		saveButton.setEnabled(builder.getMoves().size() > 1);
+		saveButton.setEnabled(builder.hasMoves());
 	}
 
 	private void handleOperatorButtons() {
@@ -456,7 +468,7 @@ public class CustomPuzzleBuilderActivity extends GameActivity {
 		opButton.setVisibility(View.VISIBLE);
 		opButton.setText(Html.fromHtml(operation.toString()));
 
-		Equation currentEquation = builder.getMoves().get(0).getStartEquation();
+		Equation currentEquation = builder.getCurrentStartEquation();
 		if (operation.inverse().canApply(currentEquation)) {
 			opButton.setEnabled(true);
 		} else {
@@ -474,9 +486,7 @@ public class CustomPuzzleBuilderActivity extends GameActivity {
 			@Override
 			public void onClick(View v) {
 				builder.apply(operation);
-				handleSaveButtonEnablement();
-				handleOperatorButtons();
-				adapter.notifyDataSetChanged();
+				updateUI();
 			}
 		});
 	}
@@ -484,8 +494,17 @@ public class CustomPuzzleBuilderActivity extends GameActivity {
 	private boolean presentOpButtonChoices(final TextView opButton,
 			final Operation operation) {
 		PopupContextMenu menuDialog = new PopupContextMenu(this, 1);
-		menuDialog.addItem(getResources(), R.string.edit_operation, 2);
-		menuDialog.addItem(getResources(), R.string.delete_operation, 3);
+		boolean hasAny = false;
+		if (builder.canReplaceOperation(operation)) {
+			menuDialog.addItem(getResources(), R.string.edit_operation, 2);
+			hasAny = true;
+		}
+		if (builder.canDeleteOperation(operation)) {
+			menuDialog.addItem(getResources(), R.string.delete_operation, 3);
+			hasAny = true;
+		}
+		if (!hasAny)
+			return false;
 		menuDialog.setOnClickListener(new ButtonContextMenuOnClickListener() {
 			@Override
 			public void onClick(int menuId) {
@@ -555,7 +574,6 @@ public class CustomPuzzleBuilderActivity extends GameActivity {
 					@Override
 					public void operationBuilt(Operation newOperation) {
 						builder.replaceOperation(operation, newOperation);
-						// TODO targeted updated?
 						handleOperatorButtons();
 						adapter.notifyDataSetChanged();
 					}
@@ -570,14 +588,13 @@ public class CustomPuzzleBuilderActivity extends GameActivity {
 					@Override
 					public void operationBuilt(Operation operation) {
 						builder.addOperation(operation);
-						// TODO targeted updated?
 						handleOperatorButtons();
 					}
 				});
 	}
 
 	private void confirmAndLeave(final Runnable run) {
-		if (builder.getOperations().isEmpty() && builder.getMoves().size() <= 1) {
+		if (builder.getOperations().isEmpty() && !builder.hasMoves()) {
 			run.run();
 			return;
 		}
@@ -616,7 +633,7 @@ public class CustomPuzzleBuilderActivity extends GameActivity {
 		});
 	}
 
-	private void deleteMove(final Move item) {
+	private void deleteMove(final IMove item) {
 		// confirm to delete
 		final AlertDialog alertDialog = new AlertDialog.Builder(this).create();
 		alertDialog.setTitle(R.string.confirm_delete_move_title);
@@ -693,4 +710,26 @@ public class CustomPuzzleBuilderActivity extends GameActivity {
 		return MenuHelper.onOptionsItemSelected(this, item);
 	}
 
+	public void notifyDataSetChanged() {
+		adapter.notifyDataSetChanged();
+	}
+
+	private void updateUI() {
+		if (!builder.getSolution().equals(xSolution.getFraction())) {
+			xSolution.setFraction(builder.getSolution());
+		}
+		xSolution.setEnabled(builder.canSetSolution());
+
+		if (builder.getSecondarySolution() != null) {
+			xSecondarySolution.setVisibility(View.VISIBLE);
+			xSecondarySolution.setText(" or "
+					+ Expression.fractionToString(
+							builder.getSecondarySolution(), UseParenthesis.NO));
+		} else {
+			xSecondarySolution.setVisibility(View.GONE);
+		}
+		handleSaveButtonEnablement();
+		handleOperatorButtons();
+		adapter.notifyDataSetChanged();
+	}
 }

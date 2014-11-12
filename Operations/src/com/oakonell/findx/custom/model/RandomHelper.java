@@ -21,6 +21,7 @@ public class RandomHelper {
         if (numOps == 0 || numMoves == 0) {
             return;
         }
+        // TODO deal with not being able to apply an operator
         for (int i = 0; i < numMoves; i++) {
             int opIndex = rand.nextInt(numOps);
             Operation operation = builder.getOperations().get(opIndex);

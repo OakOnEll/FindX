@@ -1,8 +1,7 @@
 package com.oakonell.findx.custom.model;
 
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.commons.math3.fraction.Fraction;
 import org.apache.commons.math3.fraction.FractionFormat;
@@ -15,9 +14,12 @@ import android.provider.BaseColumns;
 import com.oakonell.findx.data.DataBaseHelper;
 import com.oakonell.findx.model.Equation;
 import com.oakonell.findx.model.Expression;
+import com.oakonell.findx.model.IMove;
 import com.oakonell.findx.model.Move;
+import com.oakonell.findx.model.MultipleSolutionMove;
 import com.oakonell.findx.model.Operation;
 import com.oakonell.findx.model.Operation.OperationType;
+import com.oakonell.findx.model.SecondaryEquationMove;
 import com.oakonell.findx.model.ops.Add;
 import com.oakonell.findx.model.ops.Divide;
 import com.oakonell.findx.model.ops.Multiply;
@@ -26,9 +28,10 @@ import com.oakonell.findx.model.ops.SquareRoot;
 import com.oakonell.findx.model.ops.Subtract;
 import com.oakonell.findx.model.ops.Swap;
 import com.oakonell.findx.model.ops.WildCard;
+import com.oakonell.utils.StringUtils;
 
 public class CustomLevelDBReader {
-	private FractionFormat format = new FractionFormat();
+	private static FractionFormat format = new FractionFormat();
 
 	public long findDbIdByServerId(Context context, String parseLevelId) {
 		DataBaseHelper helper = new DataBaseHelper(context);
@@ -79,12 +82,36 @@ public class CustomLevelDBReader {
 
 	private void readFromCursor(SQLiteDatabase db, Cursor query,
 			CustomLevelBuilder builder) {
+		Equation startEquation = readMainValues(query, builder);
+
+		// load the operations, and place in id->op map
+		readOperations(db, builder);
+		readMoves(db, builder, startEquation);
+		// verify minMoves against the number of moves read
+		int minMoves = query.getInt(query
+				.getColumnIndex(DataBaseHelper.CustomLevelTable.MIN_MOVES));
+		if (builder.getNumMoves() != minMoves) {
+			// throw new RuntimeException("num moves did not match- bulider's "
+			// + builder.getNumMoves() + " vs table's " + minMoves);
+		}
+	}
+
+	private Equation readMainValues(Cursor query, CustomLevelBuilder builder) {
 		builder.setId(query.getLong(query.getColumnIndex(BaseColumns._ID)));
 		builder.setTitle(query.getString(query
 				.getColumnIndex(DataBaseHelper.CustomLevelTable.NAME)));
+
 		String solutionString = query.getString(query
 				.getColumnIndex(DataBaseHelper.CustomLevelTable.SOLUTION));
 		builder.setSolution(format.parse(solutionString));
+		// deal with secondary solution
+		String solution2String = query.getString(query
+				.getColumnIndex(DataBaseHelper.CustomLevelTable.SOLUTION2));
+		if (!StringUtils.isEmpty(solution2String)) {
+			Fraction secondarySolution = format.parse(solution2String);
+			builder.setSolution2(secondarySolution);
+		}
+
 		builder.setSequence(query.getInt(query
 				.getColumnIndex(DataBaseHelper.CustomLevelTable.SEQ_NUM)));
 
@@ -96,12 +123,6 @@ public class CustomLevelDBReader {
 				DataBaseHelper.CustomLevelTable.RHS_X2_COEFF,
 				DataBaseHelper.CustomLevelTable.RHS_X_COEFF,
 				DataBaseHelper.CustomLevelTable.RHS_CONST);
-		Equation startEquation = new Equation(lhs, rhs);
-
-		// load the operations, and place in id->op map
-		Map<Long, Operation> operationsById = new HashMap<Long, Operation>();
-		readOperations(db, builder, operationsById);
-		readMoves(db, builder, operationsById, startEquation);
 
 		boolean isOptimized = query.getInt(query
 				.getColumnIndex(DataBaseHelper.CustomLevelTable.IS_OPTIMAL)) > 0;
@@ -113,10 +134,13 @@ public class CustomLevelDBReader {
 				.getColumnIndex(DataBaseHelper.CustomLevelTable.AUTHOR)));
 		builder.setServerId(query.getString(query
 				.getColumnIndex(DataBaseHelper.CustomLevelTable.SERVER_ID)));
+
+		Equation startEquation = new Equation(lhs, rhs);
+		return startEquation;
 	}
 
-	private Expression readExpression(Cursor query, String x2CoeffColName,
-			String xCoeffColName, String constColName) {
+	public static Expression readExpression(Cursor query,
+			String x2CoeffColName, String xCoeffColName, String constColName) {
 		Fraction x2coeff = readFraction(query, x2CoeffColName);
 		Fraction coeff = readFraction(query, xCoeffColName);
 		Fraction constVal = readFraction(query, constColName);
@@ -125,40 +149,115 @@ public class CustomLevelDBReader {
 	}
 
 	private void readMoves(SQLiteDatabase db, CustomLevelBuilder builder,
-			Map<Long, Operation> operationsById, Equation startEquation) {
-		Cursor opQuery = db.query(DataBaseHelper.CUSTOM_LEVEL_MOVES_TABLE_NAME,
-				null, DataBaseHelper.CustomLevelMovesTable.CUSTOM_LEVEL_ID
-						+ "=?",
-				new String[] { Long.toString(builder.getId()) }, null, null,
-				DataBaseHelper.CustomLevelMovesTable.SEQ_NUM);
+			Equation startEquation) {
 
-		Equation eq = startEquation;
-		List<Move> moves = builder.getMoves();
-		moves.clear();
+		List<Integer> primaryMoveOpIds = readMoveOperationIds(db,
+				builder.getId(), "0");
+		List<Integer> secondary1MoveOpIds = readMoveOperationIds(db,
+				builder.getId(), "1");
+		List<Integer> secondary2MoveOpIds = readMoveOperationIds(db,
+				builder.getId(), "2");
 
-		moves.add(new Move(eq, null));
-		while (opQuery.moveToNext()) {
-			Long opId = opQuery
-					.getLong(opQuery
-							.getColumnIndex(DataBaseHelper.CustomLevelMovesTable.OPERATION_ID));
-			Operation operation = operationsById.get(opId);
-			if (operation == null) {
-				throw new RuntimeException("No operation in map with id "
-						+ opId + ", while reading custom level "
-						+ builder.getId());
-			}
-			Move move = new Move(eq, operation);
-			moves.add(move);
-			eq = move.getEndEquation();
-		}
-		// add an extra null move?
-
-		opQuery.close();
-
+		populateBuilderMovesFromOperationIndices(builder, startEquation,
+				primaryMoveOpIds, secondary1MoveOpIds, secondary2MoveOpIds);
 	}
 
-	private void readOperations(SQLiteDatabase db, CustomLevelBuilder builder,
-			Map<Long, Operation> operationsById) {
+	public static void populateBuilderMovesFromOperationIndices(
+			CustomLevelBuilder builder, Equation startEquation,
+			List<Integer> primaryMoveOpIds, List<Integer> secondary1MoveOpIds,
+			List<Integer> secondary2MoveOpIds) {
+		int moveNum = 1;
+		Equation equation = startEquation;
+		builder.getPrimaryMoves().clear();
+		builder.getPrimaryMoves().add(new Move(startEquation, null, 0));
+		for (Integer id : primaryMoveOpIds) {
+			Operation operation = builder.getOperations().get(id);
+			if (operation == null) {
+				throw new RuntimeException("No operation in map with id " + id
+						+ ", while reading custom level " + builder.getId());
+			}
+			IMove imove;
+			if (operation instanceof SquareRoot) {
+				Equation rootEquation1 = operation.apply(equation);
+
+				imove = new MultipleSolutionMove(equation, operation,
+						rootEquation1.getLhs().toString() + " = ± ( "
+								+ rootEquation1.getRhs().toString() + " )",
+						moveNum);
+				equation = rootEquation1;
+			} else {
+				Move move = new Move(equation, operation, moveNum);
+				imove = move;
+				equation = move.getEndEquation();
+			}
+			moveNum++;
+			builder.getPrimaryMoves().add(imove);
+		}
+		EquationAndMove eqAndMove = new EquationAndMove();
+		if (secondary1MoveOpIds.isEmpty()) return;
+		
+		eqAndMove.equation = equation;
+		eqAndMove.moveNum = moveNum;
+		addSecondaryMoves(builder, secondary1MoveOpIds,
+				builder.getSecondary1Moves(), eqAndMove, 1);
+		eqAndMove.equation = new Equation(equation.getLhs(),
+				Multiply.NEGATE.apply(equation.getRhs()));
+		addSecondaryMoves(builder, secondary2MoveOpIds,
+				builder.getSecondary2Moves(), eqAndMove, 2);
+	}
+
+	private static void addSecondaryMoves(CustomLevelBuilder builder,
+			List<Integer> opIds, List<IMove> moves, EquationAndMove eqAndMove,
+			int i) {
+		moves.add(new SecondaryEquationMove(eqAndMove.equation, i));
+		for (Integer id : opIds) {
+			Operation operation = builder.getOperations().get(id);
+			if (operation == null) {
+				throw new RuntimeException("No operation in map with id " + id
+						+ ", while reading custom level " + builder.getId());
+			}
+			// in the secondary moves phase, the original square root has turned
+			// into a Negate
+			if (operation instanceof SquareRoot) {
+				operation = Multiply.NEGATE;
+			}
+			IMove imove;
+			Move move = new Move(eqAndMove.equation, operation,
+					eqAndMove.moveNum);
+			imove = move;
+			eqAndMove.equation = move.getEndEquation();
+			eqAndMove.moveNum++;
+			moves.add(imove);
+		}
+	}
+
+	private static class EquationAndMove {
+		Equation equation;
+		int moveNum;
+	}
+
+	private List<Integer> readMoveOperationIds(SQLiteDatabase db, long dbId,
+			String moveType) {
+		List<Integer> result = new ArrayList<Integer>();
+		Cursor opQuery = db.query(DataBaseHelper.CUSTOM_LEVEL_MOVES_TABLE_NAME,
+				null, DataBaseHelper.CustomLevelMovesTable.CUSTOM_LEVEL_ID
+						+ "=? and "
+						+ DataBaseHelper.CustomLevelMovesTable.MOVE_TYPE
+						+ " = ?",
+				new String[] { Long.toString(dbId), moveType }, null, null,
+				DataBaseHelper.CustomLevelMovesTable.SEQ_NUM);
+
+		while (opQuery.moveToNext()) {
+			Integer opId = opQuery
+					.getInt(opQuery
+							.getColumnIndex(DataBaseHelper.CustomLevelMovesTable.OPERATION_ID));
+			result.add(opId);
+		}
+		opQuery.close();
+		return result;
+	}
+
+	private void readOperations(SQLiteDatabase db, CustomLevelBuilder builder) {
 		Cursor opQuery = db.query(
 				DataBaseHelper.CUSTOM_LEVEL_OPERATIONS_TABLE_NAME, null,
 				DataBaseHelper.CustomLevelOperationsTable.CUSTOM_LEVEL_ID
@@ -219,14 +318,13 @@ public class CustomLevelDBReader {
 				wildOp.setActual(op);
 				op = wildOp;
 			}
-			operationsById.put(id, op);
 			builder.addOperation(op);
 		}
 
 		opQuery.close();
 	}
 
-	private Fraction readFraction(Cursor query, String constColName) {
+	public static Fraction readFraction(Cursor query, String constColName) {
 		String constString = query
 				.getString(query.getColumnIndex(constColName));
 		if (constString == null)

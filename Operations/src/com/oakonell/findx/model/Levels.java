@@ -2,6 +2,7 @@ package com.oakonell.findx.model;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -20,9 +21,11 @@ import com.oakonell.findx.custom.model.CustomLevelDBReader;
 import com.oakonell.findx.custom.model.CustomStage;
 import com.oakonell.findx.data.DataBaseHelper;
 import com.oakonell.findx.data.DataBaseHelper.CustomLevelTable;
+import com.oakonell.findx.model.Level.LevelSolution;
 import com.oakonell.findx.model.ops.Add;
 import com.oakonell.findx.model.ops.Divide;
 import com.oakonell.findx.model.ops.Multiply;
+import com.oakonell.findx.model.ops.SquareRoot;
 import com.oakonell.findx.model.ops.Subtract;
 import com.oakonell.findx.model.ops.Swap;
 
@@ -50,6 +53,12 @@ public class Levels {
 				R.raw.partita_no_1_in_b_flat_major_pus_1_sarabande, stage2);
 		stages.put(stage3.getId(), stage3);
 		configureStage3(stage3);
+
+		// new stages!
+		Stage stage4 = new Stage("4", R.string.stage4_title,
+				R.raw.partita_no_1_in_b_flat_major_pus_1_sarabande, stage3);
+		stages.put(stage4.getId(), stage4);
+		configureStage4(stage4);
 
 		customStage = new CustomStage("C", R.string.custom_stage_title);
 
@@ -487,6 +496,46 @@ public class Levels {
 				new Level(stage, "Fract-ured", eq, ops, Arrays
 						.asList(3, 1, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 2, 2, 2,
 								2, 2, 2, 2, 2, 4)));
+	}
+
+	private static void configureStage4(Stage stage) {
+		Expression left;
+		Expression right;
+		Equation eq;
+		List<Operation> ops;
+		List<Fraction> solutions = new ArrayList<Fraction>();
+		LevelSolution levelSolution;
+
+		// level
+		left = new Expression(1, 0, 0);
+		right = new Expression(0);
+		eq = new Equation(left, right); // x^2 = 0
+		ops = new ArrayList<Operation>();
+		ops.add(new SquareRoot());
+		solutions.add(Fraction.ZERO);
+		levelSolution = new LevelSolution(Arrays.asList(0), eq, ops);
+
+		addLevel(stage, new Level(stage, "Trivial Square", eq, ops,
+				levelSolution));
+
+		// level
+		solutions = new ArrayList<Fraction>();
+		left = new Expression(1, 0, -1);
+		right = new Expression(0);
+		eq = new Equation(left, right); // x^2 - 1 = 0
+		ops = new ArrayList<Operation>();
+		ops.add(new Add(new Expression(1)));
+		ops.add(new SquareRoot());
+		solutions.add(Fraction.ONE);
+		solutions.add(Fraction.MINUS_ONE);
+		levelSolution = new LevelSolution(solutions, Arrays.asList(0, 1),
+				new Equation(new Expression(1, 0), new Expression(1)),
+				Collections.<Integer> emptyList(), new Equation(new Expression(
+						1, 0), new Expression(-1)),
+				Collections.<Integer> emptyList());
+
+		addLevel(stage, new Level(stage, "Hip to be Square", eq, ops,
+				levelSolution));
 	}
 
 	private static void addLevel(Stage stage, Level level) {

@@ -1,7 +1,6 @@
 package com.oakonell.findx.custom.parse;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -13,6 +12,7 @@ import android.os.AsyncTask;
 
 import com.oakonell.findx.custom.model.CustomLevel;
 import com.oakonell.findx.custom.model.CustomLevelBuilder;
+import com.oakonell.findx.custom.model.CustomLevelDBReader;
 import com.oakonell.findx.custom.parse.ParseConnectivity.ParseUserExtra;
 import com.oakonell.findx.model.Equation;
 import com.oakonell.findx.model.Expression;
@@ -42,9 +42,13 @@ public class ParseLevelHelper {
 
 	public interface ParseCustomLevel {
 		final String classname = "CustomLevel";
+
 		final String title_field = "title";
 		final String createdBy_field = "createdBy";
 		final String solution_field = "solution";
+		final String solution2_field = "solution2";
+		// some redundant fields, for easy use in searching since parse.com
+		// doesn't support aggregate functions
 		final String num_moves_field = "numMoves";
 		final String num_operations_field = "numOperations";
 		// some redundant fields, to allow easy sorting and retrieval with just
@@ -54,21 +58,25 @@ public class ParseLevelHelper {
 		final String avg_rating_field = "avg_rating";
 		final String num_ratings_field = "num_ratings";
 
+		final String num_flags = "numFlags";
+
+		// prefix for standard ExpressionField columns for the start equation
 		final String lhs_expr_prefix = "lhs_";
 		final String rhs_expr_prefix = "rhs_";
 
-		final String num_flags = "numFlags";
 	}
 
 	public interface ParseLevelOperation {
 		final String classname = "LevelOperation";
 		final String level_field = "level";
+		final String sequence_field = "sequence";
 		final String type_field = "type";
 		final String wild_type_field = "wild_type";
 	}
 
 	public interface ParseLevelMove {
 		final String classname = "LevelMove";
+		final String move_type_field = "move_type";
 		final String level_field = "level";
 		final String sequence_field = "sequence";
 		final String operation_field = "operation";
@@ -90,89 +98,120 @@ public class ParseLevelHelper {
 
 	public static String postLevel(CustomLevel theLevel) {
 		try {
-			ParseUser parseUser = ParseUser.getCurrentUser();
 
-			ParseObject level = new ParseObject(ParseCustomLevel.classname);
-			level.put(ParseCustomLevel.title_field, theLevel.getName());
-			level.put(ParseCustomLevel.createdBy_field, parseUser);
-
-			level.put(ParseCustomLevel.num_flags, 0);
-
-			Equation startEquation = theLevel.getEquation();
-			Equation equation = startEquation;
-			for (Operation each : theLevel.getSolutionOperations()) {
-				equation = each.apply(equation);
-			}
-			level.put(ParseCustomLevel.solution_field, equation.getRhs()
-					.getConstant().toString());
-
-			addExpression(ParseCustomLevel.lhs_expr_prefix,
-					startEquation.getLhs(), level);
-			addExpression(ParseCustomLevel.rhs_expr_prefix,
-					startEquation.getRhs(), level);
-
-			level.put(ParseCustomLevel.num_moves_field, theLevel.getMinMoves());
-			level.put(ParseCustomLevel.num_operations_field, theLevel
-					.getOperations().size());
-			level.save();
+			ParseObject level = postMainLevel(theLevel);
 			String id = level.getObjectId();
 
-			Map<Operation, ParseObject> opToParseOp = new HashMap<Operation, ParseObject>();
-			int i = 0;
-			for (Operation each : theLevel.getOperations()) {
-				ParseObject parseOp = new ParseObject(
-						ParseLevelOperation.classname);
-				parseOp.put(ParseLevelOperation.level_field, level);
-				OperationType type = each.type();
-				parseOp.put(ParseLevelOperation.type_field, type.ordinal());
-				Operation op = each;
-				if (type == OperationType.WILD) {
-					WildCard wild = (WildCard) op;
-					op = wild.getActual();
-					type = op.type();
-					parseOp.put(ParseLevelOperation.wild_type_field,
-							type.ordinal());
-				}
+			postLevelOperations(theLevel, level);
 
-				switch (type) {
-				case ADD:
-					addExpression("", ((Add) op).getExpression(), parseOp);
-					break;
-				case SUBTRACT:
-					addExpression("", ((Subtract) op).getExpression(), parseOp);
-					break;
-				case MULTIPLY:
-					addExpression("", new Expression(Fraction.ZERO,
-							((Multiply) op).getFactor()), parseOp);
-					break;
-				case DIVIDE:
-					addExpression("", new Expression(Fraction.ZERO,
-							((Divide) op).getFactor()), parseOp);
-					break;
-				case SWAP:
-					break;
-				}
-				opToParseOp.put(each, parseOp);
-				parseOp.save();
-				i++;
-			}
-			i = 0;
+			postLevelMoves(level, theLevel.getLevelSolution()
+					.getFirstOperations(), 0);
+			postLevelMoves(level, theLevel.getLevelSolution()
+					.getSecondaryOperations1(), 1);
+			postLevelMoves(level, theLevel.getLevelSolution()
+					.getSecondaryOperations2(), 2);
 
-			for (Operation each : theLevel.getSolutionOperations()) {
-				ParseObject parseMove = new ParseObject(
-						ParseLevelMove.classname);
-				parseMove.put(ParseLevelMove.level_field, level);
-				parseMove.put(ParseLevelMove.sequence_field, i);
-				if (each != null) {
-					ParseObject parseOp = opToParseOp.get(each);
-					parseMove.put(ParseLevelMove.operation_field, parseOp);
-				}
-				parseMove.save();
-				i++;
-			}
 			return id;
 		} catch (ParseException e) {
 			throw new RuntimeException("Error writing level to parse", e);
+		}
+	}
+
+	private static ParseObject postMainLevel(CustomLevel theLevel)
+			throws ParseException {
+		ParseUser parseUser = ParseUser.getCurrentUser();
+
+		ParseObject level = new ParseObject(ParseCustomLevel.classname);
+		level.put(ParseCustomLevel.title_field, theLevel.getName());
+		level.put(ParseCustomLevel.createdBy_field, parseUser);
+
+		level.put(ParseCustomLevel.num_flags, 0);
+
+		Equation startEquation = theLevel.getEquation();
+		Fraction solution1 = theLevel.getSolutions().get(0);
+		level.put(ParseCustomLevel.solution_field, solution1.toString());
+		if (theLevel.getSolutions().size() > 1) {
+			Fraction solution2 = theLevel.getSolutions().get(1);
+			level.put(ParseCustomLevel.solution2_field, solution2.toString());
+		} else {
+			level.put(ParseCustomLevel.solution2_field, "0");
+		}
+
+		addExpression(ParseCustomLevel.lhs_expr_prefix, startEquation.getLhs(),
+				level);
+		addExpression(ParseCustomLevel.rhs_expr_prefix, startEquation.getRhs(),
+				level);
+
+		level.put(ParseCustomLevel.num_moves_field, theLevel.getMinMoves());
+		level.put(ParseCustomLevel.num_operations_field, theLevel
+				.getOperations().size());
+		level.save();
+		return level;
+	}
+
+	private static void postLevelOperations(CustomLevel theLevel,
+			ParseObject level) throws ParseException {
+		int opSequence = 0;
+		for (Operation each : theLevel.getOperations()) {
+			ParseObject parseOp = new ParseObject(ParseLevelOperation.classname);
+			parseOp.put(ParseLevelOperation.level_field, level);
+			parseOp.put(ParseLevelOperation.sequence_field, opSequence);
+			OperationType type = each.type();
+			parseOp.put(ParseLevelOperation.type_field, type.ordinal());
+			Operation op = each;
+			if (type == OperationType.WILD) {
+				WildCard wild = (WildCard) op;
+				op = wild.getActual();
+				type = op.type();
+				parseOp.put(ParseLevelOperation.wild_type_field, type.ordinal());
+			}
+
+			switch (type) {
+			case ADD:
+				addExpression("", ((Add) op).getExpression(), parseOp);
+				break;
+			case SUBTRACT:
+				addExpression("", ((Subtract) op).getExpression(), parseOp);
+				break;
+			case MULTIPLY:
+				addExpression(
+						"",
+						new Expression(Fraction.ZERO, ((Multiply) op)
+								.getFactor()), parseOp);
+				break;
+			case DIVIDE:
+				addExpression(
+						"",
+						new Expression(Fraction.ZERO, ((Divide) op).getFactor()),
+						parseOp);
+				break;
+			case SQUARE_ROOT:
+				break;
+			case SWAP:
+				break;
+			default:
+				throw new RuntimeException("Unhandled Operator type " + type);
+			}
+			parseOp.save();
+			opSequence++;
+		}
+	}
+
+	private static void postLevelMoves(ParseObject level,
+			List<Integer> opIndexes, int moveType) throws ParseException {
+		if (opIndexes == null) {
+			return;
+		}
+		int i;
+		i = 0;
+		for (Integer index : opIndexes) {
+			ParseObject parseMove = new ParseObject(ParseLevelMove.classname);
+			parseMove.put(ParseLevelMove.level_field, level);
+			parseMove.put(ParseLevelMove.move_type_field, moveType);
+			parseMove.put(ParseLevelMove.sequence_field, i);
+			parseMove.put(ParseLevelMove.operation_field, index);
+			parseMove.save();
+			i++;
 		}
 	}
 
@@ -198,10 +237,13 @@ public class ParseLevelHelper {
 		String serverId = level.getObjectId();
 		Fraction solution = format.parse(level
 				.getString(ParseCustomLevel.solution_field));
+		Fraction solution2 = format.parse(level
+				.getString(ParseCustomLevel.solution2_field));
 
 		Map<String, Operation> parseOpIdToOp = new HashMap<String, Operation>();
 		ParseQuery<ParseObject> query = new ParseQuery<ParseObject>(
 				ParseLevelOperation.classname);
+		query.orderByAscending(ParseLevelOperation.sequence_field);
 		query.whereEqualTo(ParseLevelOperation.level_field, level);
 		List<ParseObject> operations;
 		try {
@@ -216,9 +258,11 @@ public class ParseLevelHelper {
 			theOperations.add(op);
 		}
 
+		// get the moves in a single query
 		ParseQuery<ParseObject> moveQuery = new ParseQuery<ParseObject>(
 				ParseLevelMove.classname);
 		moveQuery.whereEqualTo(ParseLevelMove.level_field, level);
+		moveQuery.orderByAscending(ParseLevelMove.move_type_field);
 		moveQuery.orderByAscending(ParseLevelMove.sequence_field);
 		List<ParseObject> parseMoves;
 		try {
@@ -226,17 +270,25 @@ public class ParseLevelHelper {
 		} catch (ParseException e) {
 			throw new RuntimeException("error finding level's moves", e);
 		}
-
-		List<Operation> moveOperations = new ArrayList<Operation>();
-		Equation equation = startEquation;
+		// split them by move type
+		List<Integer> primMoves = new ArrayList<Integer>();
+		List<Integer> sec1Moves = new ArrayList<Integer>();
+		List<Integer> sec2Moves = new ArrayList<Integer>();
 		for (ParseObject each : parseMoves) {
-			Operation op = null;
-			ParseObject parseOp = (ParseObject) each
-					.getParseObject(ParseLevelMove.operation_field);
-			if (parseOp != null) {
-				op = parseOpIdToOp.get(parseOp.getObjectId());
-				equation = op.apply(equation);
-				moveOperations.add(op);
+			int moveType = each.getInt(ParseLevelMove.move_type_field);
+			int index = each.getInt(ParseLevelMove.operation_field);
+			switch (moveType) {
+			case 0:
+				primMoves.add(index);
+				break;
+			case 1:
+				sec1Moves.add(index);
+				break;
+			case 2:
+				sec2Moves.add(index);
+				break;
+			default:
+				throw new RuntimeException("Invalid 'moveType' " + moveType);
 			}
 		}
 
@@ -248,14 +300,17 @@ public class ParseLevelHelper {
 		builder.setTitle(title);
 		builder.setAuthor(creator.getString(ParseUserExtra.nickname_field));
 		builder.setSolution(solution);
+		if (sec1Moves.isEmpty()) {			
+			builder.setSolution2(null);
+		} else {
+			builder.setSolution2(solution2);			
+		}
 		builder.setServerId(serverId);
 		builder.getOperations().addAll(theOperations);
 		builder.defaultMaxSequence();
 
-		Collections.reverse(moveOperations);
-		for (Operation each : moveOperations) {
-			builder.apply(each);
-		}
+		CustomLevelDBReader.populateBuilderMovesFromOperationIndices(builder,
+				startEquation, primMoves, sec1Moves, sec2Moves);
 
 		return builder;
 	}

@@ -188,7 +188,8 @@ public class ChooseStageActivity extends GameActivity implements
 
 		if (id != null) {
 			startPuzzle(id);
-			finish();
+			// don't finish- in case back used, should go back to main menu for user
+			//finish();
 			return true;
 		}
 		return false;

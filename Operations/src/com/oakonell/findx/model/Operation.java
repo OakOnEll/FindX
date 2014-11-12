@@ -1,24 +1,26 @@
 package com.oakonell.findx.model;
 
-
 public interface Operation {
-    public enum OperationType {
-        ADD, SUBTRACT, MULTIPLY, DIVIDE, SWAP, SQUARE, SQUARE_ROOT, WILD;
-    }
+	public enum OperationType {
+		ADD, SUBTRACT, MULTIPLY, DIVIDE, SWAP, SQUARE, SQUARE_ROOT, WILD;
+	}
 
-    Equation apply(Equation equation);
+	Equation apply(Equation equation);
 
-    boolean isInverse(Operation op);
+	boolean isInverse(Operation op);
 
-    Operation inverse();
+	Operation inverse();
 
-    OperationType type();
+	OperationType type();
 
-    boolean canApply(Equation equation);
-    
-    void accept(OperationVisitor visitor);
+	boolean canApply(Equation equation);
 
-    // Wild Cards are not built at the start
+	void accept(OperationVisitor visitor);
+
+	// Wild Cards are not built at the start
 	boolean isBuilt();
+
+	Operation afterUsed();
+
 
 }

@@ -33,4 +33,18 @@ public class SecondaryEquationMove implements IMove {
 		return equation;
 	}
 
+	@Override
+	public void incrementMoveNum() {
+		// do nothing
+	}
+
+	public void decrementMoveNum() {
+		// do nothing
+	}
+
+	public String toString() {
+		return "Secondary solution " + num + ": "
+				+ getStartEquation().toString();
+	}
+
 }

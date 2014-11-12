@@ -24,6 +24,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Parcelable;
 import android.preference.PreferenceManager;
+import android.provider.BaseColumns;
 import android.support.v4.app.NavUtils;
 import android.util.Base64;
 import android.view.View;
@@ -63,6 +64,7 @@ import com.oakonell.findx.custom.parse.ParseLevelHelper;
 import com.oakonell.findx.data.DataBaseHelper;
 import com.oakonell.findx.data.DataBaseHelper.CustomLevelTable;
 import com.oakonell.findx.model.Expression;
+import com.oakonell.findx.model.IMove;
 import com.oakonell.findx.model.Level;
 import com.oakonell.findx.model.Levels;
 import com.oakonell.findx.model.Move;
@@ -283,7 +285,7 @@ public class CustomStageActivity extends GameActivity {
 
 			String title = builder.getTitle();
 			List<Operation> operations = builder.getOperations();
-			List<Move> moves = builder.getMoves();
+			List<IMove> moves = builder.getMoves();
 
 			DocumentBuilderFactory factory = DocumentBuilderFactory
 					.newInstance();
@@ -376,8 +378,13 @@ public class CustomStageActivity extends GameActivity {
 				};
 				each.accept(visitor);
 			}
-			List<Move> subList = moves.subList(1, moves.size());
-			for (Move each : subList) {
+			List<IMove> subList = moves.subList(1, moves.size());
+			for (IMove iEach : subList) {
+				// TODO
+				if (!(iEach instanceof Move)) {
+					continue;
+				}
+				Move each = (Move) iEach;
 				int opIndex = operations.indexOf(each.getOperation());
 				Element op = doc.createElement("m");
 				root.appendChild(op);
@@ -503,6 +510,8 @@ public class CustomStageActivity extends GameActivity {
 
 		UndoBarController.UndoBar undoBar = new UndoBarController.UndoBar(this);
 		undoBar.message("Deleted " + level.getName());
+		final String dbId = level.getDbId()+"";
+		
 		undoBar.listener(new UndoListener() {
 			@Override
 			public void onUndo(Parcelable token) {
@@ -513,8 +522,8 @@ public class CustomStageActivity extends GameActivity {
 				ContentValues values = new ContentValues();
 				values.put(CustomLevelTable.TO_DELETE, 0);
 				db.update(DataBaseHelper.CUSTOM_LEVEL_TABLE_NAME, values,
-						CustomLevelTable.SERVER_ID + "=?",
-						new String[] { level.getServerId() });
+						BaseColumns._ID + "=?",
+						new String[] { dbId});
 				db.close();
 
 				Toast.makeText(CustomStageActivity.this,
@@ -531,8 +540,8 @@ public class CustomStageActivity extends GameActivity {
 		ContentValues values = new ContentValues();
 		values.put(CustomLevelTable.TO_DELETE, 1);
 		db.update(DataBaseHelper.CUSTOM_LEVEL_TABLE_NAME, values,
-				CustomLevelTable.SERVER_ID + "=?",
-				new String[] { level.getServerId() });
+				BaseColumns._ID + "=?",
+				new String[] { dbId });
 		db.close();
 		Levels.resetCustomStage();
 		adapter.notifyDataSetChanged();

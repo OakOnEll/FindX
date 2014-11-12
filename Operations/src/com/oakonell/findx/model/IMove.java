@@ -2,6 +2,8 @@ package com.oakonell.findx.model;
 
 public interface IMove {
 
+	Equation getStartEquation();
+	
 	String getEndEquationString();
 
 	String getDescriptiontext();
@@ -9,6 +11,7 @@ public interface IMove {
 	boolean isSolved();
 
 	String getMoveNumText();
-	
 
+	void incrementMoveNum();
+	void decrementMoveNum();
 }
