@@ -68,7 +68,6 @@ public class PuzzleActivity extends GameActivity {
 	private Typeface chalkFont;
 
 	private int lastMoveIndexSeen = -1;
-	// Set<IMove> movesSeen = new HashSet<IMove>();
 	private SortedSet<MoveWithView> movesToAnimate = new TreeSet<MoveWithView>(
 			new Comparator<MoveWithView>() {
 				@Override
@@ -285,9 +284,6 @@ public class PuzzleActivity extends GameActivity {
 					boolean animate = position == lastMoveIndexSeen + 1;
 					synchronized (movesToAnimate) {
 						movesToAnimate.add(moveWithView);
-						// if (movesToAnimate.size() == 1) {
-						// animate = true;
-						// }
 					}
 					if (animate) {
 						animateWriteMove();
@@ -322,7 +318,6 @@ public class PuzzleActivity extends GameActivity {
 				boolean animate = false;
 				synchronized (movesToAnimate) {
 					// remove when done animating
-					// movesSeen.add(itemAndView.move);
 					lastMoveIndexSeen = itemAndView.index;
 					movesView.setSelection(lastMoveIndexSeen);
 					movesToAnimate.remove(itemAndView);
@@ -614,8 +609,6 @@ public class PuzzleActivity extends GameActivity {
 		Puzzle.readState(db, puzzle.getId(), puzzle);
 		db.close();
 		lastMoveIndexSeen = puzzle.getMoves().size() - 1;
-		// movesSeen.clear();
-		// movesSeen.addAll(puzzle.getMoves());
 		movesToAnimate.clear();
 
 		adapter.notifyDataSetChanged();
