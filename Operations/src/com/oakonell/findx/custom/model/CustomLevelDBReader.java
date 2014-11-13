@@ -16,7 +16,7 @@ import com.oakonell.findx.model.Equation;
 import com.oakonell.findx.model.Expression;
 import com.oakonell.findx.model.IMove;
 import com.oakonell.findx.model.Move;
-import com.oakonell.findx.model.MultipleSolutionMove;
+import com.oakonell.findx.model.MoveResult;
 import com.oakonell.findx.model.Operation;
 import com.oakonell.findx.model.Operation.OperationType;
 import com.oakonell.findx.model.SecondaryEquationMove;
@@ -170,38 +170,41 @@ public class CustomLevelDBReader {
 		Equation equation = startEquation;
 		builder.getPrimaryMoves().clear();
 		builder.getPrimaryMoves().add(new Move(startEquation, null, 0));
+		MoveResult branchResult = null;
 		for (Integer id : primaryMoveOpIds) {
+			if (branchResult != null) {
+				throw new RuntimeException(
+						"Shouldn't have any primary moves after a branch");
+			}
 			Operation operation = builder.getOperations().get(id);
 			if (operation == null) {
 				throw new RuntimeException("No operation in map with id " + id
 						+ ", while reading custom level " + builder.getId());
 			}
-			IMove imove;
-			if (operation instanceof SquareRoot) {
-				Equation rootEquation1 = operation.apply(equation);
-
-				imove = new MultipleSolutionMove(equation, operation,
-						rootEquation1.getLhs().toString() + " = ± ( "
-								+ rootEquation1.getRhs().toString() + " )",
-						moveNum);
-				equation = rootEquation1;
+			MoveResult moveResult = operation
+					.applyMove(equation, moveNum, null);
+			builder.getPrimaryMoves().add(moveResult.getPrimaryMove());
+			if (moveResult.hasMultiple()) {
+				branchResult = moveResult;
 			} else {
-				Move move = new Move(equation, operation, moveNum);
-				imove = move;
-				equation = move.getEndEquation();
+				equation = moveResult.getPrimaryEndEquation();
 			}
+
 			moveNum++;
-			builder.getPrimaryMoves().add(imove);
 		}
 		EquationAndMove eqAndMove = new EquationAndMove();
-		if (secondary1MoveOpIds.isEmpty()) return;
-		
-		eqAndMove.equation = equation;
+		if (secondary1MoveOpIds.isEmpty()) {
+			if (branchResult != null) {
+				throw new RuntimeException("No secondary operators");
+			}
+			return;
+		}
+
+		eqAndMove.equation = branchResult.getSecondary1().getStartEquation();
 		eqAndMove.moveNum = moveNum;
 		addSecondaryMoves(builder, secondary1MoveOpIds,
 				builder.getSecondary1Moves(), eqAndMove, 1);
-		eqAndMove.equation = new Equation(equation.getLhs(),
-				Multiply.NEGATE.apply(equation.getRhs()));
+		eqAndMove.equation = branchResult.getSecondary2().getStartEquation();
 		addSecondaryMoves(builder, secondary2MoveOpIds,
 				builder.getSecondary2Moves(), eqAndMove, 2);
 	}

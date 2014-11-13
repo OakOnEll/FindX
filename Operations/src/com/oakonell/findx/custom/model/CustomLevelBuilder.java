@@ -14,9 +14,8 @@ import com.oakonell.findx.model.IMove;
 import com.oakonell.findx.model.IMoveWithOperation;
 import com.oakonell.findx.model.Level.LevelSolution;
 import com.oakonell.findx.model.Move;
-import com.oakonell.findx.model.MultipleSolutionMove;
+import com.oakonell.findx.model.MoveResult;
 import com.oakonell.findx.model.Operation;
-import com.oakonell.findx.model.SecondaryEquationMove;
 import com.oakonell.findx.model.Stage;
 import com.oakonell.findx.model.ops.Multiply;
 import com.oakonell.findx.model.ops.SquareRoot;
@@ -30,13 +29,15 @@ public class CustomLevelBuilder extends TempCorrectLevelBuilder {
 	public List<IMove> getPrimaryMoves() {
 		return primaryMoves;
 	}
+
 	public List<IMove> getSecondary1Moves() {
 		return secondary1Moves;
 	}
+
 	public List<IMove> getSecondary2Moves() {
 		return secondary2Moves;
 	}
-	
+
 	public boolean canReplaceOperation(Operation operation) {
 		// the same logistics apply to delete/edit, as an edit is effectively a
 		// delete and apply the new operation
@@ -47,7 +48,7 @@ public class CustomLevelBuilder extends TempCorrectLevelBuilder {
 		if (op instanceof SquareRoot) {
 			// can't delete a square root operation if it is used
 			IMove last = primaryMoves.get(primaryMoves.size() - 1);
-			return !(last instanceof MultipleSolutionMove && ((MultipleSolutionMove) last)
+			return !(last instanceof IMoveWithOperation && ((IMoveWithOperation) last)
 					.getOperation().equals(op));
 		}
 		// otherwise, can't delete it if it is used in the secondary solutions
@@ -66,15 +67,10 @@ public class CustomLevelBuilder extends TempCorrectLevelBuilder {
 
 	private boolean usesOperation(Operation op, List<IMove> moves) {
 		for (IMove iEach : moves) {
-			if (iEach instanceof MultipleSolutionMove) {
-				if (((MultipleSolutionMove) iEach).getOperation().equals(op)) {
-					return true;
-				}
-			}
-			if (!(iEach instanceof Move))
+			if (!(iEach instanceof IMoveWithOperation)) {
 				continue;
-
-			Move each = (Move) iEach;
+			}
+			IMoveWithOperation each = (IMoveWithOperation) iEach;
 
 			if (each.getOperation() != null && each.getOperation().equals(op)) {
 				return true;
@@ -197,22 +193,19 @@ public class CustomLevelBuilder extends TempCorrectLevelBuilder {
 		Equation newStartEquation = inverse.apply(move.getStartEquation());
 
 		// here, need to solve the TWO equations if there was a branch
-		Move newMove = new Move(newStartEquation, op, 1);
-		if (op instanceof SquareRoot
-				&& !(newStartEquation.getRhs().isZero() || newStartEquation
-						.getLhs().isZero())) {
+		MoveResult applyMove = op.applyMove(newStartEquation, 1, null);
+		if (applyMove.hasMultiple()) {
 			// TODO put up a progress dialog for resolving roots
 			// completely replace the moves list with these two solution moves
 			int numMoves = primaryMoves.size();
 			primaryMoves.clear();
 
-			Equation rootEquation1 = op.apply(newStartEquation);
-			Multiply negateOp = Multiply.NEGATE;
-			Equation rootEquation2 = new Equation(rootEquation1.getLhs(),
-					negateOp.apply(rootEquation1.getRhs()));
-			primaryMoves.add(new MultipleSolutionMove(newStartEquation, op,
-					rootEquation1.getLhs().toString() + " = ± ( "
-							+ rootEquation1.getRhs().toString() + " )", 1));
+			primaryMoves.add(0, applyMove.getPrimaryMove());
+
+			Equation rootEquation1 = applyMove.getSecondary1()
+					.getStartEquation();
+			Equation rootEquation2 = applyMove.getSecondary2()
+					.getStartEquation();
 			EquationSolver solver = new EquationSolver();
 			List<Operation> modOps = new ArrayList<Operation>(operations);
 			modOps.remove(op);
@@ -230,13 +223,13 @@ public class CustomLevelBuilder extends TempCorrectLevelBuilder {
 						"Unexpected state- root solutions do not contain original solution.");
 			}
 
-			secondary1Moves.add(new SecondaryEquationMove(rootEquation1, 1));
+			secondary1Moves.add(applyMove.getSecondary1());
 			int i = 2;
 			for (Move each : solution1.moves) {
 				secondary1Moves.add(new Move(each.getStartEquation(), each
 						.getOperation(), i++));
 			}
-			secondary2Moves.add(new SecondaryEquationMove(rootEquation2, 2));
+			secondary2Moves.add(applyMove.getSecondary2());
 			for (Move each : solution2.moves) {
 				secondary2Moves.add(new Move(each.getStartEquation(), each
 						.getOperation(), i++));
@@ -246,7 +239,7 @@ public class CustomLevelBuilder extends TempCorrectLevelBuilder {
 				// adjust each move's move Number
 				incrementMoveNumbers();
 			}
-			primaryMoves.add(0, newMove);
+			primaryMoves.add(0, applyMove.getPrimaryMove());
 		}
 
 		primaryMoves.add(0, new Move(newStartEquation, null, 0));
@@ -312,7 +305,8 @@ public class CustomLevelBuilder extends TempCorrectLevelBuilder {
 			return;
 		}
 
-		// revisit all the moves after the first use of the operation being replaced
+		// revisit all the moves after the first use of the operation being
+		// replaced
 		Equation solvedEquation = new Equation(new Expression(1, 0),
 				new Expression(Fraction.ZERO, solution));
 		Move solvedMove = new Move(solvedEquation, null, 0);

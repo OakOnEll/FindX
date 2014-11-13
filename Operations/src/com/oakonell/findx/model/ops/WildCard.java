@@ -1,6 +1,9 @@
 package com.oakonell.findx.model.ops;
 
+import java.util.List;
+
 import com.oakonell.findx.model.Equation;
+import com.oakonell.findx.model.MoveResult;
 import com.oakonell.findx.model.Operation;
 import com.oakonell.findx.model.OperationVisitor;
 
@@ -23,6 +26,15 @@ public class WildCard implements Operation {
 					"Actual operation for wildcard has not been assigned");
 		}
 		return actual.apply(equation);
+	}
+
+	@Override
+	public MoveResult applyMove(Equation equation, int moveNum, List<Operation> operations) {
+		if (actual == null) {
+			throw new IllegalStateException(
+					"Actual operation for wildcard has not been assigned");
+		}
+		return actual.applyMove(equation, moveNum, operations);
 	}
 
 	@Override

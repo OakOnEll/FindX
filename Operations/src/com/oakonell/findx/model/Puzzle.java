@@ -1,7 +1,6 @@
 package com.oakonell.findx.model;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,7 +31,7 @@ public class Puzzle {
 	private List<IMove> moves = new ArrayList<IMove>();
 	private List<Operation> operations;
 
-	private Equation equationInWaiting;
+	private IMove moveInWaiting;
 	private Equation currentEquation;
 	private int numMoves = 0;
 	private int squareRootOpIndex = -1;
@@ -51,7 +50,7 @@ public class Puzzle {
 			int numUndosUsed, Map<Integer, Operation> builtWilds) {
 		level = Levels.get(puzzleId);
 		currentEquation = level.getEquation();
-		equationInWaiting = null;
+		moveInWaiting = null;
 		numMoves = 0;
 		squareRootOpIndex = -1;
 		moves.clear();
@@ -282,7 +281,7 @@ public class Puzzle {
 	}
 
 	private int getOperatorIndex(IMoveWithOperation move) {
-		if (move.getOperation().equals(new SquareRoot())
+		if ((move.getOperation() instanceof SquareRoot)
 				&& squareRootOpIndex >= 0) {
 			// if a square root operator was used, we marked its index
 			return squareRootOpIndex;
@@ -291,12 +290,14 @@ public class Puzzle {
 		// loop to find it
 		int index = 0;
 		for (Operation each : getOperations()) {
-			// if the square root has been applied, a "multiply by -1" can simply be the square root changed operator
-			if (each.equals(Multiply.NEGATE) && squareRootOpIndex > 0 ) {
+			// if the square root has been applied, a "multiply by -1" can
+			// simply be the square root changed operator
+			if (each.equals(Multiply.NEGATE) && squareRootOpIndex > 0) {
 				return squareRootOpIndex;
 			}
-			
-			// Wild cards are stored as the WildCard operation, and so will match
+
+			// Wild cards are stored as the WildCard operation, and so will
+			// match
 			if (each.equals(move.getOperation())) {
 				return index;
 			}
@@ -496,51 +497,31 @@ public class Puzzle {
 		Equation startEquation = currentEquation;
 
 		numMoves++;
-		Move move = new Move(startEquation, operation, numMoves);
-		currentEquation = move.getEndEquation();
 		if (operation instanceof SquareRoot) {
-			Multiply negateOp = Multiply.NEGATE;
-			if (!(currentEquation.getRhs().isZero() || currentEquation.getLhs()
-					.isZero())) {
-				moves.add(new MultipleSolutionMove(startEquation, operation,
-						currentEquation.getLhs().toString() + " = ± ( "
-								+ currentEquation.getRhs().toString() + " )",
-						numMoves));
-				moves.add(new SecondaryEquationMove(move.getEndEquation(), 1));
-				// conditionally switch this no longer useful operator to a
-				// multiply(-1) if one is not already present...
-				equationInWaiting = new Equation(
-						move.getEndEquation().getLhs(), negateOp.apply(move
-								.getEndEquation().getRhs()));
-			} else {
-				moves.add(move);
-			}
-			boolean hasMutiplyNeg1 = false;
-			for (Operation each : operations) {
-				if (each instanceof Multiply) {
-					if (((Multiply) each).getFactor().compareTo(Fraction.ONE) != 0) {
-						hasMutiplyNeg1 = true;
-					}
-				}
-			}
-			// keep track of used square root
 			squareRootOpIndex = operations.indexOf(new SquareRoot());
-			if (!hasMutiplyNeg1) {
-				Collections.replaceAll(operations, operation, negateOp);
-			}
-		} else {
-			moves.add(move);
 		}
-		if (move.getEndEquation().isSolved() && equationInWaiting != null) {
-			moves.add(new SecondaryEquationMove(equationInWaiting, 2));
+		MoveResult moveResult = operation.applyMove(startEquation, numMoves,
+				operations);
+		moves.add(moveResult.getPrimaryMove());
+		if (moveResult.hasMultiple()) {
+			IMove secondary1 = moveResult.getSecondary1();
+			moves.add(secondary1);
+			currentEquation = secondary1.getStartEquation();
+			moveInWaiting = moveResult.getSecondary2();
+		} else {
+			currentEquation = moveResult.getPrimaryEndEquation();
+		}
+
+		if (currentEquation.isSolved() && moveInWaiting != null) {
+			moves.add(moveInWaiting);
 			// firstSolution = move.getEndEquation().getRhs().getConstant();
-			currentEquation = equationInWaiting;
-			equationInWaiting = null;
+			currentEquation = moveInWaiting.getStartEquation();
+			moveInWaiting = null;
 		}
 	}
 
 	public boolean isSolved() {
-		return equationInWaiting == null && !moves.isEmpty()
+		return moveInWaiting == null && !moves.isEmpty()
 				&& currentEquation.isSolved();
 	}
 

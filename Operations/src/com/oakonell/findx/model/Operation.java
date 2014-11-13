@@ -1,11 +1,15 @@
 package com.oakonell.findx.model;
 
+import java.util.List;
+
 public interface Operation {
 	public enum OperationType {
 		ADD, SUBTRACT, MULTIPLY, DIVIDE, SWAP, SQUARE, SQUARE_ROOT, WILD;
 	}
 
 	Equation apply(Equation equation);
+	
+	MoveResult applyMove(Equation equation, int moveNum, List<Operation> operations); 
 
 	boolean isInverse(Operation op);
 
