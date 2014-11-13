@@ -43,7 +43,7 @@
             android:layout_width="32dp"
             android:layout_height="30dp"
             android:layout_gravity="right"
-            android:src="@drawable/ic_item_menu" />
+            android:src="@drawable/level_item_menu" />
     </FrameLayout>
 
     <RatingBar
