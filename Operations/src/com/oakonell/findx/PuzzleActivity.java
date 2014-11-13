@@ -1,7 +1,10 @@
 package com.oakonell.findx;
 
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -64,7 +67,16 @@ public class PuzzleActivity extends GameActivity {
 	protected SoundManager soundManager;
 	private Typeface chalkFont;
 
-	private boolean animateNewMove;
+	private int lastMoveIndexSeen = -1;
+	// Set<IMove> movesSeen = new HashSet<IMove>();
+	private SortedSet<MoveWithView> movesToAnimate = new TreeSet<MoveWithView>(
+			new Comparator<MoveWithView>() {
+				@Override
+				public int compare(MoveWithView lhs, MoveWithView rhs) {
+					return lhs.index < rhs.index ? -1
+							: (lhs.index == rhs.index ? 0 : 1);
+				}
+			});
 
 	/** Called when the activity is first created. */
 	@Override
@@ -116,7 +128,7 @@ public class PuzzleActivity extends GameActivity {
 		minMoves.setText(Integer.toString(puzzle.getMinMoves()));
 		minMoves.setTypeface(chalkFont);
 
-		final ListView movesView = (ListView) findViewById(R.id.moves);
+		movesView = (ListView) findViewById(R.id.moves);
 
 		// LayoutInflater inflater = getLayoutInflater();
 		// View header = inflater.inflate(R.layout.move, (ViewGroup)
@@ -204,7 +216,17 @@ public class PuzzleActivity extends GameActivity {
 
 	}
 
-	int moveSeen;
+	private static class MoveViewHolder {
+		DelayedTextView moveNum;
+		DelayedTextView op;
+		DelayedTextView eq;
+	}
+
+	private static class MoveWithView {
+		int index;
+		IMove move;
+		MoveViewHolder holder;
+	}
 
 	private void initializeAdapter(final ListView movesView) {
 		adapter = new ArrayAdapter<IMove>(getApplication(), R.layout.move,
@@ -213,25 +235,29 @@ public class PuzzleActivity extends GameActivity {
 			@Override
 			public View getView(int position, View inputRow, ViewGroup parent) {
 				View row = inputRow;
+				MoveViewHolder holder;
 				if (row == null) {
 					row = getLayoutInflater().inflate(R.layout.move, parent,
 							false);
+					holder = new MoveViewHolder();
+					holder.moveNum = (DelayedTextView) row
+							.findViewById(R.id.move_num);
+					holder.op = (DelayedTextView) row
+							.findViewById(R.id.operation);
+					holder.eq = (DelayedTextView) row
+							.findViewById(R.id.equation);
+					row.setTag(holder);
+				} else {
+					holder = (MoveViewHolder) row.getTag();
 				}
 				row.setVisibility(View.VISIBLE);
 
 				IMove item = getItem(position);
 
-				DelayedTextView moveNum = (DelayedTextView) row
-						.findViewById(R.id.move_num);
-				DelayedTextView op = (DelayedTextView) row
-						.findViewById(R.id.operation);
-				DelayedTextView eq = (DelayedTextView) row
-						.findViewById(R.id.equation);
-
 				if (inputRow == null) {
-					moveNum.setTypeface(chalkFont);
-					op.setTypeface(chalkFont);
-					eq.setTypeface(chalkFont);
+					holder.moveNum.setTypeface(chalkFont);
+					holder.op.setTypeface(chalkFont);
+					holder.eq.setTypeface(chalkFont);
 				}
 
 				String moveNumString = item.getMoveNumText();
@@ -240,57 +266,90 @@ public class PuzzleActivity extends GameActivity {
 				int index = moves.indexOf(item);
 				Log.i("Puzzle", (inputRow == null ? "inputRow is null" : "")
 						+ ", for move " + index + " out of " + moves.size()
-						+ " moves: animate = " + animateNewMove);
-				if (index != -1 && index >= moveSeen && animateNewMove) {
-					// clear it out- it is a reused view
-					moveNum.writeText(Html.fromHtml(""));
-					op.writeText(Html.fromHtml(""));
-					eq.writeText(Html.fromHtml(""));
+						+ " moves");
 
-					animateNewMove = false;
-					SoundInfo soundInfo = new SoundInfo();
-					soundInfo.soundManager = soundManager;
-					soundInfo.streamId = soundManager.playSound(Sounds.CHALK,
-							true);
-
-					TextViewInfo eqInfo = new TextViewInfo();
-					eqInfo.text = item.getEndEquationString();
-					eqInfo.textView = eq;
-					eqInfo.animationFinished = new Runnable() {
-						@Override
-						public void run() {
-							moveAnimationFinished();
-						}
-					};
-
-					TextViewInfo opInfo = new TextViewInfo();
-					opInfo.text = moveText;
-					opInfo.textView = op;
-					opInfo.next = eqInfo;
-
-					TextViewInfo moveInfo = new TextViewInfo();
-					moveInfo.text = moveNumString;
-					moveInfo.textView = moveNum;
-					moveInfo.next = opInfo;
-
-					moveNum.writeWithDelay(soundInfo, moveInfo);
-					// moveNum.setText(moveNumString);
-					// op.setText(operation != null ? operation.toString() :
-					// "");
-					// eq.setText(item.getEndEquation().toString());
+				// if (movesSeen.contains(item)) {
+				if (lastMoveIndexSeen >= position) {
+					holder.moveNum.writeText(Html.fromHtml(moveNumString));
+					holder.op.writeText(Html.fromHtml(moveText));
+					holder.eq.writeText(Html.fromHtml(item
+							.getEndEquationString()));
 				} else {
-					moveNum.writeText(Html.fromHtml(moveNumString));
-					op.writeText(Html.fromHtml(moveText));
-					eq.writeText(Html.fromHtml(item.getEndEquationString()));
+					holder.moveNum.writeText(Html.fromHtml(""));
+					holder.op.writeText(Html.fromHtml(""));
+					holder.eq.writeText(Html.fromHtml(""));
+					MoveWithView moveWithView = new MoveWithView();
+					moveWithView.holder = holder;
+					moveWithView.move = item;
+					moveWithView.index = position;
+					boolean animate = position == lastMoveIndexSeen + 1;
+					synchronized (movesToAnimate) {
+						movesToAnimate.add(moveWithView);
+						// if (movesToAnimate.size() == 1) {
+						// animate = true;
+						// }
+					}
+					if (animate) {
+						animateWriteMove();
+					}
 				}
-				if (index > moveSeen)
-					moveSeen = index;
+
 				return row;
 			}
 
 		};
 
 		movesView.setAdapter(adapter);
+	}
+
+	private void animateWriteMove() {
+		MoveWithView obj;
+		synchronized (movesToAnimate) {
+			obj = movesToAnimate.iterator().next();
+		}
+		final MoveWithView itemAndView = obj;
+
+		SoundInfo soundInfo = new SoundInfo();
+		soundInfo.soundManager = soundManager;
+		soundInfo.streamId = soundManager.playSound(Sounds.CHALK, true);
+
+		TextViewInfo eqInfo = new TextViewInfo();
+		eqInfo.text = itemAndView.move.getEndEquationString();
+		eqInfo.textView = itemAndView.holder.eq;
+		eqInfo.animationFinished = new Runnable() {
+			@Override
+			public void run() {
+				boolean animate = false;
+				synchronized (movesToAnimate) {
+					// remove when done animating
+					// movesSeen.add(itemAndView.move);
+					lastMoveIndexSeen = itemAndView.index;
+					movesView.setSelection(lastMoveIndexSeen);
+					movesToAnimate.remove(itemAndView);
+					if (!movesToAnimate.isEmpty()) {
+						animate = true;
+					}
+				}
+				if (animate) {
+					animateWriteMove();
+				} else {
+					moveAnimationFinished();
+				}
+			}
+		};
+
+		TextViewInfo opInfo = new TextViewInfo();
+		opInfo.text = itemAndView.move.getDescriptiontext();
+		opInfo.textView = itemAndView.holder.op;
+		opInfo.next = eqInfo;
+
+		TextViewInfo moveInfo = new TextViewInfo();
+		moveInfo.text = itemAndView.move.getMoveNumText();
+		moveInfo.textView = itemAndView.holder.moveNum;
+		moveInfo.next = opInfo;
+
+		itemAndView.holder.moveNum.writeWithDelay(soundInfo, moveInfo);
+
 	}
 
 	private void configureOperationButtons(final ListView movesView) {
@@ -343,13 +402,12 @@ public class PuzzleActivity extends GameActivity {
 				// move
 				puzzle.apply(operation);
 
-				animateNewMove = true;
 				configureOperationButtons(movesView);
 				handleUndoEnabling();
 				handleRestartEnabling();
 
 				// adapter.notifyDataSetChanged();
-				movesView.setSelection(puzzle.getNumMoves());
+				movesView.setSelection(puzzle.getMoves().size() - 1);
 
 				if (puzzle.isSolved()) {
 					levelIsFinished = true;
@@ -389,6 +447,7 @@ public class PuzzleActivity extends GameActivity {
 	}
 
 	private boolean levelIsFinished;
+	private ListView movesView;
 
 	private void moveAnimationFinished() {
 		if (levelIsFinished) {
@@ -554,6 +613,10 @@ public class PuzzleActivity extends GameActivity {
 
 		Puzzle.readState(db, puzzle.getId(), puzzle);
 		db.close();
+		lastMoveIndexSeen = puzzle.getMoves().size() - 1;
+		// movesSeen.clear();
+		// movesSeen.addAll(puzzle.getMoves());
+		movesToAnimate.clear();
 
 		adapter.notifyDataSetChanged();
 	}
