@@ -210,10 +210,12 @@ public class CustomLevelBuilder extends TempCorrectLevelBuilder {
 			List<Operation> modOps = new ArrayList<Operation>(operations);
 			modOps.remove(op);
 			modOps.add(Multiply.NEGATE);
+			// A Fudge factor, in case the chosen root equation needs a couple of MULTIPLY operations
+			int fudgeFactor = 3;
 			Solution solution1 = solver.solve(rootEquation1, modOps,
-					numMoves + 1, null);
+					numMoves + fudgeFactor, null);
 			Solution solution2 = solver.solve(rootEquation2, modOps,
-					numMoves + 1, null);
+					numMoves + fudgeFactor, null);
 			if (solution1.solution.compareTo(solution) == 0) {
 				secondarySolution = solution2.solution;
 			} else if (solution2.solution.compareTo(solution) == 0) {
@@ -364,39 +366,10 @@ public class CustomLevelBuilder extends TempCorrectLevelBuilder {
 					getOperations());
 		}
 		List<Integer> secondary1 = new ArrayList<Integer>();
-		for (IMove iEach : secondary1Moves) {
-			if (!(iEach instanceof IMoveWithOperation))
-				continue;
-
-			IMoveWithOperation each = (IMoveWithOperation) iEach;
-			if (each.getOperation() == null) {
-				continue;
-			}
-			int indexOf = operations.indexOf(each.getOperation());
-			if (indexOf == -1) {
-				throw new RuntimeException("The custom level " + getId()
-						+ " solution moves contains an invalid operation "
-						+ each.getOperation());
-			}
-			secondary1.add(indexOf);
-		}
+		addSecondaryOpIndices(secondary1, secondary1Moves);
 		List<Integer> secondary2 = new ArrayList<Integer>();
-		for (IMove iEach : secondary1Moves) {
-			if (!(iEach instanceof IMoveWithOperation))
-				continue;
+		addSecondaryOpIndices(secondary2, secondary2Moves);
 
-			IMoveWithOperation each = (IMoveWithOperation) iEach;
-			if (each.getOperation() == null) {
-				continue;
-			}
-			int indexOf = operations.indexOf(each.getOperation());
-			if (indexOf == -1) {
-				throw new RuntimeException("The custom level " + getId()
-						+ " solution moves contains an invalid operation "
-						+ each.getOperation());
-			}
-			secondary2.add(indexOf);
-		}
 		List<Fraction> solutions = new ArrayList<Fraction>();
 		solutions.add(solution);
 		solutions.add(secondarySolution);
@@ -404,6 +377,35 @@ public class CustomLevelBuilder extends TempCorrectLevelBuilder {
 				.getStartEquation(), secondary1, secondary2Moves.get(0)
 				.getStartEquation(), secondary2);
 
+	}
+
+	private void addSecondaryOpIndices(List<Integer> secondary1,
+			List<IMove> sourceMoves) {
+		for (IMove iEach : sourceMoves) {
+			if (!(iEach instanceof IMoveWithOperation))
+				continue;
+
+			IMoveWithOperation each = (IMoveWithOperation) iEach;
+			Operation operation = each.getOperation();
+			if (operation == null) {
+				continue;
+			}
+			int indexOf = operations.indexOf(operation);
+			if (indexOf == -1) {
+				if (! operation.equals(Multiply.NEGATE))  {
+					throw new RuntimeException("The custom level " + getId()
+						+ " solution moves contains an invalid operation "
+						+ operation);
+				}
+				indexOf = operations.indexOf(new SquareRoot());
+				if (indexOf ==-1) {
+					throw new RuntimeException("The custom level " + getId()
+							+ " solution moves contains an invalid operation "
+							+ operation);					
+				}
+			}
+			secondary1.add(indexOf);
+		}
 	}
 
 	public void replaceMoves(Solution result) {

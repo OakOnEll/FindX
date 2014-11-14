@@ -152,8 +152,12 @@ public class CustomLevelDBWriter {
 			opInfo.put(DataBaseHelper.CustomLevelMovesTable.CUSTOM_LEVEL_ID, id);
 			opInfo.put(DataBaseHelper.CustomLevelMovesTable.MOVE_TYPE, moveType);
 			opInfo.put(DataBaseHelper.CustomLevelMovesTable.SEQ_NUM, index);
+			int opIndex = operations.indexOf(operation);
+			if (opIndex < 0 && operation == Multiply.NEGATE) {
+				opIndex = operations.indexOf(new SquareRoot());
+			}
 			opInfo.put(DataBaseHelper.CustomLevelMovesTable.OPERATION_ID,
-					operations.indexOf(operation));
+					opIndex);
 			db.insert(DataBaseHelper.CUSTOM_LEVEL_MOVES_TABLE_NAME, null,
 					opInfo);
 			numWritten++;

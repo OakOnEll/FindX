@@ -7,13 +7,35 @@ import java.util.List;
 import junit.framework.TestCase;
 
 import com.oakonell.findx.custom.model.AbstractEquationSolver.Solution;
+import com.oakonell.findx.custom.model.CustomLevelBuilder;
 import com.oakonell.findx.custom.model.EquationSolver;
 import com.oakonell.findx.model.ops.Add;
 import com.oakonell.findx.model.ops.SquareRoot;
 
 public class EquationSolverTest extends TestCase {
 
+	public void testRootXOtherside() {
+		SquareRoot squareRoot = new SquareRoot();
+		Add addX = new Add(new Expression(1,0));
+		Add addTwo = new Add(new Expression(2));
+		
+		CustomLevelBuilder builder = new CustomLevelBuilder();
+		builder.addOperation(squareRoot);
+		builder.addOperation(addX);
+		builder.addOperation(addTwo);
+		
+		builder.apply(addX);
+		builder.apply(addTwo);
+		builder.apply(squareRoot);
+		
+//		EquationSolver solver = new EquationSolver();
+//		Solution solve = solver.solve(new Equation(new Expression(0, 0, -2),
+//				new Expression(0, 0, 0)), builder.getOperations(), 2, null);
+	}
+
+	
 	public void testBetterSolution() {
+		// TODO 
 		EquationSolver solver = new EquationSolver();
 		List<Operation> operations = new ArrayList<Operation>();
 		SquareRoot squareRoot = new SquareRoot();
@@ -25,8 +47,6 @@ public class EquationSolverTest extends TestCase {
 		
 		Solution solve = solver.solve(new Equation(new Expression(1, 0, -1),
 				new Expression(0, 0, 0)), operations, 2, null);
-		
-		
 	}
 	
 	public void testSolveSquareRoot() {
