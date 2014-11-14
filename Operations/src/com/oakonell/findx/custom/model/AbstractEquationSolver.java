@@ -8,10 +8,11 @@ import org.apache.commons.collections.map.ReferenceMap;
 import org.apache.commons.math3.fraction.Fraction;
 
 import com.oakonell.findx.model.Equation;
+import com.oakonell.findx.model.IMove;
 import com.oakonell.findx.model.Move;
+import com.oakonell.findx.model.MoveResult;
 import com.oakonell.findx.model.Operation;
 import com.oakonell.findx.model.ops.Multiply;
-import com.oakonell.findx.model.ops.SquareRoot;
 
 public abstract class AbstractEquationSolver {
 
@@ -22,13 +23,73 @@ public abstract class AbstractEquationSolver {
 	}
 
 	public static class Solution {
-		// Equation equation;
-		// List<Operation> operations;
 		public Fraction solution;
-		public List<Move> moves;
+		public Fraction solution2;
+		public List<IMove> primaryMoves;
+		public List<IMove> secondary1Moves;
+		public List<IMove> secondary2Moves;
+
+		public Solution(SolverState state, List<Operation> moves) {
+			this(state, moves, null, null);
+		}
+
+		public Solution(SolverState state, List<Operation> moves,
+				Solution solve, Solution solve2) {
+			Equation equation = state.startEquation;
+			primaryMoves = new ArrayList<IMove>();
+			primaryMoves.add(new Move(equation, null));
+			int moveNum = 1;
+			MoveResult applyMove = null;
+			for (Operation each : moves) {
+				applyMove = each.applyMove(equation, moveNum, null);
+				primaryMoves.add(applyMove.getPrimaryMove());
+				equation = applyMove.getPrimaryEndEquation();
+				moveNum++;
+			}
+
+			if (applyMove != null && applyMove.hasMultiple()) {
+				secondary1Moves = new ArrayList<IMove>();
+				secondary2Moves = new ArrayList<IMove>();
+
+				equation = applyMove.getSecondary1().getStartEquation();
+				secondary1Moves.add(applyMove.getSecondary1());
+				for (IMove each : solve.primaryMoves) {
+					if (!(each instanceof Move)) {
+						continue;
+					}
+					if (((Move) each).getOperation() == null) continue;
+					secondary1Moves.add(new Move(each.getStartEquation(),
+							((Move) each).getOperation(), moveNum++));
+					equation = ((Move) each).getEndEquation();
+				}
+				solution = equation.getRhs().getConstant();
+
+				equation = applyMove.getSecondary2().getStartEquation();
+				secondary2Moves.add(applyMove.getSecondary2());
+				for (IMove each : solve2.primaryMoves) {
+					if (!(each instanceof Move)) {
+						continue;
+					}
+					if (((Move) each).getOperation() == null) continue;
+					secondary2Moves.add(new Move(each.getStartEquation(),
+							((Move) each).getOperation(), moveNum++));
+					equation = ((Move) each).getEndEquation();
+				}
+				solution2 = equation.getRhs().getConstant();
+			} else {
+				if (equation.isSolved()) {
+					solution = equation.getRhs().getConstant();
+				}
+			}
+
+		}
 
 		public int getNumMoves() {
-			return moves.size();
+			int size = primaryMoves.size() - 1;
+			if (secondary1Moves != null) {
+				size += secondary1Moves.size() + secondary2Moves.size() - 2;
+			}
+			return size;
 		}
 	}
 
@@ -45,7 +106,7 @@ public abstract class AbstractEquationSolver {
 		protected Equation startEquation;
 		protected Equation equation;
 
-		protected List<Operation> solution;
+		private Solution currentSolution;
 
 		protected int maxDepth;
 		private int initialMaxDepth;
@@ -54,8 +115,6 @@ public abstract class AbstractEquationSolver {
 		// good for 5 operations up to ~27 moves
 		private long numMovesVisited;
 		private OnCalculateMove onCalculateMove;
-
-		public Fraction solutionValue;
 
 		public int getMaxDepth() {
 			return maxDepth;
@@ -70,33 +129,29 @@ public abstract class AbstractEquationSolver {
 		}
 
 		public boolean hasCurrentSolution() {
-			return solution != null;
+			return currentSolution != null;
 		}
 
 		public int getCurrentSolutionDepth() {
-			return solution == null ? -1 : solution.size();
+			return currentSolution == null ? -1 : currentSolution.getNumMoves();
 		}
 
-		public List<Move> getCurrentSolution() {
-			if (solution == null) {
-				return null;
-			}
-			List<Move> moves = new ArrayList<Move>();
-			Equation eq = startEquation;
-			for (Operation each : solution) {
-				Move move = new Move(eq, each);
-				moves.add(move);
-				eq = move.getEndEquation();
-			}
-			return moves;
-		}
+		// public List<Move> getCurrentSolution() {
+		// if (solution == null) {
+		// return null;
+		// }
+		// List<Move> moves = new ArrayList<Move>();
+		// Equation eq = startEquation;
+		// for (Operation each : solution) {
+		// Move move = new Move(eq, each);
+		// moves.add(move);
+		// eq = move.getEndEquation();
+		// }
+		// return moves;
+		// }
 
-		public Solution asSolution() {
-			Solution solution = new Solution();
-			solution.moves = getCurrentSolution();
-			solution.solution = solution.moves.get(solution.moves.size() - 1)
-					.getEndEquation().getRhs().getConstant();
-			return solution;
+		public Solution getSolution() {
+			return currentSolution;
 		}
 	}
 
@@ -124,14 +179,7 @@ public abstract class AbstractEquationSolver {
 
 		depthSearch(state);
 
-		if (state.solution == null) {
-			return null;
-		}
-
-		Solution solution = new Solution();
-		solution.moves = state.getCurrentSolution();
-		solution.solution = state.solutionValue;
-		return solution;
+		return state.getSolution();
 	}
 
 	private void depthSearch(SolverState state) {
@@ -141,10 +189,10 @@ public abstract class AbstractEquationSolver {
 			state.onCalculateMove.calculated(state);
 		}
 		if (isSolution(state.equation)) {
-			if (state.solution == null || depth < state.solution.size()) {
-				state.solution = new ArrayList<Operation>(state.moves);
-				state.maxDepth = state.solution.size();
-				state.solutionValue = state.equation.getRhs().getConstant();
+			if (state.currentSolution == null
+					|| depth < state.currentSolution.getNumMoves()) {
+				state.currentSolution = new Solution(state, state.moves);
+
 				// how to update number of moves visited for all remaining
 				// branches
 				pruneMoveCount(state, depth);
@@ -177,30 +225,58 @@ public abstract class AbstractEquationSolver {
 				continue;
 			}
 
-			Equation nextEquation = each.apply(state.equation);
-			Integer depthEquationEncountered = state.equations
-					.get(nextEquation);
-			if (depthEquationEncountered != null) {
-				if (depthEquationEncountered <= depth) {
-					pruneMoveCount(state, depth + 1);
-					continue;
+			MoveResult moveResult = each.applyMove(state.equation, depth, null);
+			if (moveResult.hasMultiple()) {
+				// this has trouble matching an equation, assume only "solved"
+				// solutions for now
+				ArrayList<Operation> subOperations = new ArrayList<Operation>(
+						state.operations);
+				subOperations.remove(each);
+				subOperations.add(Multiply.NEGATE);
+				// TODO adjust move counts
+				Solution solve = solve(moveResult.getSecondary1()
+						.getStartEquation(), subOperations, state.maxDepth
+						- depth, state.onCalculateMove, state.equations);
+				Solution solve2 = solve(moveResult.getSecondary2()
+						.getStartEquation(), subOperations, state.maxDepth
+						- depth, state.onCalculateMove, state.equations);
+
+				if (solve != null && solve2 != null) {
+					int totalNumMoves = depth + solve.getNumMoves()
+							+ solve2.getNumMoves();
+					if (state.currentSolution == null
+							|| totalNumMoves < state.currentSolution
+									.getNumMoves()) {
+						state.moves.add(each);
+						state.currentSolution = new Solution(state,
+								state.moves, solve, solve2);
+						// update number of moves visited for all remaining
+						// branches
+						pruneMoveCount(state, totalNumMoves);
+						state.moves.remove(depth);
+						return;
+					}
 				}
+
+			} else {
+				Equation nextEquation = each.apply(state.equation);
+				Integer depthEquationEncountered = state.equations
+						.get(nextEquation);
+				if (depthEquationEncountered != null) {
+					if (depthEquationEncountered <= depth) {
+						pruneMoveCount(state, depth + 1);
+						continue;
+					}
+				}
+				Equation origEquation = state.equation;
+				state.equation = nextEquation;
+				state.equations.put(nextEquation, depth);
+				state.moves.add(each);
+				depthSearch(state);
+				state.moves.remove(depth);
+				state.equation = origEquation;
 			}
-			Equation origEquation = state.equation;
-			List<Operation> originalOperations = state.operations;
-			// TODO deal with Square root operator
-			if (each instanceof SquareRoot) {
-				state.operations = new ArrayList<Operation>(state.operations);
-				state.operations.remove(each);
-				state.operations.add(Multiply.NEGATE);
-			}
-			state.equation = nextEquation;
-			state.equations.put(nextEquation, depth);
-			state.moves.add(each);
-			depthSearch(state);
-			state.moves.remove(depth);
-			state.equation = origEquation;
-			state.operations = originalOperations;
+
 		}
 	}
 

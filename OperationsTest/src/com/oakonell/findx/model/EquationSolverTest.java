@@ -1,5 +1,6 @@
 package com.oakonell.findx.model;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
@@ -7,11 +8,49 @@ import junit.framework.TestCase;
 
 import com.oakonell.findx.custom.model.AbstractEquationSolver.Solution;
 import com.oakonell.findx.custom.model.EquationSolver;
-import com.oakonell.findx.model.Level;
-import com.oakonell.findx.model.Levels;
-import com.oakonell.findx.model.Move;
+import com.oakonell.findx.model.ops.Add;
+import com.oakonell.findx.model.ops.SquareRoot;
 
 public class EquationSolverTest extends TestCase {
+
+	public void testBetterSolution() {
+		EquationSolver solver = new EquationSolver();
+		List<Operation> operations = new ArrayList<Operation>();
+		SquareRoot squareRoot = new SquareRoot();
+		Add addOne = new Add(new Expression(1));
+		Add addTwo = new Add(new Expression(2));
+		operations.add(squareRoot);
+		operations.add(addOne);
+		operations.add(addTwo);
+		
+		Solution solve = solver.solve(new Equation(new Expression(1, 0, -1),
+				new Expression(0, 0, 0)), operations, 2, null);
+		
+		
+	}
+	
+	public void testSolveSquareRoot() {
+		EquationSolver solver = new EquationSolver();
+		List<Operation> operations = new ArrayList<Operation>();
+		SquareRoot squareRoot = new SquareRoot();
+		operations.add(squareRoot);
+		Add addOne = new Add(new Expression(1));
+		operations.add(addOne);
+
+		Solution solve = solver.solve(new Equation(new Expression(1, 0, -1),
+				new Expression(0, 0, 0)), operations, 2, null);
+		try {
+			assertEquals(addOne,
+					((Move) solve.primaryMoves.get(1)).getOperation());
+			assertEquals(squareRoot,
+					((MultipleSolutionMove) solve.primaryMoves.get(2)).getOperation());
+		} catch (AssertionError e) {
+			for (IMove move : solve.primaryMoves) {
+				System.out.println(move.toString());
+			}
+			throw e;
+		}
+	}
 
 	public void testSolveAllLevels() {
 		List<Stage> stages = Levels.getStages();
@@ -29,8 +68,8 @@ public class EquationSolverTest extends TestCase {
 				// Test that can be solved
 				Solution solution = solver.solve(each.getEquation(),
 						each.getOperations(), each.getMinMoves(), null);
-				List<Move> solve = solution.moves;
-				for (Move move : solve) {
+				List<IMove> solve = solution.primaryMoves;
+				for (IMove move : solve) {
 					System.out.println(move.toString());
 				}
 				assertNotNull("Level " + each.getId()
@@ -41,18 +80,19 @@ public class EquationSolverTest extends TestCase {
 	}
 
 	public void testSolverLevel0() {
-		List<Move> moves = null;
+		List<IMove> moves = null;
 		try {
 			Level level = Levels.get("1-1");
 			EquationSolver solver = new EquationSolver();
 			Solution solution = solver.solve(level.getEquation(),
 					level.getOperations(), level.getMinMoves(), null);
-			moves = solution.moves;
-			assertEquals(1, moves.size());
-			assertEquals(level.getMinMoves(), moves.size());
-			assertEquals("Add 1", moves.get(0).getOperation().toString());
+			moves = solution.primaryMoves;
+			assertEquals(2, moves.size());
+			assertEquals(level.getMinMoves(), solution.getNumMoves());
+			assertEquals("Add 1", ((Move) moves.get(1)).getOperation()
+					.toString());
 		} catch (AssertionError e) {
-			for (Move move : moves) {
+			for (IMove move : moves) {
 				System.out.println(move.toString());
 			}
 			throw e;
@@ -60,20 +100,23 @@ public class EquationSolverTest extends TestCase {
 	}
 
 	public void testSolverLevel1() {
-		List<Move> moves = null;
+		List<IMove> moves = null;
 		try {
 			Level level = Levels.get("1-2");
 			EquationSolver solver = new EquationSolver();
 			Solution solution = solver.solve(level.getEquation(),
 					level.getOperations(), level.getMinMoves(), null);
-			moves = solution.moves;
-			assertEquals(3, moves.size());
-			assertEquals(level.getMinMoves(), moves.size());
-			assertEquals("Subtract 1", moves.get(0).getOperation().toString());
-			assertEquals("Subtract 1", moves.get(1).getOperation().toString());
-			assertEquals("Subtract 1", moves.get(2).getOperation().toString());
+			moves = solution.primaryMoves;
+			assertEquals(3, solution.getNumMoves());
+			assertEquals(level.getMinMoves(), solution.getNumMoves());
+			assertEquals("Subtract 1", ((Move) moves.get(1)).getOperation()
+					.toString());
+			assertEquals("Subtract 1", ((Move) moves.get(2)).getOperation()
+					.toString());
+			assertEquals("Subtract 1", ((Move) moves.get(3)).getOperation()
+					.toString());
 		} catch (AssertionError e) {
-			for (Move move : moves) {
+			for (IMove move : moves) {
 				System.out.println(move.toString());
 			}
 			throw e;
@@ -81,19 +124,22 @@ public class EquationSolverTest extends TestCase {
 	}
 
 	public void testSolverLevel2() {
-		List<Move> moves = null;
+		List<IMove> moves = null;
 		try {
 			Level level = Levels.get("1-3");
 			EquationSolver solver = new EquationSolver();
 			Solution solution = solver.solve(level.getEquation(),
 					level.getOperations(), level.getMinMoves(), null);
-			moves = solution.moves;
-			assertEquals(level.getMinMoves(), moves.size());
-			Iterator<Move> iter = moves.iterator();
-			assertEquals("Divide by 3", iter.next().getOperation().toString());
-			assertEquals("Add 6", iter.next().getOperation().toString());
+			moves = solution.primaryMoves;
+			assertEquals(level.getMinMoves(), solution.getNumMoves());
+			Iterator<IMove> iter = moves.iterator();
+			iter.next();
+			assertEquals("Divide by 3", ((Move) iter.next()).getOperation()
+					.toString());
+			assertEquals("Add 6", ((Move) iter.next()).getOperation()
+					.toString());
 		} catch (AssertionError e) {
-			for (Move move : moves) {
+			for (IMove move : moves) {
 				System.out.println(move.toString());
 			}
 			throw e;
@@ -101,19 +147,22 @@ public class EquationSolverTest extends TestCase {
 	}
 
 	public void testSolverLevel3() {
-		List<Move> moves = null;
+		List<IMove> moves = null;
 		try {
 			Level level = Levels.get("1-4");
 			EquationSolver solver = new EquationSolver();
 			Solution solution = solver.solve(level.getEquation(),
 					level.getOperations(), level.getMinMoves(), null);
-			moves = solution.moves;
-			assertEquals(level.getMinMoves(), moves.size());
-			Iterator<Move> iter = moves.iterator();
-			assertEquals("Divide by 4", iter.next().getOperation().toString());
-			assertEquals("Add 33", iter.next().getOperation().toString());
+			moves = solution.primaryMoves;
+			assertEquals(level.getMinMoves(), solution.getNumMoves());
+			Iterator<IMove> iter = moves.iterator();
+			iter.next();
+			assertEquals("Divide by 4", ((Move) iter.next()).getOperation()
+					.toString());
+			assertEquals("Add 33", ((Move) iter.next()).getOperation()
+					.toString());
 		} catch (AssertionError e) {
-			for (Move move : moves) {
+			for (IMove move : moves) {
 				System.out.println(move.toString());
 			}
 			throw e;
@@ -121,20 +170,22 @@ public class EquationSolverTest extends TestCase {
 	}
 
 	public void testSolverLevel4() {
-		List<Move> moves = null;
+		List<IMove> moves = null;
 		try {
 			Level level = Levels.get("1-5");
 			EquationSolver solver = new EquationSolver();
 			Solution solution = solver.solve(level.getEquation(),
 					level.getOperations(), level.getMinMoves(), null);
-			moves = solution.moves;
-			assertEquals(level.getMinMoves(), moves.size());
-			Iterator<Move> iter = moves.iterator();
-			assertEquals("Divide by 7 / 2", iter.next().getOperation()
+			moves = solution.primaryMoves;
+			assertEquals(level.getMinMoves(), solution.getNumMoves());
+			Iterator<IMove> iter = moves.iterator();
+			iter.next();
+			assertEquals("Divide by 7 / 2", ((Move) iter.next()).getOperation()
 					.toString());
-			assertEquals("Add 2/3", iter.next().getOperation().toString());
+			assertEquals("Add 2/3", ((Move) iter.next()).getOperation()
+					.toString());
 		} catch (AssertionError e) {
-			for (Move move : moves) {
+			for (IMove move : moves) {
 				System.out.println(move.toString());
 			}
 			throw e;
@@ -142,20 +193,22 @@ public class EquationSolverTest extends TestCase {
 	}
 
 	public void testSolverLevel5() {
-		List<Move> moves = null;
+		List<IMove> moves = null;
 		try {
 			Level level = Levels.get("1-6");
 			EquationSolver solver = new EquationSolver();
 			Solution solution = solver.solve(level.getEquation(),
 					level.getOperations(), 5, null);
-			moves = solution.moves;
-			assertEquals(level.getMinMoves(), moves.size());
-			Iterator<Move> iter = moves.iterator();
-			assertEquals("Subtract 3/5", iter.next().getOperation().toString());
-			assertEquals("Multiply by 4 / 5", iter.next().getOperation()
+			moves = solution.primaryMoves;
+			assertEquals(level.getMinMoves(), solution.getNumMoves());
+			Iterator<IMove> iter = moves.iterator();
+			iter.next();
+			assertEquals("Subtract 3/5", ((Move) iter.next()).getOperation()
 					.toString());
+			assertEquals("Multiply by 4 / 5", ((Move) iter.next())
+					.getOperation().toString());
 		} catch (AssertionError e) {
-			for (Move move : moves) {
+			for (IMove move : moves) {
 				System.out.println(move.toString());
 			}
 			throw e;
@@ -163,20 +216,22 @@ public class EquationSolverTest extends TestCase {
 	}
 
 	public void testSolverLevel6() {
-		List<Move> moves = null;
+		List<IMove> moves = null;
 		try {
 			Level level = Levels.get("1-7");
 			EquationSolver solver = new EquationSolver();
 			Solution solution = solver.solve(level.getEquation(),
 					level.getOperations(), level.getMinMoves(), null);
-			moves = solution.moves;
-			assertEquals(level.getMinMoves(), moves.size());
-			Iterator<Move> iter = moves.iterator();
-			assertEquals("Multiply by 3 / 5", iter.next().getOperation()
+			moves = solution.primaryMoves;
+			assertEquals(level.getMinMoves(), solution.getNumMoves());
+			Iterator<IMove> iter = moves.iterator();
+			iter.next();
+			assertEquals("Multiply by 3 / 5", ((Move) iter.next())
+					.getOperation().toString());
+			assertEquals("Subtract 12", ((Move) iter.next()).getOperation()
 					.toString());
-			assertEquals("Subtract 12", iter.next().getOperation().toString());
 		} catch (AssertionError e) {
-			for (Move move : moves) {
+			for (IMove move : moves) {
 				System.out.println(move.toString());
 			}
 			throw e;
@@ -184,21 +239,26 @@ public class EquationSolverTest extends TestCase {
 	}
 
 	public void testSolverLevel7() {
-		List<Move> moves = null;
+		List<IMove> moves = null;
 		try {
 			Level level = Levels.get("1-8");
 			EquationSolver solver = new EquationSolver();
 			Solution solution = solver.solve(level.getEquation(),
 					level.getOperations(), level.getMinMoves(), null);
-			moves = solution.moves;
-			assertEquals(level.getMinMoves(), moves.size());
-			Iterator<Move> iter = moves.iterator();
-			assertEquals("Subtract 1", iter.next().getOperation().toString());
-			assertEquals("Subtract 1", iter.next().getOperation().toString());
-			assertEquals("Add 3", iter.next().getOperation().toString());
-			assertEquals("Add 3", iter.next().getOperation().toString());
+			moves = solution.primaryMoves;
+			assertEquals(level.getMinMoves(), solution.getNumMoves());
+			Iterator<IMove> iter = moves.iterator();
+			iter.next();
+			assertEquals("Subtract 1", ((Move) iter.next()).getOperation()
+					.toString());
+			assertEquals("Subtract 1", ((Move) iter.next()).getOperation()
+					.toString());
+			assertEquals("Add 3", ((Move) iter.next()).getOperation()
+					.toString());
+			assertEquals("Add 3", ((Move) iter.next()).getOperation()
+					.toString());
 		} catch (AssertionError e) {
-			for (Move move : moves) {
+			for (IMove move : moves) {
 				System.out.println(move.toString());
 			}
 			throw e;
@@ -206,22 +266,28 @@ public class EquationSolverTest extends TestCase {
 	}
 
 	public void testSolverLevel8() {
-		List<Move> moves = null;
+		List<IMove> moves = null;
 		try {
 			Level level = Levels.get("1-9");
 			EquationSolver solver = new EquationSolver();
 			Solution solution = solver.solve(level.getEquation(),
 					level.getOperations(), level.getMinMoves(), null);
-			moves = solution.moves;
-			assertEquals(level.getMinMoves(), moves.size());
-			Iterator<Move> iter = moves.iterator();
-			assertEquals("Add 3", iter.next().getOperation().toString());
-			assertEquals("Add 3", iter.next().getOperation().toString());
-			assertEquals("Add 3", iter.next().getOperation().toString());
-			assertEquals("Subtract 5", iter.next().getOperation().toString());
-			assertEquals("Subtract 5", iter.next().getOperation().toString());
+			moves = solution.primaryMoves;
+			assertEquals(level.getMinMoves(), solution.getNumMoves());
+			Iterator<IMove> iter = moves.iterator();
+			iter.next();
+			assertEquals("Add 3", ((Move) iter.next()).getOperation()
+					.toString());
+			assertEquals("Add 3", ((Move) iter.next()).getOperation()
+					.toString());
+			assertEquals("Add 3", ((Move) iter.next()).getOperation()
+					.toString());
+			assertEquals("Subtract 5", ((Move) iter.next()).getOperation()
+					.toString());
+			assertEquals("Subtract 5", ((Move) iter.next()).getOperation()
+					.toString());
 		} catch (AssertionError e) {
-			for (Move move : moves) {
+			for (IMove move : moves) {
 				System.out.println(move.toString());
 			}
 			throw e;
@@ -233,15 +299,19 @@ public class EquationSolverTest extends TestCase {
 		EquationSolver solver = new EquationSolver();
 		Solution solution = solver.solve(level.getEquation(),
 				level.getOperations(), level.getMinMoves(), null);
-		List<Move> moves = solution.moves;
+		List<IMove> moves = solution.primaryMoves;
 		try {
-			assertEquals(level.getMinMoves(), moves.size());
-			Iterator<Move> iter = moves.iterator();
-			assertEquals("Divide by 3", iter.next().getOperation().toString());
-			assertEquals("Divide by 2", iter.next().getOperation().toString());
-			assertEquals("Divide by 2", iter.next().getOperation().toString());
+			assertEquals(level.getMinMoves(), solution.getNumMoves());
+			Iterator<IMove> iter = moves.iterator();
+			iter.next();
+			assertEquals("Divide by 3", ((Move) iter.next()).getOperation()
+					.toString());
+			assertEquals("Divide by 2", ((Move) iter.next()).getOperation()
+					.toString());
+			assertEquals("Divide by 2", ((Move) iter.next()).getOperation()
+					.toString());
 		} catch (AssertionError e) {
-			for (Move move : moves) {
+			for (IMove move : moves) {
 				System.out.println(move.toString());
 			}
 			throw e;

@@ -121,9 +121,10 @@ class CalculateMinMovesProgressTask extends
 				}
 			}
 		};
-		Solution solution = solver.solve(builder.getCurrentStartEquation(),
-				builder.getOperations(), builder.getNumMoves() - 2,
-				onCalculateMove);
+		Solution solution = solver
+				.solve(builder.getCurrentStartEquation(),
+						builder.getOperations(), builder.getNumMoves(),
+						onCalculateMove);
 		return solution;
 	}
 
@@ -131,7 +132,9 @@ class CalculateMinMovesProgressTask extends
 	protected void onCancelled() {
 		dialogInfo.dialog.cancel();
 		if (solverState != null && solverState.hasCurrentSolution()) {
-			promptToReplaceMoves(solverState.asSolution(), false);
+			if (solverState.getSolution().getNumMoves() < builder.getNumMoves()) {
+				promptToReplaceMoves(solverState.getSolution(), false);
+			}
 		}
 		super.onCancelled();
 	}

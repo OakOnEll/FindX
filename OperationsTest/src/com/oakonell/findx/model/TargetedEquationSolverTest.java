@@ -5,27 +5,23 @@ import java.util.List;
 import junit.framework.TestCase;
 
 import com.oakonell.findx.custom.model.AbstractEquationSolver.Solution;
-import com.oakonell.findx.model.Equation;
-import com.oakonell.findx.model.Expression;
-import com.oakonell.findx.model.Level;
-import com.oakonell.findx.model.Levels;
-import com.oakonell.findx.model.Move;
 
 public class TargetedEquationSolverTest extends TestCase {
 	public void testSolverLevel0() {
-		List<Move> moves = null;
+		List<IMove> moves = null;
 		try {
 			Level level = Levels.get("1-1");
 			TargetedEquationSolver solver = new TargetedEquationSolver();
 			Solution solution = solver.solve(level.getEquation(), new Equation(
 					new Expression(1, 0), new Expression(1)), level
 					.getOperations(), level.getMinMoves());
-			moves = solution.moves;
-			assertEquals(1, moves.size());
-			assertEquals(level.getMinMoves(), moves.size());
-			assertEquals("Add 1", moves.get(0).getOperation().toString());
+			moves = solution.primaryMoves;
+			assertEquals(1, solution.getNumMoves());
+			assertEquals(level.getMinMoves(), solution.getNumMoves());
+			assertEquals("Add 1", ((Move) moves.get(1)).getOperation()
+					.toString());
 		} catch (AssertionError e) {
-			for (Move move : moves) {
+			for (IMove move : moves) {
 				System.out.println(move.toString());
 			}
 			throw e;

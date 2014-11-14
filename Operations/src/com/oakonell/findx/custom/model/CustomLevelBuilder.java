@@ -210,10 +210,10 @@ public class CustomLevelBuilder extends TempCorrectLevelBuilder {
 			List<Operation> modOps = new ArrayList<Operation>(operations);
 			modOps.remove(op);
 			modOps.add(Multiply.NEGATE);
-			Solution solution1 = solver.solve(rootEquation1, modOps, numMoves,
-					null);
-			Solution solution2 = solver.solve(rootEquation2, modOps, numMoves,
-					null);
+			Solution solution1 = solver.solve(rootEquation1, modOps,
+					numMoves + 1, null);
+			Solution solution2 = solver.solve(rootEquation2, modOps,
+					numMoves + 1, null);
 			if (solution1.solution.compareTo(solution) == 0) {
 				secondarySolution = solution2.solution;
 			} else if (solution2.solution.compareTo(solution) == 0) {
@@ -225,14 +225,26 @@ public class CustomLevelBuilder extends TempCorrectLevelBuilder {
 
 			secondary1Moves.add(applyMove.getSecondary1());
 			int i = 2;
-			for (Move each : solution1.moves) {
-				secondary1Moves.add(new Move(each.getStartEquation(), each
-						.getOperation(), i++));
+			for (IMove each : solution1.primaryMoves) {
+				if (!(each instanceof Move)) {
+					continue;
+				}
+				if (((Move) each).getOperation() == null)
+					continue;
+
+				secondary1Moves.add(new Move(each.getStartEquation(),
+						((Move) each).getOperation(), i++));
 			}
 			secondary2Moves.add(applyMove.getSecondary2());
-			for (Move each : solution2.moves) {
-				secondary2Moves.add(new Move(each.getStartEquation(), each
-						.getOperation(), i++));
+			for (IMove each : solution2.primaryMoves) {
+				if (!(each instanceof Move)) {
+					continue;
+				}
+				if (((Move) each).getOperation() == null)
+					continue;
+
+				secondary2Moves.add(new Move(each.getStartEquation(),
+						((Move) each).getOperation(), i++));
 			}
 		} else {
 			if (adjustMoveNumbers) {
@@ -396,18 +408,18 @@ public class CustomLevelBuilder extends TempCorrectLevelBuilder {
 
 	public void replaceMoves(Solution result) {
 		// TODO validate that the moves are valid for eg square root
-		// TODO something doesn't seem right here...
-		Move originalLastMove = (Move) primaryMoves
-				.get(primaryMoves.size() - 1);
-		primaryMoves.subList(1, primaryMoves.size()).clear();
-		for (Move each : result.moves) {
-			primaryMoves.add(each);
+
+		primaryMoves.clear();
+		primaryMoves.addAll(result.primaryMoves);
+
+		secondary1Moves.clear();
+		if (result.secondary1Moves != null) {
+			secondary1Moves.addAll(result.secondary1Moves);
 		}
-		Move newLastMove = (Move) primaryMoves.get(primaryMoves.size() - 1);
-		if (!newLastMove.getEndEquation().equals(
-				originalLastMove.getEndEquation())) {
-			throw new RuntimeException(
-					"The end equations should match upon replacing the moves!");
+
+		secondary2Moves.clear();
+		if (result.secondary2Moves != null) {
+			secondary2Moves.addAll(result.secondary2Moves);
 		}
 	}
 
