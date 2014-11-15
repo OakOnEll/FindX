@@ -510,8 +510,8 @@ public class CustomStageActivity extends GameActivity {
 
 		UndoBarController.UndoBar undoBar = new UndoBarController.UndoBar(this);
 		undoBar.message("Deleted " + level.getName());
-		final String dbId = level.getDbId()+"";
-		
+		final String dbId = level.getDbId() + "";
+
 		undoBar.listener(new UndoListener() {
 			@Override
 			public void onUndo(Parcelable token) {
@@ -522,8 +522,7 @@ public class CustomStageActivity extends GameActivity {
 				ContentValues values = new ContentValues();
 				values.put(CustomLevelTable.TO_DELETE, 0);
 				db.update(DataBaseHelper.CUSTOM_LEVEL_TABLE_NAME, values,
-						BaseColumns._ID + "=?",
-						new String[] { dbId});
+						BaseColumns._ID + "=?", new String[] { dbId });
 				db.close();
 
 				Toast.makeText(CustomStageActivity.this,
@@ -540,8 +539,7 @@ public class CustomStageActivity extends GameActivity {
 		ContentValues values = new ContentValues();
 		values.put(CustomLevelTable.TO_DELETE, 1);
 		db.update(DataBaseHelper.CUSTOM_LEVEL_TABLE_NAME, values,
-				BaseColumns._ID + "=?",
-				new String[] { dbId });
+				BaseColumns._ID + "=?", new String[] { dbId });
 		db.close();
 		Levels.resetCustomStage();
 		adapter.notifyDataSetChanged();
@@ -703,6 +701,34 @@ public class CustomStageActivity extends GameActivity {
 			return;
 		}
 
+		Runnable uniqueRunnable = new Runnable() {
+			@Override
+			public void run() {
+				actualPost(theLevel);
+			}
+		};
+		Runnable notUniqueRunnable = new Runnable() {
+			@Override
+			public void run() {
+				Runnable continuation = new Runnable() {
+					@Override
+					public void run() {
+						Levels.resetCustomStage();
+						adapter.notifyDataSetChanged();
+						CustomLevel modLevel = Levels.getCustomStage()
+								.getLevelByDBId(theLevel.getDbId());
+						postLevel(modLevel);
+					}
+				};
+				promptTitleChange(theLevel, continuation);
+			}
+		};
+		ParseLevelHelper.checkLevelAuthorAndTitleNotUnique(theLevel,
+				uniqueRunnable, notUniqueRunnable);
+
+	}
+
+	private void actualPost(final CustomLevel theLevel) {
 		final ProgressDialog dialog = ProgressDialog.show(this,
 				"Saving to server", "Please wait...");
 		dialog.setCancelable(false);
@@ -738,6 +764,36 @@ public class CustomStageActivity extends GameActivity {
 
 		};
 		task.execute();
+	}
+
+	private void promptTitleChange(final CustomLevel theLevel,
+			final Runnable continuation) {
+		// Set an EditText view to get user input
+		final EditText input = new EditText(this);
+		input.setText(theLevel.getName());
+
+		new AlertDialog.Builder(CustomStageActivity.this)
+				.setTitle("Change Level Name")
+				.setMessage(
+						"You already have a level with that title. Enter a unique name.")
+				.setView(input)
+				.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+					public void onClick(DialogInterface dialog, int whichButton) {
+						String newTitle = input.getText().toString();
+						CustomLevelBuilder builder = new CustomLevelBuilder();
+						builder.load(theLevel.getDbId());
+						builder.setTitle(newTitle);
+						builder.save();
+						continuation.run();
+					}
+				})
+				.setNegativeButton("Cancel",
+						new DialogInterface.OnClickListener() {
+							public void onClick(DialogInterface dialog,
+									int whichButton) {
+								// Do nothing.
+							}
+						}).show();
 	}
 
 	@Override

@@ -300,10 +300,10 @@ public class ParseLevelHelper {
 		builder.setTitle(title);
 		builder.setAuthor(creator.getString(ParseUserExtra.nickname_field));
 		builder.setSolution(solution);
-		if (sec1Moves.isEmpty()) {			
+		if (sec1Moves.isEmpty()) {
 			builder.setSolution2(null);
 		} else {
-			builder.setSolution2(solution2);			
+			builder.setSolution2(solution2);
 		}
 		builder.setServerId(serverId);
 		builder.getOperations().addAll(theOperations);
@@ -462,5 +462,40 @@ public class ParseLevelHelper {
 		} catch (ParseException e) {
 			throw new RuntimeException("Error flagging level", e);
 		}
+	}
+
+	public static void checkLevelAuthorAndTitleNotUnique(
+			final CustomLevel theLevel, final Runnable unique,
+			final Runnable notUnique) {
+		AsyncTask<Void, Void, Boolean> task = new AsyncTask<Void, Void, Boolean>() {
+
+			@Override
+			protected Boolean doInBackground(Void... params) {
+
+				ParseUser parseUser = ParseUser.getCurrentUser();
+				String name = theLevel.getName();
+
+				ParseQuery<ParseObject> query = new ParseQuery<ParseObject>(
+						ParseCustomLevel.classname);
+				query.whereEqualTo(ParseCustomLevel.title_field, name);
+				query.whereEqualTo(ParseCustomLevel.createdBy_field, parseUser);
+				try {
+					return query.count() > 0;
+				} catch (ParseException e) {
+					throw new RuntimeException("Parse exception", e);
+				}
+			}
+
+			@Override
+			protected void onPostExecute(Boolean exists) {
+				if (exists) {
+					notUnique.run();
+					return;
+				}
+				unique.run();
+			}
+
+		};
+		task.execute();
 	}
 }
