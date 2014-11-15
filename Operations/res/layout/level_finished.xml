@@ -197,13 +197,26 @@
                     android:text=""
                     android:textAppearance="?android:attr/textAppearanceMedium" />
             </LinearLayout>
+
+            <TextView
+                android:id="@+id/anim_debug"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:visibility="gone" />
         </LinearLayout>
 
-        <TextView
-            android:id="@+id/anim_text"
+        <LinearLayout
+            android:id="@+id/anim_container"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceMedium" />
+            android:background="#ff222222" >
+
+            <TextView
+                android:id="@+id/anim_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceMedium" />
+        </LinearLayout>
     </FrameLayout>
 
     <TextView
