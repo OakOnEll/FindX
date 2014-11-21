@@ -21,7 +21,8 @@ public abstract class AbstractOperation implements Operation {
 	}
 
 	@Override
-	public MoveResult applyMove(Equation equation, int moveNum, List<Operation> operations) {
+	public MoveResult applyMove(Equation equation, int moveNum,
+			List<Operation> operations) {
 		return new MoveResult(new Move(equation, this, moveNum));
 	}
 
@@ -46,4 +47,8 @@ public abstract class AbstractOperation implements Operation {
 		return this;
 	}
 
+	@Override
+	public boolean isAppliableWith(List<Operation> operations) {
+		return true;
+	}
 }

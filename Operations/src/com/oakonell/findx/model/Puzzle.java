@@ -17,7 +17,9 @@ import com.oakonell.findx.custom.model.CustomLevelDBReader;
 import com.oakonell.findx.data.DataBaseHelper;
 import com.oakonell.findx.model.Operation.OperationType;
 import com.oakonell.findx.model.ops.Add;
+import com.oakonell.findx.model.ops.Defactor;
 import com.oakonell.findx.model.ops.Divide;
+import com.oakonell.findx.model.ops.Factor;
 import com.oakonell.findx.model.ops.Multiply;
 import com.oakonell.findx.model.ops.Square;
 import com.oakonell.findx.model.ops.SquareRoot;
@@ -209,6 +211,26 @@ public class Puzzle {
 				@Override
 				public void visitSwap(Swap swap) {
 					// no data for operation row
+				}
+
+				@Override
+				public void visitFactor(Factor factor) {
+					opInfo.put(DataBaseHelper.CurrentLevelWildTable.X2_COEFF,
+							factor.getExpression().getX2Coefficient().toString());
+					opInfo.put(DataBaseHelper.CurrentLevelWildTable.CONST, factor
+							.getExpression().getConstant().toString());
+					opInfo.put(DataBaseHelper.CurrentLevelWildTable.X_COEFF,
+							factor.getExpression().getXCoefficient().toString());
+				}
+
+				@Override
+				public void visitDefactor(Defactor defactor) {
+					opInfo.put(DataBaseHelper.CurrentLevelWildTable.X2_COEFF,
+							defactor.getExpression().getX2Coefficient().toString());
+					opInfo.put(DataBaseHelper.CurrentLevelWildTable.CONST, defactor
+							.getExpression().getConstant().toString());
+					opInfo.put(DataBaseHelper.CurrentLevelWildTable.X_COEFF,
+							defactor.getExpression().getXCoefficient().toString());
 				}
 
 				@Override
@@ -427,6 +449,18 @@ public class Puzzle {
 				break;
 			case SQUARE:
 				op = new Square();
+				break;
+			case FACTOR:
+				op = new Factor(CustomLevelDBReader.readExpression(opQuery,
+						DataBaseHelper.CurrentLevelWildTable.X2_COEFF,
+						DataBaseHelper.CurrentLevelWildTable.X_COEFF,
+						DataBaseHelper.CurrentLevelWildTable.CONST));
+				break;
+			case DEFACTOR:
+				op = new Defactor(CustomLevelDBReader.readExpression(opQuery,
+						DataBaseHelper.CurrentLevelWildTable.X2_COEFF,
+						DataBaseHelper.CurrentLevelWildTable.X_COEFF,
+						DataBaseHelper.CurrentLevelWildTable.CONST));
 				break;
 			case SQUARE_ROOT:
 				op = new SquareRoot();

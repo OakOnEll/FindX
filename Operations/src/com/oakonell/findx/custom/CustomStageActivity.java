@@ -71,7 +71,9 @@ import com.oakonell.findx.model.Move;
 import com.oakonell.findx.model.Operation;
 import com.oakonell.findx.model.OperationVisitor;
 import com.oakonell.findx.model.ops.Add;
+import com.oakonell.findx.model.ops.Defactor;
 import com.oakonell.findx.model.ops.Divide;
+import com.oakonell.findx.model.ops.Factor;
 import com.oakonell.findx.model.ops.Multiply;
 import com.oakonell.findx.model.ops.Square;
 import com.oakonell.findx.model.ops.SquareRoot;
@@ -328,6 +330,18 @@ public class CustomStageActivity extends GameActivity {
 
 					@Override
 					public void visitSquareRoot(SquareRoot squareRoot) {
+					}
+
+					@Override
+					public void visitFactor(Factor factor) {
+						Expression expression = factor.getExpression();
+						appendExpression(expression);
+					}
+
+					@Override
+					public void visitDefactor(Defactor defactor) {
+						Expression expression = defactor.getExpression();
+						appendExpression(expression);
 					}
 
 					@Override

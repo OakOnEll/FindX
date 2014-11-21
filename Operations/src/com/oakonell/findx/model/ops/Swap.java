@@ -19,7 +19,8 @@ public class Swap implements Operation {
 	}
 
 	@Override
-	public MoveResult applyMove(Equation equation, int moveNum, List<Operation> operations) {
+	public MoveResult applyMove(Equation equation, int moveNum,
+			List<Operation> operations) {
 		return new MoveResult(new Move(equation, this, moveNum));
 	}
 
@@ -70,5 +71,10 @@ public class Swap implements Operation {
 	@Override
 	public Operation afterUsed() {
 		return this;
+	}
+
+	@Override
+	public boolean isAppliableWith(List<Operation> operations) {
+		return true;
 	}
 }

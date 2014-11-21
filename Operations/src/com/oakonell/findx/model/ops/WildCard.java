@@ -29,7 +29,8 @@ public class WildCard implements Operation {
 	}
 
 	@Override
-	public MoveResult applyMove(Equation equation, int moveNum, List<Operation> operations) {
+	public MoveResult applyMove(Equation equation, int moveNum,
+			List<Operation> operations) {
 		if (actual == null) {
 			throw new IllegalStateException(
 					"Actual operation for wildcard has not been assigned");
@@ -90,6 +91,14 @@ public class WildCard implements Operation {
 	@Override
 	public Operation afterUsed() {
 		return actual;
+	}
+
+	@Override
+	public boolean isAppliableWith(List<Operation> operations) {
+		if (actual == null) {
+			return true;
+		}
+		return actual.isAppliableWith(operations);
 	}
 
 }

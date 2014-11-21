@@ -21,7 +21,9 @@ import com.oakonell.findx.model.Operation;
 import com.oakonell.findx.model.Operation.OperationType;
 import com.oakonell.findx.model.SecondaryEquationMove;
 import com.oakonell.findx.model.ops.Add;
+import com.oakonell.findx.model.ops.Defactor;
 import com.oakonell.findx.model.ops.Divide;
+import com.oakonell.findx.model.ops.Factor;
 import com.oakonell.findx.model.ops.Multiply;
 import com.oakonell.findx.model.ops.Square;
 import com.oakonell.findx.model.ops.SquareRoot;
@@ -302,6 +304,19 @@ public class CustomLevelDBReader {
 				break;
 			case DIVIDE:
 				op = new Divide(readFraction(opQuery,
+						DataBaseHelper.CustomLevelOperationsTable.CONST));
+				break;
+			case DEFACTOR:
+				op = new Defactor(readExpression(opQuery,
+						DataBaseHelper.CustomLevelOperationsTable.X2_COEFF,
+						DataBaseHelper.CustomLevelOperationsTable.X_COEFF,
+						DataBaseHelper.CustomLevelOperationsTable.CONST));
+				break;
+				
+			case FACTOR:
+				op = new Factor(readExpression(opQuery,
+						DataBaseHelper.CustomLevelOperationsTable.X2_COEFF,
+						DataBaseHelper.CustomLevelOperationsTable.X_COEFF,
 						DataBaseHelper.CustomLevelOperationsTable.CONST));
 				break;
 			case SQUARE:

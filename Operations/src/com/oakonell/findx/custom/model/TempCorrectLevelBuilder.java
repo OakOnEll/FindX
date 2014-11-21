@@ -100,8 +100,11 @@ public abstract class TempCorrectLevelBuilder {
 
 	public void addOperation(Operation operation) {
 		getOperations().add(operation);
+		checkOperatorAppliability();
 		markAsOptimized(false);
 	}
+
+	protected abstract void checkOperatorAppliability();
 
 	public void setAuthor(String author) {
 		this.author = author;

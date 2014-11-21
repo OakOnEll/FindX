@@ -134,7 +134,7 @@ public class SharedLevelActivity extends SherlockFragmentActivity {
 			builder.setTitle(title);
 			builder.setAuthor(author);
 			builder.setSolution(solution);
-			builder.getOperations().addAll(operations);
+			builder.addOperations(operations);
 			builder.defaultMaxSequence();
 
 			Collections.reverse(moveOperations);

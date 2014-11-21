@@ -17,7 +17,9 @@ import com.oakonell.findx.model.Move;
 import com.oakonell.findx.model.Operation;
 import com.oakonell.findx.model.OperationVisitor;
 import com.oakonell.findx.model.ops.Add;
+import com.oakonell.findx.model.ops.Defactor;
 import com.oakonell.findx.model.ops.Divide;
+import com.oakonell.findx.model.ops.Factor;
 import com.oakonell.findx.model.ops.Multiply;
 import com.oakonell.findx.model.ops.Square;
 import com.oakonell.findx.model.ops.SquareRoot;
@@ -228,6 +230,35 @@ public class CustomLevelDBWriter {
 					opInfo.put(
 							DataBaseHelper.CustomLevelOperationsTable.X_COEFF,
 							"0");
+				}
+
+				@Override
+				public void visitFactor(Factor factor) {
+					// output constant and coeff
+					opInfo.put(
+							DataBaseHelper.CustomLevelOperationsTable.X2_COEFF,
+							factor.getExpression().getX2Coefficient()
+									.toString());
+					opInfo.put(DataBaseHelper.CustomLevelOperationsTable.CONST,
+							factor.getExpression().getConstant().toString());
+					opInfo.put(
+							DataBaseHelper.CustomLevelOperationsTable.X_COEFF,
+							factor.getExpression().getXCoefficient().toString());
+				}
+
+				@Override
+				public void visitDefactor(Defactor defactor) {
+					// output constant and coeff
+					opInfo.put(
+							DataBaseHelper.CustomLevelOperationsTable.X2_COEFF,
+							defactor.getExpression().getX2Coefficient()
+									.toString());
+					opInfo.put(DataBaseHelper.CustomLevelOperationsTable.CONST,
+							defactor.getExpression().getConstant().toString());
+					opInfo.put(
+							DataBaseHelper.CustomLevelOperationsTable.X_COEFF,
+							defactor.getExpression().getXCoefficient()
+									.toString());
 				}
 
 				@Override

@@ -2,7 +2,9 @@ package com.oakonell.findx.custom.model;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.commons.math3.fraction.Fraction;
 
@@ -45,6 +47,7 @@ public class CustomLevelBuilder extends TempCorrectLevelBuilder {
 	}
 
 	public boolean canDeleteOperation(Operation op) {
+		// TODO Check if eg any Factor operation used
 		if (op instanceof SquareRoot) {
 			// can't delete a square root operation if it is used
 			IMove last = primaryMoves.get(primaryMoves.size() - 1);
@@ -83,6 +86,7 @@ public class CustomLevelBuilder extends TempCorrectLevelBuilder {
 		if (!operations.remove(operation)) {
 			return;
 		}
+		checkOperatorAppliability();
 
 		// An earlier check canDeleteOperation should have been called, and this
 		// can only be called after
@@ -210,12 +214,13 @@ public class CustomLevelBuilder extends TempCorrectLevelBuilder {
 			List<Operation> modOps = new ArrayList<Operation>(operations);
 			modOps.remove(op);
 			modOps.add(Multiply.NEGATE);
-			// A Fudge factor, in case the chosen root equation needs a couple of MULTIPLY operations
+			// A Fudge factor, in case the chosen root equation needs a couple
+			// of MULTIPLY operations
 			int fudgeFactor = 3;
-			Solution solution1 = solver.solve(rootEquation1, modOps,
-					numMoves + fudgeFactor, null);
-			Solution solution2 = solver.solve(rootEquation2, modOps,
-					numMoves + fudgeFactor, null);
+			Solution solution1 = solver.solve(rootEquation1, modOps, numMoves
+					+ fudgeFactor, null);
+			Solution solution2 = solver.solve(rootEquation2, modOps, numMoves
+					+ fudgeFactor, null);
 			if (solution1.solution.compareTo(solution) == 0) {
 				secondarySolution = solution2.solution;
 			} else if (solution2.solution.compareTo(solution) == 0) {
@@ -314,6 +319,7 @@ public class CustomLevelBuilder extends TempCorrectLevelBuilder {
 		int index = operations.indexOf(operation);
 		operations.add(index, newOperation);
 		operations.remove(operation);
+		checkOperatorAppliability();
 
 		if (primaryMoves.size() <= 1) {
 			return;
@@ -392,16 +398,16 @@ public class CustomLevelBuilder extends TempCorrectLevelBuilder {
 			}
 			int indexOf = operations.indexOf(operation);
 			if (indexOf == -1) {
-				if (! operation.equals(Multiply.NEGATE))  {
-					throw new RuntimeException("The custom level " + getId()
-						+ " solution moves contains an invalid operation "
-						+ operation);
-				}
-				indexOf = operations.indexOf(new SquareRoot());
-				if (indexOf ==-1) {
+				if (!operation.equals(Multiply.NEGATE)) {
 					throw new RuntimeException("The custom level " + getId()
 							+ " solution moves contains an invalid operation "
-							+ operation);					
+							+ operation);
+				}
+				indexOf = operations.indexOf(new SquareRoot());
+				if (indexOf == -1) {
+					throw new RuntimeException("The custom level " + getId()
+							+ " solution moves contains an invalid operation "
+							+ operation);
 				}
 			}
 			secondary1.add(indexOf);
@@ -444,4 +450,24 @@ public class CustomLevelBuilder extends TempCorrectLevelBuilder {
 		return primaryMoves;
 	}
 
+	private Set<Operation> disallowed = new HashSet<Operation>();
+
+	public boolean isAppliable(Operation operation) {
+		return !disallowed.contains(operation);
+	}
+
+	@Override
+	protected void checkOperatorAppliability() {
+		disallowed.clear();
+		for (Operation each : operations) {
+			if (!each.isAppliableWith(operations)) {
+				disallowed.add(each);
+			}
+		}
+	}
+
+	public void addOperations(List<Operation> theOperations) {
+		getOperations().addAll(theOperations);
+		checkOperatorAppliability();
+	}
 }

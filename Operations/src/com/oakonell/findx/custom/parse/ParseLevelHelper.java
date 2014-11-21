@@ -19,7 +19,9 @@ import com.oakonell.findx.model.Expression;
 import com.oakonell.findx.model.Operation;
 import com.oakonell.findx.model.Operation.OperationType;
 import com.oakonell.findx.model.ops.Add;
+import com.oakonell.findx.model.ops.Defactor;
 import com.oakonell.findx.model.ops.Divide;
+import com.oakonell.findx.model.ops.Factor;
 import com.oakonell.findx.model.ops.Multiply;
 import com.oakonell.findx.model.ops.Square;
 import com.oakonell.findx.model.ops.SquareRoot;
@@ -185,6 +187,12 @@ public class ParseLevelHelper {
 						new Expression(Fraction.ZERO, ((Divide) op).getFactor()),
 						parseOp);
 				break;
+			case FACTOR:
+				addExpression("", ((Factor) op).getExpression(), parseOp);
+				break;
+			case DEFACTOR:
+				addExpression("", ((Defactor) op).getExpression(), parseOp);
+				break;
 			case SQUARE_ROOT:
 				break;
 			case SWAP:
@@ -306,7 +314,7 @@ public class ParseLevelHelper {
 			builder.setSolution2(solution2);
 		}
 		builder.setServerId(serverId);
-		builder.getOperations().addAll(theOperations);
+		builder.addOperations(theOperations);
 		builder.defaultMaxSequence();
 
 		CustomLevelDBReader.populateBuilderMovesFromOperationIndices(builder,
@@ -345,6 +353,12 @@ public class ParseLevelHelper {
 			break;
 		case SWAP:
 			op = new Swap();
+			break;
+		case FACTOR:
+			op = new Factor(expr);
+			break;
+		case DEFACTOR:
+			op = new Defactor(expr);
 			break;
 		case SQUARE_ROOT:
 			op = new SquareRoot();

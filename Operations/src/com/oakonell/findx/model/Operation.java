@@ -4,7 +4,7 @@ import java.util.List;
 
 public interface Operation {
 	public enum OperationType {
-		ADD, SUBTRACT, MULTIPLY, DIVIDE, SWAP, SQUARE, SQUARE_ROOT, WILD;
+		ADD, SUBTRACT, MULTIPLY, DIVIDE, SWAP, SQUARE, SQUARE_ROOT, WILD, FACTOR, DEFACTOR;
 	}
 
 	Equation apply(Equation equation);
@@ -25,6 +25,8 @@ public interface Operation {
 	boolean isBuilt();
 
 	Operation afterUsed();
+
+	boolean isAppliableWith(List<Operation> operations);
 
 
 }

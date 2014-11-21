@@ -469,7 +469,10 @@ public class CustomPuzzleBuilderActivity extends GameActivity {
 		opButton.setText(Html.fromHtml(operation.toString()));
 
 		Equation currentEquation = builder.getCurrentStartEquation();
-		if (operation.inverse().canApply(currentEquation)) {
+		// TODO Factor operation can only be applied if the Factor op is
+		// solvable with current operations
+		if (builder.isAppliable(operation)
+				&& operation.inverse().canApply(currentEquation)) {
 			opButton.setEnabled(true);
 		} else {
 			opButton.setEnabled(false);
@@ -589,6 +592,29 @@ public class CustomPuzzleBuilderActivity extends GameActivity {
 					public void operationBuilt(Operation operation) {
 						builder.addOperation(operation);
 						handleOperatorButtons();
+						if (!builder.isAppliable(operation)) {
+							// if the new operator is not appliable immediately,
+							// let the user know
+							final AlertDialog alertDialog = new AlertDialog.Builder(
+									CustomPuzzleBuilderActivity.this).create();
+							// TODO .. tell why can't be applied?
+							alertDialog.setTitle("Can't be applied yet");
+							alertDialog.setMessage("The operation " + operation
+									+ " can't be applied yet...");
+							alertDialog
+									.setIcon(android.R.drawable.ic_dialog_alert);
+							alertDialog.setCancelable(true);
+							alertDialog.setButton(getText(android.R.string.ok),
+									new DialogInterface.OnClickListener() {
+										@Override
+										public void onClick(
+												DialogInterface dialog,
+												int which) {
+											alertDialog.dismiss();
+										}
+									});
+							alertDialog.show();
+						}
 					}
 				});
 	}
