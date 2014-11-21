@@ -451,14 +451,14 @@ public class CustomPuzzleBuilderActivity extends GameActivity {
 		addOperator.setEnabled(canAddMoreOperations);
 
 		List<Operation> operations = builder.getOperations();
-		handleOperatorButton(R.id.op1, operations, 0);
-		handleOperatorButton(R.id.op2, operations, 1);
-		handleOperatorButton(R.id.op3, operations, 2);
-		handleOperatorButton(R.id.op4, operations, 3);
-		handleOperatorButton(R.id.op5, operations, 4);
+		handleOperatorButton(R.id.op1, R.id.op1_lock, operations, 0);
+		handleOperatorButton(R.id.op2, R.id.op2_lock, operations, 1);
+		handleOperatorButton(R.id.op3, R.id.op3_lock, operations, 2);
+		handleOperatorButton(R.id.op4, R.id.op4_lock, operations, 3);
+		handleOperatorButton(R.id.op5, R.id.op5_lock, operations, 4);
 	}
 
-	private void handleOperatorButton(int op1, List<Operation> operations, int i) {
+	private void handleOperatorButton(int op1, int lockId, List<Operation> operations, int i) {
 		final TextView opButton = (TextView) findViewById(op1);
 		if (i >= operations.size()) {
 			opButton.setVisibility(View.GONE);
@@ -469,10 +469,17 @@ public class CustomPuzzleBuilderActivity extends GameActivity {
 		opButton.setText(Html.fromHtml(operation.toString()));
 
 		Equation currentEquation = builder.getCurrentStartEquation();
-		// TODO Factor operation can only be applied if the Factor op is
+		// Factor operation can only be applied if the Factor op is
 		// solvable with current operations
-		if (builder.isAppliable(operation)
-				&& operation.inverse().canApply(currentEquation)) {
+		// TODO show a "lock" image if not appliable at all...
+		boolean isAppliable = builder.isAppliable(operation);
+		View lockView = findViewById(lockId);
+		if (isAppliable) {
+			lockView.setVisibility(View.GONE);
+		} else {
+			lockView.setVisibility(View.VISIBLE);
+		}
+		if (isAppliable && operation.inverse().canApply(currentEquation)) {
 			opButton.setEnabled(true);
 		} else {
 			opButton.setEnabled(false);

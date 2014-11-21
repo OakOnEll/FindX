@@ -10,7 +10,7 @@
         android:layout_height="wrap_content"
         android:hint="@string/custom_title_hint" >
 
-        <requestFocus />
+        <requestFocus android:layout_width="match_parent" />
     </EditText>
 
     <LinearLayout
@@ -41,7 +41,6 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="TextView" />
-
     </LinearLayout>
 
     <LinearLayout
@@ -56,29 +55,71 @@
             android:layout_height="wrap_content"
             android:text="+" />
 
-        <TextView
-            android:id="@+id/op1"
-            style="@style/FindXButton"
+        <RelativeLayout
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Button"
-            android:visibility="gone" />
+            android:layout_height="wrap_content" >
 
-        <TextView
-            android:id="@+id/op2"
-            style="@style/FindXButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Button"
-            android:visibility="gone" />
+            <TextView
+                android:id="@+id/op1"
+                style="@style/FindXButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Button"
+                android:visibility="gone" />
 
-        <TextView
-            android:id="@+id/op3"
-            style="@style/FindXButton"
+            <ImageView
+                android:id="@+id/op1_lock"
+                android:layout_width="18dp"
+                android:layout_height="18dp"
+                android:layout_alignBottom="@+id/op1"
+                android:layout_alignRight="@+id/op1"
+                android:src="@drawable/lock"
+                android:visibility="gone" />
+        </RelativeLayout>
+
+        <RelativeLayout
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Button"
-            android:visibility="gone" />
+            android:layout_height="wrap_content" >
+
+            <TextView
+                android:id="@+id/op2"
+                style="@style/FindXButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Button"
+                android:visibility="gone" />
+
+            <ImageView
+                android:id="@+id/op2_lock"
+                android:layout_width="18dp"
+                android:layout_height="18dp"
+                android:layout_alignBottom="@+id/op2"
+                android:layout_alignRight="@+id/op2"
+                android:src="@drawable/lock"
+                android:visibility="gone" />
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" >
+
+            <TextView
+                android:id="@+id/op3"
+                style="@style/FindXButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Button"
+                android:visibility="gone" />
+
+            <ImageView
+                android:id="@+id/op3_lock"
+                android:layout_width="18dp"
+                android:layout_height="18dp"
+                android:layout_alignBottom="@+id/op3"
+                android:layout_alignRight="@+id/op3"
+                android:src="@drawable/lock"
+                android:visibility="gone" />
+        </RelativeLayout>
     </LinearLayout>
 
     <LinearLayout
@@ -87,21 +128,49 @@
         android:layout_height="wrap_content"
         android:gravity="center_horizontal" >
 
-        <TextView
-            android:id="@+id/op4"
-            style="@style/FindXButton"
+        <RelativeLayout
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Button"
-            android:visibility="gone" />
+            android:layout_height="wrap_content" >
 
-        <TextView
-            android:id="@+id/op5"
-            style="@style/FindXButton"
+            <TextView
+                android:id="@+id/op4"
+                style="@style/FindXButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Button"
+                android:visibility="gone" />
+
+            <ImageView
+                android:id="@+id/op4_lock"
+                android:layout_width="18dp"
+                android:layout_height="18dp"
+                android:layout_alignBottom="@+id/op4"
+                android:layout_alignRight="@+id/op4"
+                android:src="@drawable/lock"
+                android:visibility="gone" />
+        </RelativeLayout>
+
+        <RelativeLayout
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Button"
-            android:visibility="gone" />
+            android:layout_height="wrap_content" >
+
+            <TextView
+                android:id="@+id/op5"
+                style="@style/FindXButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Button"
+                android:visibility="gone" />
+
+            <ImageView
+                android:id="@+id/op5_lock"
+                android:layout_width="18dp"
+                android:layout_height="18dp"
+                android:layout_alignBottom="@+id/op5"
+                android:layout_alignRight="@+id/op5"
+                android:src="@drawable/lock"
+                android:visibility="gone" />
+        </RelativeLayout>
     </LinearLayout>
 
     <ListView

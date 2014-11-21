@@ -126,17 +126,20 @@ public class OperationBuilderDialog {
 							.getX2Coefficient());
 					xCoeffText.setFraction(factor.getExpression()
 							.getXCoefficient());
-					constantText.setFraction(factor.getExpression().getConstant());										
+					constantText.setFraction(factor.getExpression()
+							.getConstant());
 				}
-				
+
 				@Override
 				public void visitDefactor(Defactor defactor) {
 					x2CoeffText.setFraction(defactor.getExpression()
 							.getX2Coefficient());
 					xCoeffText.setFraction(defactor.getExpression()
 							.getXCoefficient());
-					constantText.setFraction(defactor.getExpression().getConstant());										
+					constantText.setFraction(defactor.getExpression()
+							.getConstant());
 				}
+
 				@Override
 				public void visitSubtract(Subtract sub) {
 					x2CoeffText.setFraction(sub.getExpression()
@@ -271,9 +274,9 @@ public class OperationBuilderDialog {
 					// defactor not an actual allowed operation
 					break;
 				case FACTOR:
-					 expr = randomHelper.randomExpression();
+					expr = randomHelper.randomExpression();
 					xCoeffText.setFraction(expr.getXCoefficient());
-					constantText.setFraction(expr.getConstant());					
+					constantText.setFraction(expr.getConstant());
 					break;
 				case SQUARE:
 					// square not an actual allowed operation
@@ -351,25 +354,24 @@ public class OperationBuilderDialog {
 					break;
 				case DEFACTOR: {
 					throw new RuntimeException("Defactor not a valid operation");
-					//break;
+					// break;
 				}
 				case FACTOR: {
 					if (!checkFactorInputsValidity(x2CoeffText, xCoeffText,
 							constantText, okButton)) {
 						return;
 					}
-					
+
 					Fraction xCoeff = xCoeffText.getFraction();
 					Fraction constant = constantText.getFraction();
 
-					operation = new Factor(new Expression(xCoeff,
-							constant));
+					operation = new Factor(new Expression(xCoeff, constant));
 					break;
 				}
 				case SQUARE:
 					throw new RuntimeException("Square not a valid operation");
-					//operation = new Square();
-					//break;
+					// operation = new Square();
+					// break;
 				case SQUARE_ROOT:
 					operation = new SquareRoot();
 					break;
@@ -409,13 +411,25 @@ public class OperationBuilderDialog {
 			FractionEditText xCoeffText, FractionEditText constantText,
 			Button okButton) {
 		boolean inputsValid = xCoeffText.isValid() && constantText.isValid();
-		inputsValid = inputsValid
-				&& (xCoeffText.getEditableText().length() > 0 || constantText
-						.getEditableText().length() > 0);
+		if (xCoeffText.isValid()
+				&& (xCoeffText.getFraction() == null || xCoeffText
+						.getFraction().compareTo(Fraction.ZERO) == 0)) {
+			xCoeffText.setError(xCoeffText.getContext().getString(
+					R.string.cannot_be_zero));
+			inputsValid = false;
+		}
+		if (constantText.isValid()
+				&& (constantText.getFraction() == null || constantText
+						.getFraction().compareTo(Fraction.ZERO) == 0)) {
+			constantText.setError(constantText.getContext().getString(
+					R.string.cannot_be_zero));
+			inputsValid = false;
+		}
 		okButton.setEnabled(inputsValid);
 		return inputsValid;
 
 	}
+
 	private boolean checkMultiplicationInputsValidity(
 			final FractionEditText constantText, final Button okButton) {
 		boolean inputsValid = constantText.isValid();
@@ -492,8 +506,8 @@ public class OperationBuilderDialog {
 			xLabel.setVisibility(View.VISIBLE);
 			constantText.setVisibility(View.VISIBLE);
 
-			checkFactorInputsValidity(x2CoeffText, xCoeffText,
-					constantText, okButton);
+			checkFactorInputsValidity(x2CoeffText, xCoeffText, constantText,
+					okButton);
 			break;
 		case SQUARE:
 			// fallthrough
@@ -512,7 +526,5 @@ public class OperationBuilderDialog {
 			throw new RuntimeException("Unsupported operation type " + opType);
 		}
 	}
-
-
 
 }

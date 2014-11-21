@@ -14,5 +14,9 @@ public class FormattedMove extends Move {
 	public String getEndEquationString() {
 		return description;
 	}
+	@Override
+	public Equation getEndEquation() {
+		return getStartEquation();
+	}
 
 }

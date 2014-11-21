@@ -259,7 +259,7 @@ public abstract class AbstractEquationSolver {
 				}
 
 			} else {
-				Equation nextEquation = each.apply(state.equation);
+				Equation nextEquation = moveResult.getPrimaryEndEquation();
 				Integer depthEquationEncountered = state.equations
 						.get(nextEquation);
 				if (depthEquationEncountered != null) {
