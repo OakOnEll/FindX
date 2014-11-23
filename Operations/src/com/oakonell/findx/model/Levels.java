@@ -11,13 +11,13 @@ import org.apache.commons.math3.fraction.Fraction;
 
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.util.Log;
+import android.provider.BaseColumns;
 
 import com.oakonell.findx.FindXApp;
 import com.oakonell.findx.R;
-import com.oakonell.findx.custom.model.CustomLevel;
 import com.oakonell.findx.custom.model.CustomLevelBuilder;
 import com.oakonell.findx.custom.model.CustomLevelDBReader;
+import com.oakonell.findx.custom.model.CustomLevelProxy;
 import com.oakonell.findx.custom.model.CustomStage;
 import com.oakonell.findx.data.DataBaseHelper;
 import com.oakonell.findx.data.DataBaseHelper.CustomLevelTable;
@@ -543,7 +543,7 @@ public class Levels {
 		levels.put(level.getId(), level);
 	}
 
-	public static Level get(String key) {
+	public static ILevel get(String key) {
 		if (isCustom(key)) {
 			return customStage.getLevel(key);
 		}
@@ -574,7 +574,7 @@ public class Levels {
 		configureCustom(customStage);
 	}
 
-	private static void configureCustom(Stage custom) {
+	private static void configureCustom(CustomStage custom) {
 		// TODO not thread safe access to custom stage..?!
 		custom.getLevels().clear();
 
@@ -588,13 +588,28 @@ public class Levels {
 				//
 				, null, null, null, CustomLevelTable.SEQ_NUM);
 		CustomLevelDBReader reader = new CustomLevelDBReader();
+		int num = 1;
 		while (query.moveToNext()) {
-			CustomLevelBuilder builder = reader.readFromCursor(db, query);
-			CustomLevel level = builder.convertToLevel(custom);
-			int toDelete = query.getInt(query
-					.getColumnIndex(CustomLevelTable.TO_DELETE));
-			Log.i("Levels", "ToDelete = " + toDelete);
+			long dbId = query.getLong(query.getColumnIndex(BaseColumns._ID));
+			String name = query.getString(query
+					.getColumnIndex(DataBaseHelper.CustomLevelTable.NAME));
+
+			boolean isImported = query.getInt(query
+					.getColumnIndex(DataBaseHelper.CustomLevelTable.IS_IMPORTED)) > 0;
+			String author = query.getString(query
+					.getColumnIndex(DataBaseHelper.CustomLevelTable.AUTHOR));
+			String serverId = query.getString(query
+					.getColumnIndex(DataBaseHelper.CustomLevelTable.SERVER_ID));
+			int sequence = query.getInt(query
+					.getColumnIndex(DataBaseHelper.CustomLevelTable.SEQ_NUM));
+
+			
+			// TODO make this only read the custom level main info
+			// and lazily load the other info on demand
+			CustomLevelProxy level = new CustomLevelProxy(custom, "C-" + num,
+					dbId, name, isImported, author, serverId, sequence);
 			custom.addLevel(level);
+			num++;
 		}
 		query.close();
 		db.close();

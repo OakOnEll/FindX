@@ -18,7 +18,9 @@ import com.google.android.gms.games.Games;
 import com.google.android.gms.games.GamesStatusCodes;
 import com.google.android.gms.games.achievement.Achievements.UpdateAchievementResult;
 import com.google.example.games.basegameutils.GameHelper;
-import com.oakonell.findx.model.Level;
+import com.oakonell.findx.custom.model.AbstractEquationSolver.Solution;
+import com.oakonell.findx.custom.model.EquationSolver;
+import com.oakonell.findx.model.ILevel;
 import com.oakonell.findx.model.Puzzle;
 
 public class Achievements {
@@ -26,6 +28,7 @@ public class Achievements {
 
 	private List<Achievement> achievements = new ArrayList<Achievements.Achievement>();
 	private List<Achievement> levelEndAchievements = new ArrayList<Achievements.Achievement>();
+	private List<Achievement> inLevelAchievements = new ArrayList<Achievements.Achievement>();
 
 	Achievement trivial = new BooleanAchievement(
 			R.string.achievement_the_trivial_solution,
@@ -47,6 +50,43 @@ public class Achievements {
 
 		@Override
 		public void testAndSet(AchievementContext context, Puzzle puzzle) {
+			unlock(context);
+		}
+
+	};
+
+	Achievement lostCause = new BooleanAchievement(
+			R.string.achievement_the_lost_cause,
+			R.string.achievement_the_lost_cause_label, "The Lost Cause") {
+
+		@Override
+		public void testAndSet(AchievementContext context, Puzzle puzzle) {
+			if (puzzle.isSolved())
+				return;
+			int minMoves = puzzle.getMinMoves();
+			int numMoves = puzzle.getNumMoves();
+			if (numMoves < minMoves) {
+				return;
+			}
+			if (minMoves < 5) {
+				if (numMoves < 5 * minMoves)
+					return;
+			} else if (minMoves < 10) {
+				if (numMoves < 2 * minMoves)
+					return;
+			} else {
+				if (numMoves - minMoves < 5)
+					return;
+			}
+
+			if (minMoves < 6) {
+				EquationSolver solver = new EquationSolver();
+				Solution solve = solver.solve(puzzle.getCurrentEquation(),
+						puzzle.getOperations(), 6, null);
+				if (solve != null)
+					return;
+			}
+
 			unlock(context);
 		}
 
@@ -86,7 +126,7 @@ public class Achievements {
 			if (!puzzle.getStage().getId().equals(stageId)) {
 				return;
 			}
-			for (Level each : puzzle.getStage().getLevels()) {
+			for (ILevel each : puzzle.getStage().getLevels()) {
 				// TODO this seemed to be not work when resolving the last one
 				// for a three star
 				if (puzzle.getId().equals(each.getId())) {
@@ -120,7 +160,10 @@ public class Achievements {
 				R.string.achievement_the_masters_degree_label,
 				"Master's Degree", "3"));
 
+		inLevelAchievements.add(lostCause);
+
 		achievements.addAll(levelEndAchievements);
+		achievements.addAll(inLevelAchievements);
 		achievements.add(contributor);
 	}
 
@@ -307,4 +350,33 @@ public class Achievements {
 		contributor.testAndSet(context, null);
 	}
 
+	public void testAndSetInLevelAchievements(AchievementContext context,
+			Puzzle puzzle) {
+		for (Achievement each : inLevelAchievements) {
+			try {
+				each.testAndSet(context, puzzle);
+			} catch (RuntimeException e) {
+				String text = "Error testing in level achievement "
+						+ each.getName();
+				if (BuildConfig.DEBUG) {
+					Toast.makeText(context.getContext(),
+							text + ": " + e.getMessage(), Toast.LENGTH_LONG)
+							.show();
+				}
+				Tracker myTracker = GoogleAnalytics.getInstance(
+						context.getContext())
+						.newTracker(R.string.ga_trackingId);
+				Map<String, String> event = new HitBuilders.ExceptionBuilder()
+						.setDescription(
+								new StandardExceptionParser(context
+										.getContext(), null).getDescription(
+										Thread.currentThread().getName(), e))
+						.setFatal(false).build();
+				myTracker.send(event);
+				// don't crash game due to faulty implementation of achievement,
+				// just log it
+				Log.e(TAG, text + ": " + e.getMessage());
+			}
+		}
+	}
 }

@@ -52,11 +52,11 @@ import com.oakonell.findx.MenuHelper;
 import com.oakonell.findx.PuzzleActivity;
 import com.oakonell.findx.R;
 import com.oakonell.findx.custom.PopupMenuDialogFragment.OnItemSelected;
-import com.oakonell.findx.custom.model.CustomLevel;
 import com.oakonell.findx.custom.model.CustomLevelBuilder;
 import com.oakonell.findx.custom.model.CustomLevelDBReader;
 import com.oakonell.findx.custom.model.CustomLevelDBWriter;
 import com.oakonell.findx.custom.model.CustomStage;
+import com.oakonell.findx.custom.model.ICustomLevel;
 import com.oakonell.findx.custom.parse.CustomLevelSearchActivity;
 import com.oakonell.findx.custom.parse.ParseConnectivity;
 import com.oakonell.findx.custom.parse.ParseConnectivity.ParseUserExtra;
@@ -64,8 +64,8 @@ import com.oakonell.findx.custom.parse.ParseLevelHelper;
 import com.oakonell.findx.data.DataBaseHelper;
 import com.oakonell.findx.data.DataBaseHelper.CustomLevelTable;
 import com.oakonell.findx.model.Expression;
+import com.oakonell.findx.model.ILevel;
 import com.oakonell.findx.model.IMove;
-import com.oakonell.findx.model.Level;
 import com.oakonell.findx.model.Levels;
 import com.oakonell.findx.model.Move;
 import com.oakonell.findx.model.Operation;
@@ -94,7 +94,7 @@ import com.parse.ParseUser;
 public class CustomStageActivity extends GameActivity {
 	private static final int DISMISS_BAR_DURATION = 2000;
 
-	private ArrayAdapter<Level> adapter;
+	private ArrayAdapter<ILevel> adapter;
 	private CustomStage stage;
 	private DragController mDragController;
 	private DragLayer mDragLayer;
@@ -123,12 +123,12 @@ public class CustomStageActivity extends GameActivity {
 		mDragController.setDragListener(mDragLayer);
 
 		stage.getLevels();
-		adapter = new ArrayAdapter<Level>(getApplication(),
+		adapter = new ArrayAdapter<ILevel>(getApplication(),
 				R.layout.level_select_grid_item, stage.getLevels()) {
 
 			@Override
 			public View getView(int position, View inputRow, ViewGroup parent) {
-				final CustomLevel level = (CustomLevel) getItem(position);
+				final ICustomLevel level = (ICustomLevel) getItem(position);
 
 				final CustomLevelGridCell row;
 				if (inputRow == null) {
@@ -144,8 +144,8 @@ public class CustomStageActivity extends GameActivity {
 							int y, int xOffset, int yOffset, DragView dragView,
 							Object dragInfo) {
 						CustomLevelGridCell s = (CustomLevelGridCell) source;
-						CustomLevel movedLevel = s.getLevel();
-						CustomLevel myLevel = row.getLevel();
+						ICustomLevel movedLevel = s.getLevel();
+						ICustomLevel myLevel = row.getLevel();
 						stage.reorderFromTo(movedLevel, myLevel);
 						adapter.notifyDataSetChanged();
 					}
@@ -215,7 +215,7 @@ public class CustomStageActivity extends GameActivity {
 					@Override
 					public void onItemClick(AdapterView<?> parent, View view,
 							int position, long id) {
-						Level level = adapter.getItem(position);
+						ILevel level = adapter.getItem(position);
 						startPuzzle(level.getId());
 					}
 				});
@@ -260,7 +260,7 @@ public class CustomStageActivity extends GameActivity {
 		BackgroundMusicHelper.onActivtyCreate(this, stage.getBgMusicId());
 	}
 
-	private void shareLevel(final CustomLevel level) {
+	private void shareLevel(final ICustomLevel level) {
 		// TODO can share
 		// in progress levels- passed via URL encoding, as the old
 		// posted level, via a new url that passes the parseObject id
@@ -517,7 +517,7 @@ public class CustomStageActivity extends GameActivity {
 		super.onResume();
 	}
 
-	protected void deleteLevel(final CustomLevel level) {
+	protected void deleteLevel(final ICustomLevel level) {
 		final AtomicBoolean delete = new AtomicBoolean(true);
 
 		final DataBaseHelper helper = new DataBaseHelper(this);
@@ -575,7 +575,7 @@ public class CustomStageActivity extends GameActivity {
 
 	}
 
-	private void copyLevel(CustomLevel level) {
+	private void copyLevel(ICustomLevel level) {
 		Intent levelIntent = new Intent(CustomStageActivity.this,
 				CustomPuzzleBuilderActivity.class);
 		levelIntent.putExtra(CustomPuzzleBuilderActivity.LEVEL_ID,
@@ -585,7 +585,7 @@ public class CustomStageActivity extends GameActivity {
 		startActivity(levelIntent);
 	}
 
-	private void editLevel(final CustomLevel level) {
+	private void editLevel(final ICustomLevel level) {
 		Intent levelIntent = new Intent(CustomStageActivity.this,
 				CustomPuzzleBuilderActivity.class);
 		levelIntent.putExtra(CustomPuzzleBuilderActivity.LEVEL_ID,
@@ -639,7 +639,7 @@ public class CustomStageActivity extends GameActivity {
 	}
 
 	public interface ItemExecute {
-		void execute(CustomStageActivity activity, ArrayAdapter<Level> adapter);
+		void execute(CustomStageActivity activity, ArrayAdapter<ILevel> adapter);
 	}
 
 	public static class LevelMenuItem {
@@ -652,12 +652,12 @@ public class CustomStageActivity extends GameActivity {
 		}
 	}
 
-	private void addMenuItems(final CustomLevel level,
+	private void addMenuItems(final ICustomLevel level,
 			List<LevelMenuItem> menuItems) {
 		menuItems.add(new LevelMenuItem("Delete", new ItemExecute() {
 			@Override
 			public void execute(CustomStageActivity activity,
-					ArrayAdapter<Level> adapter) {
+					ArrayAdapter<ILevel> adapter) {
 				deleteLevel(level);
 			}
 		}));
@@ -665,7 +665,7 @@ public class CustomStageActivity extends GameActivity {
 			menuItems.add(new LevelMenuItem("Copy", new ItemExecute() {
 				@Override
 				public void execute(CustomStageActivity activity,
-						ArrayAdapter<Level> adapter) {
+						ArrayAdapter<ILevel> adapter) {
 					copyLevel(level);
 				}
 			}));
@@ -673,14 +673,14 @@ public class CustomStageActivity extends GameActivity {
 				menuItems.add(new LevelMenuItem("Edit", new ItemExecute() {
 					@Override
 					public void execute(CustomStageActivity activity,
-							ArrayAdapter<Level> adapter) {
+							ArrayAdapter<ILevel> adapter) {
 						editLevel(level);
 					}
 				}));
 				menuItems.add(new LevelMenuItem("Post", new ItemExecute() {
 					@Override
 					public void execute(CustomStageActivity activity,
-							ArrayAdapter<Level> adapter) {
+							ArrayAdapter<ILevel> adapter) {
 						postLevel(level);
 					}
 
@@ -690,13 +690,13 @@ public class CustomStageActivity extends GameActivity {
 		menuItems.add(new LevelMenuItem("Share", new ItemExecute() {
 			@Override
 			public void execute(CustomStageActivity activity,
-					ArrayAdapter<Level> adapter) {
+					ArrayAdapter<ILevel> adapter) {
 				shareLevel(level);
 			}
 		}));
 	}
 
-	private void postLevel(final CustomLevel theLevel) {
+	private void postLevel(final ICustomLevel theLevel) {
 		ParseUser parseUser = ParseUser.getCurrentUser();
 		if (parseUser == null) {
 			// prompt to Log in
@@ -729,7 +729,7 @@ public class CustomStageActivity extends GameActivity {
 					public void run() {
 						Levels.resetCustomStage();
 						adapter.notifyDataSetChanged();
-						CustomLevel modLevel = Levels.getCustomStage()
+						ICustomLevel modLevel = Levels.getCustomStage()
 								.getLevelByDBId(theLevel.getDbId());
 						postLevel(modLevel);
 					}
@@ -742,7 +742,7 @@ public class CustomStageActivity extends GameActivity {
 
 	}
 
-	private void actualPost(final CustomLevel theLevel) {
+	private void actualPost(final ICustomLevel theLevel) {
 		final ProgressDialog dialog = ProgressDialog.show(this,
 				"Saving to server", "Please wait...");
 		dialog.setCancelable(false);
@@ -780,7 +780,7 @@ public class CustomStageActivity extends GameActivity {
 		task.execute();
 	}
 
-	private void promptTitleChange(final CustomLevel theLevel,
+	private void promptTitleChange(final ICustomLevel theLevel,
 			final Runnable continuation) {
 		// Set an EditText view to get user input
 		final EditText input = new EditText(this);

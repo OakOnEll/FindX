@@ -188,8 +188,9 @@ public class ChooseStageActivity extends GameActivity implements
 
 		if (id != null) {
 			startPuzzle(id);
-			// don't finish- in case back used, should go back to main menu for user
-			//finish();
+			// don't finish- in case back used, should go back to main menu for
+			// user
+			// finish();
 			return true;
 		}
 		return false;
@@ -226,7 +227,9 @@ public class ChooseStageActivity extends GameActivity implements
 	protected void onResume() {
 		BackgroundMusicHelper.onActivityResume(this,
 				R.raw.prelude_no_8_in_e_flat_minor_loop);
-		adapter.notifyDataSetChanged();
+		if (adapter!=null) {
+			adapter.notifyDataSetChanged();
+		}
 		super.onResume();
 	}
 

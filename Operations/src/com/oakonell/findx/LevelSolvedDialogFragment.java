@@ -36,7 +36,7 @@ import com.oakonell.findx.PuzzleActivity.Sounds;
 import com.oakonell.findx.model.Equation;
 import com.oakonell.findx.model.Expression;
 import com.oakonell.findx.model.Expression.UseParenthesis;
-import com.oakonell.findx.model.Level;
+import com.oakonell.findx.model.ILevel;
 import com.oakonell.findx.model.Puzzle;
 import com.oakonell.utils.StringUtils;
 import com.oakonell.utils.share.ShareHelper;
@@ -233,7 +233,7 @@ public class LevelSolvedDialogFragment extends SherlockDialogFragment {
 		});
 
 		Button nextLevelButton = (Button) view.findViewById(R.id.next_level);
-		final Level nextLevel = puzzle.getNextLevel();
+		final ILevel nextLevel = puzzle.getNextLevel();
 		if (nextLevel == null) {
 			nextLevelButton.setEnabled(false);
 		} else {
@@ -810,7 +810,7 @@ public class LevelSolvedDialogFragment extends SherlockDialogFragment {
 		if (BuildConfig.DEBUG) {
 			TextView debugTextView = (TextView) frameParent
 					.findViewById(R.id.anim_debug);
-			debugTextView.setVisibility(View.VISIBLE);
+//			debugTextView.setVisibility(View.VISIBLE);
 			debugTextView.setText(string);
 		}
 	}
@@ -1034,7 +1034,7 @@ public class LevelSolvedDialogFragment extends SherlockDialogFragment {
 
 	}
 
-	private void nextLevel(final Level nextLevel) {
+	private void nextLevel(final ILevel nextLevel) {
 		activity.saveState = false;
 		Runnable nextLevelRunnable = new Runnable() {
 			@Override

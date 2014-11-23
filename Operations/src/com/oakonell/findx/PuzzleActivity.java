@@ -28,6 +28,7 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.actionbarsherlock.app.ActionBar;
 import com.actionbarsherlock.view.MenuInflater;
@@ -39,6 +40,7 @@ import com.oakonell.findx.custom.OperationBuilderDialog;
 import com.oakonell.findx.custom.OperationBuilderDialog.OperationBuiltContinuation;
 import com.oakonell.findx.custom.model.CustomLevel;
 import com.oakonell.findx.custom.model.CustomStage;
+import com.oakonell.findx.custom.model.ICustomLevel;
 import com.oakonell.findx.custom.parse.CustomLevelDetailActivity;
 import com.oakonell.findx.data.DataBaseHelper;
 import com.oakonell.findx.model.IMove;
@@ -367,6 +369,9 @@ public class PuzzleActivity extends GameActivity {
 			case 5:
 				resourceId = R.id.op5;
 				break;
+			case 6:
+				resourceId = R.id.op5;
+				break;
 			default:
 				throw new RuntimeException("Unexpected number of operations");
 			}
@@ -395,7 +400,16 @@ public class PuzzleActivity extends GameActivity {
 				// soundManager.playSound(operation1.type());
 				// TODO adjust for moves not having starting equation as special
 				// move
-				puzzle.apply(operation);
+				try {
+					puzzle.apply(operation);
+				} catch (RuntimeException e) {
+					Toast.makeText(getContext(), "Operation failed",
+							Toast.LENGTH_SHORT).show();
+				}
+
+				FindXApp app = (FindXApp) getApplication();
+				app.getAchievements().testAndSetInLevelAchievements(
+						PuzzleActivity.this, puzzle);
 
 				configureOperationButtons(movesView);
 				handleUndoEnabling();
@@ -640,7 +654,7 @@ public class PuzzleActivity extends GameActivity {
 	@Override
 	public boolean onCreateOptionsMenu(com.actionbarsherlock.view.Menu menu) {
 		if (puzzle.getStage() instanceof CustomStage
-				&& ((CustomLevel) puzzle.getLevel()).savedToServer()) {
+				&& ((ICustomLevel) puzzle.getLevel()).savedToServer()) {
 			MenuInflater inflater = getSupportMenuInflater();
 			inflater.inflate(R.menu.custom_puzzle, menu);
 			return true;
@@ -711,7 +725,7 @@ public class PuzzleActivity extends GameActivity {
 	}
 
 	private void showLevelDetails() {
-		CustomLevel cLevel = (CustomLevel) puzzle.getLevel();
+		ICustomLevel cLevel = (ICustomLevel) puzzle.getLevel();
 
 		Intent levelIntent = new Intent(PuzzleActivity.this,
 				CustomLevelDetailActivity.class);

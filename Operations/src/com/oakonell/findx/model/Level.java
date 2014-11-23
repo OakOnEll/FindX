@@ -16,7 +16,7 @@ import com.oakonell.findx.FindXApp;
 import com.oakonell.findx.data.DataBaseHelper;
 
 @Immutable
-public class Level {
+public class Level implements ILevel {
 	private final Stage stage;
 	private final String id;
 	private final String name;
@@ -41,34 +41,42 @@ public class Level {
 		solution = levelSolution;
 	}
 
+	@Override
 	public String getId() {
 		return id;
 	}
 
-	public Level getNextLevel() {
+	@Override
+	public ILevel getNextLevel() {
 		return stage.getNextLevel(this);
 	}
 
-	public Level getPreviousLevel() {
+	@Override
+	public ILevel getPreviousLevel() {
 		return stage.getPreviousLevel(this);
 	}
 
+	@Override
 	public String getName() {
 		return name;
 	}
 
+	@Override
 	public Equation getEquation() {
 		return equation;
 	}
 
+	@Override
 	public List<Operation> getOperations() {
 		return operations;
 	}
 
+	@Override
 	public int getMinMoves() {
 		return solution.getNumMoves();
 	}
 
+	@Override
 	public int getRating() {
 		DataBaseHelper helper = new DataBaseHelper(FindXApp.getContext());
 		SQLiteDatabase db = helper.getReadableDatabase();
@@ -97,6 +105,7 @@ public class Level {
 		return rating;
 	}
 
+	@Override
 	public int calculateRating(int numMoves, int undosUsed) {
 		int rating = 3;
 		if (undosUsed > 0) {
@@ -115,6 +124,7 @@ public class Level {
 		return query;
 	}
 
+	@Override
 	public void possibilyUpdateRating(int moves, int undosUsed) {
 		DataBaseHelper helper = new DataBaseHelper(FindXApp.getContext());
 		SQLiteDatabase db = helper.getWritableDatabase();
@@ -132,6 +142,7 @@ public class Level {
 		values.put(DataBaseHelper.LevelProgressTable.MIN_MOVES, moves);
 		values.put(DataBaseHelper.LevelProgressTable.NUM_UNDOS, undosUsed);
 
+		// TODO use the dbId for custom levels, instead of the "1-1" style of id
 		if (existingRating > 0) {
 			// update
 			db.update(DataBaseHelper.LEVEL_PROGRESS_TABLE_NAME, values,
@@ -153,14 +164,16 @@ public class Level {
 		db.close();
 	}
 
+	@Override
 	public boolean isUnlocked() {
-		Level previous = getPreviousLevel();
+		ILevel previous = getPreviousLevel();
 		if (previous == null) {
 			return true;
 		}
 		return previous.getRating() > 0;
 	}
 
+	@Override
 	public String getMultilineDescription() {
 		StringBuilder builder = new StringBuilder();
 		Equation equation = getEquation();
@@ -178,14 +191,17 @@ public class Level {
 		return builder.toString();
 	}
 
+	@Override
 	public Stage getStage() {
 		return stage;
 	}
 
+	@Override
 	public List<Fraction> getSolutions() {
 		return solution.getSolutions();
 	}
 
+	@Override
 	public LevelSolution getLevelSolution() {
 		return solution;
 	}

@@ -31,9 +31,9 @@ import com.actionbarsherlock.view.MenuItem;
 import com.commonsware.cwac.merge.MergeAdapter;
 import com.oakonell.findx.PuzzleActivity;
 import com.oakonell.findx.R;
-import com.oakonell.findx.custom.model.CustomLevel;
 import com.oakonell.findx.custom.model.CustomLevelBuilder;
 import com.oakonell.findx.custom.model.CustomLevelDBReader;
+import com.oakonell.findx.custom.model.ICustomLevel;
 import com.oakonell.findx.custom.parse.ParseConnectivity.ParseUserExtra;
 import com.oakonell.findx.custom.parse.ParseLevelHelper.ParseCustomLevel;
 import com.oakonell.findx.custom.parse.ParseLevelHelper.ParseLevelOperation;
@@ -422,7 +422,7 @@ public class CustomLevelDetailActivity extends SherlockFragmentActivity {
 			@Override
 			protected void onPostExecute(CustomLevelBuilder builder) {
 				dialog.dismiss();
-				CustomLevel newlevel = Levels.getCustomStage().getLevelByDBId(
+				ICustomLevel newlevel = Levels.getCustomStage().getLevelByDBId(
 						builder.getId());
 				startPuzzle(newlevel.getId());
 			}
@@ -483,7 +483,8 @@ public class CustomLevelDetailActivity extends SherlockFragmentActivity {
 			final CustomLevelDBReader reader = new CustomLevelDBReader();
 			final long dbId = reader.findDbIdByServerId(this, levelId);
 			// Ugh-ly..
-			CustomLevel theLevel = Levels.getCustomStage().getLevelByDBId(dbId);
+			ICustomLevel theLevel = Levels.getCustomStage()
+					.getLevelByDBId(dbId);
 			startPuzzle(theLevel.getId());
 			return true;
 		} else if (item.getItemId() == R.id.menu_download) {

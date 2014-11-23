@@ -13,6 +13,7 @@ import android.os.AsyncTask;
 import com.oakonell.findx.custom.model.CustomLevel;
 import com.oakonell.findx.custom.model.CustomLevelBuilder;
 import com.oakonell.findx.custom.model.CustomLevelDBReader;
+import com.oakonell.findx.custom.model.ICustomLevel;
 import com.oakonell.findx.custom.parse.ParseConnectivity.ParseUserExtra;
 import com.oakonell.findx.model.Equation;
 import com.oakonell.findx.model.Expression;
@@ -98,7 +99,7 @@ public class ParseLevelHelper {
 		final String flaggedBy_field = "flaggedBy";
 	}
 
-	public static String postLevel(CustomLevel theLevel) {
+	public static String postLevel(ICustomLevel theLevel) {
 		try {
 
 			ParseObject level = postMainLevel(theLevel);
@@ -119,7 +120,7 @@ public class ParseLevelHelper {
 		}
 	}
 
-	private static ParseObject postMainLevel(CustomLevel theLevel)
+	private static ParseObject postMainLevel(ICustomLevel theLevel)
 			throws ParseException {
 		ParseUser parseUser = ParseUser.getCurrentUser();
 
@@ -151,7 +152,7 @@ public class ParseLevelHelper {
 		return level;
 	}
 
-	private static void postLevelOperations(CustomLevel theLevel,
+	private static void postLevelOperations(ICustomLevel theLevel,
 			ParseObject level) throws ParseException {
 		int opSequence = 0;
 		for (Operation each : theLevel.getOperations()) {
@@ -479,7 +480,7 @@ public class ParseLevelHelper {
 	}
 
 	public static void checkLevelAuthorAndTitleNotUnique(
-			final CustomLevel theLevel, final Runnable unique,
+			final ICustomLevel theLevel, final Runnable unique,
 			final Runnable notUnique) {
 		AsyncTask<Void, Void, Boolean> task = new AsyncTask<Void, Void, Boolean>() {
 

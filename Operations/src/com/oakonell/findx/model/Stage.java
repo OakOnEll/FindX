@@ -8,7 +8,7 @@ public class Stage {
     private final int bgMusicId;
     private final String id;
     private final int titleId;
-    private final List<Level> levels = Collections.synchronizedList(new ArrayList<Level>());
+    private final List<ILevel> levels = Collections.synchronizedList(new ArrayList<ILevel>());
     private final Stage previousStage;
 
     public Stage(String id, int titleId, int bgMusicRes, Stage previousStage) {
@@ -26,11 +26,11 @@ public class Stage {
         return titleId;
     }
 
-    public void addLevel(Level level) {
+    public void addLevel(ILevel level) {
         levels.add(level);
     }
 
-    public Level getNextLevel(Level level) {
+    public ILevel getNextLevel(ILevel level) {
         int indexOf = levels.indexOf(level);
         if (indexOf < -1) {
             throw new IllegalArgumentException("No such level in this stage");
@@ -42,7 +42,7 @@ public class Stage {
         return levels.get(nextIndex);
     }
 
-    public Level getPreviousLevel(Level level) {
+    public ILevel getPreviousLevel(ILevel level) {
         int indexOf = levels.indexOf(level);
         if (indexOf < -1) {
             throw new IllegalArgumentException("No such level in this stage");
@@ -54,12 +54,12 @@ public class Stage {
         return levels.get(nextIndex);
     }
 
-    public List<Level> getLevels() {
+    public List<ILevel> getLevels() {
         return levels;
     }
 
-    public Level getLevel(String key) {
-        for (Level each : levels) {
+    public ILevel getLevel(String key) {
+        for (ILevel each : levels) {
             if (each.getId().equals(key)) {
                 return each;
             }
@@ -75,7 +75,7 @@ public class Stage {
         if (previousStage == null) {
             return true;
         }
-        List<Level> prevLevels = previousStage.getLevels();
+        List<ILevel> prevLevels = previousStage.getLevels();
         return prevLevels.get(prevLevels.size() - 1).isUnlocked();
     }
 }

@@ -37,7 +37,7 @@ public abstract class AbstractEquationSolver {
 				Solution solve, Solution solve2) {
 			Equation equation = state.startEquation;
 			primaryMoves = new ArrayList<IMove>();
-			primaryMoves.add(new Move(equation, null));
+			primaryMoves.add(new Move(equation, null, 0));
 			int moveNum = 1;
 			MoveResult applyMove = null;
 			for (Operation each : moves) {

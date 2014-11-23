@@ -23,6 +23,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.actionbarsherlock.app.ActionBar;
 import com.actionbarsherlock.view.MenuItem;
@@ -51,9 +52,12 @@ public class CustomPuzzleBuilderActivity extends GameActivity {
 	public static final String LEVEL_ID = "id";
 	public static final String COPY = "copy";
 
-	private static final int MAX_OPERATORS = 5;
+	private static final int MAX_OPERATORS = 6;
 
 	protected static final double LARGE_SEARCH_SPACE = Math.pow(5, 12);
+	protected static final int MAX_RAND_MOVES = 10;
+	protected static final int MAX_MOVES = 30;
+
 	private CustomLevelBuilder builder = new CustomLevelBuilder();
 
 	private ArrayAdapter<IMove> adapter;
@@ -411,6 +415,21 @@ public class CustomPuzzleBuilderActivity extends GameActivity {
 							public void onClick(DialogInterface dialog,
 									int whichButton) {
 								int num = input.getNumber();
+								if (num > MAX_RAND_MOVES) {
+									Toast.makeText(getContext(),
+											"Too many random moves!",
+											Toast.LENGTH_SHORT).show();
+									return;
+								}
+								if (num + builder.getNumMoves() > MAX_MOVES) {
+									Toast.makeText(
+											getContext(),
+											"Would result in too many moves- choose a number less than "
+													+ (MAX_MOVES - builder
+															.getNumMoves()),
+											Toast.LENGTH_SHORT).show();
+									return;
+								}
 								addRandomMoves(num);
 								dialog.dismiss();
 							}
@@ -458,7 +477,8 @@ public class CustomPuzzleBuilderActivity extends GameActivity {
 		handleOperatorButton(R.id.op5, R.id.op5_lock, operations, 4);
 	}
 
-	private void handleOperatorButton(int op1, int lockId, List<Operation> operations, int i) {
+	private void handleOperatorButton(int op1, int lockId,
+			List<Operation> operations, int i) {
 		final TextView opButton = (TextView) findViewById(op1);
 		if (i >= operations.size()) {
 			opButton.setVisibility(View.GONE);
@@ -495,7 +515,18 @@ public class CustomPuzzleBuilderActivity extends GameActivity {
 		opButton.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				builder.apply(operation);
+				if (builder.getNumMoves() > MAX_MOVES) {
+					Toast.makeText(getContext(), "Too many moves!",
+							Toast.LENGTH_SHORT).show();
+					return;
+				}
+				// handle math overflow
+				try {
+					builder.apply(operation);
+				} catch (Exception e) {
+					Toast.makeText(getContext(), "Operation resulted in an error!",
+							Toast.LENGTH_SHORT).show();
+				}
 				updateUI();
 			}
 		});

@@ -29,8 +29,8 @@ import com.actionbarsherlock.app.ActionBar;
 import com.actionbarsherlock.app.SherlockFragmentActivity;
 import com.oakonell.findx.PuzzleActivity;
 import com.oakonell.findx.R;
-import com.oakonell.findx.custom.model.CustomLevel;
 import com.oakonell.findx.custom.model.CustomLevelBuilder;
+import com.oakonell.findx.custom.model.ICustomLevel;
 import com.oakonell.findx.model.Expression;
 import com.oakonell.findx.model.Levels;
 import com.oakonell.findx.model.Operation;
@@ -202,8 +202,8 @@ public class SharedLevelActivity extends SherlockFragmentActivity {
 				public void onClick(View view) {
 					builder.save();
 					Levels.resetCustomStage();
-					CustomLevel level = Levels.getCustomStage().getLevelByDBId(
-							builder.getId());
+					ICustomLevel level = Levels.getCustomStage()
+							.getLevelByDBId(builder.getId());
 					startPuzzle(level.getId());
 
 					finish();

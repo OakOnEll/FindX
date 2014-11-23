@@ -10,4 +10,6 @@ Save this file as res/values/games-ids.xml in your project.
   <string name="achievement_journeyman">CgkI0eiT7qgKEAIQBA</string>
   <string name="achievement_the_masters_degree">CgkI0eiT7qgKEAIQBQ</string>
   <string name="achievement_the_contributor">CgkI0eiT7qgKEAIQBw</string>
-</resources>
+  <string name="achievement_the_lost_cause">CgkI0eiT7qgKEAIQCA</string>
+  
+  </resources>

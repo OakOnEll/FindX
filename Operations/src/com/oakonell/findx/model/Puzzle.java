@@ -12,6 +12,7 @@ import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.provider.BaseColumns;
+import android.widget.Toast;
 
 import com.oakonell.findx.custom.model.CustomLevelDBReader;
 import com.oakonell.findx.data.DataBaseHelper;
@@ -28,7 +29,7 @@ import com.oakonell.findx.model.ops.Swap;
 import com.oakonell.findx.model.ops.WildCard;
 
 public class Puzzle {
-	private Level level;
+	private ILevel level;
 	private int numUndosLeft;
 	private List<IMove> moves = new ArrayList<IMove>();
 	private List<Operation> operations;
@@ -82,7 +83,7 @@ public class Puzzle {
 		numUndosLeft = 2 - numUndosUsed;
 	}
 
-	public Level getLevel() {
+	public ILevel getLevel() {
 		return level;
 	}
 
@@ -151,7 +152,7 @@ public class Puzzle {
 		return true;
 	}
 
-	public Level getNextLevel() {
+	public ILevel getNextLevel() {
 		return level.getNextLevel();
 	}
 
@@ -216,9 +217,10 @@ public class Puzzle {
 				@Override
 				public void visitFactor(Factor factor) {
 					opInfo.put(DataBaseHelper.CurrentLevelWildTable.X2_COEFF,
-							factor.getExpression().getX2Coefficient().toString());
-					opInfo.put(DataBaseHelper.CurrentLevelWildTable.CONST, factor
-							.getExpression().getConstant().toString());
+							factor.getExpression().getX2Coefficient()
+									.toString());
+					opInfo.put(DataBaseHelper.CurrentLevelWildTable.CONST,
+							factor.getExpression().getConstant().toString());
 					opInfo.put(DataBaseHelper.CurrentLevelWildTable.X_COEFF,
 							factor.getExpression().getXCoefficient().toString());
 				}
@@ -226,11 +228,13 @@ public class Puzzle {
 				@Override
 				public void visitDefactor(Defactor defactor) {
 					opInfo.put(DataBaseHelper.CurrentLevelWildTable.X2_COEFF,
-							defactor.getExpression().getX2Coefficient().toString());
-					opInfo.put(DataBaseHelper.CurrentLevelWildTable.CONST, defactor
-							.getExpression().getConstant().toString());
+							defactor.getExpression().getX2Coefficient()
+									.toString());
+					opInfo.put(DataBaseHelper.CurrentLevelWildTable.CONST,
+							defactor.getExpression().getConstant().toString());
 					opInfo.put(DataBaseHelper.CurrentLevelWildTable.X_COEFF,
-							defactor.getExpression().getXCoefficient().toString());
+							defactor.getExpression().getXCoefficient()
+									.toString());
 				}
 
 				@Override
@@ -530,12 +534,14 @@ public class Puzzle {
 		}
 		Equation startEquation = currentEquation;
 
+		// weird order to allow for an apply exception being thrown
+		MoveResult moveResult = operation.applyMove(startEquation,
+				numMoves + 1, operations);
 		numMoves++;
 		if (operation instanceof SquareRoot) {
 			squareRootOpIndex = operations.indexOf(new SquareRoot());
 		}
-		MoveResult moveResult = operation.applyMove(startEquation, numMoves,
-				operations);
+
 		moves.add(moveResult.getPrimaryMove());
 		if (moveResult.hasMultiple()) {
 			IMove secondary1 = moveResult.getSecondary1();

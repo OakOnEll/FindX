@@ -7,18 +7,17 @@ public class Move implements IMoveWithOperation {
 	private final Equation start;
 	private final Operation op;
 	private int moveNum;
-
-	public Move(Equation start, Operation op) {
-		// TODO fix the custom level builder to properly set the move num
-		this.start = start;
-		this.op = op;
-		this.moveNum = 0;
-	}
+	private final Equation endEquation;
 
 	public Move(Equation start, Operation op, int moveNum) {
 		this.start = start;
 		this.op = op;
 		this.moveNum = moveNum;
+		if (op == null) {
+			endEquation = start;
+		} else {
+			endEquation = op.apply(start);
+		}
 	}
 
 	public Equation getStartEquation() {
@@ -30,10 +29,7 @@ public class Move implements IMoveWithOperation {
 	}
 
 	public Equation getEndEquation() {
-		if (op == null) {
-			return start;
-		}
-		return op.apply(start);
+		return endEquation;
 	}
 
 	@Override
@@ -55,7 +51,7 @@ public class Move implements IMoveWithOperation {
 		if (isSolved()) {
 			return getEndEquation().toString()
 					+ " <font color=\"#32cd32\"><big><bold>\u2713</bold></big></font>";// check
-																							// mark
+																						// mark
 		}
 		return getEndEquation().toString();
 

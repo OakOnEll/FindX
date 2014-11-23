@@ -16,7 +16,7 @@ public class SecondaryEquationMove implements IMove {
 
 	@Override
 	public String getDescriptiontext() {
-		return "Solution " + num;
+		return "<font color=\"#647cf2\">Solution " + num + "</font>";
 	}
 
 	@Override

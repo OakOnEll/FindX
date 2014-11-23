@@ -16,14 +16,14 @@ import android.widget.TextView;
 import com.actionbarsherlock.app.ActionBar;
 import com.actionbarsherlock.view.MenuInflater;
 import com.actionbarsherlock.view.MenuItem;
-import com.oakonell.findx.model.Level;
+import com.oakonell.findx.model.ILevel;
 import com.oakonell.findx.model.Levels;
 import com.oakonell.findx.model.Stage;
 
 public class StageActivity extends GameActivity {
 	public static final String STAGE_ID = "stageId";
 
-	private ArrayAdapter<Level> adapter;
+	private ArrayAdapter<ILevel> adapter;
 	private Stage stage;
 
 	@Override
@@ -48,12 +48,12 @@ public class StageActivity extends GameActivity {
 			stage = Levels.getStage(stageId);
 		}
 
-		TextView label = (TextView)findViewById(R.id.stage_label);
+		TextView label = (TextView) findViewById(R.id.stage_label);
 		label.setText(stage.getTitleId());
-		
+
 		GridView levelSelect = (GridView) findViewById(R.id.level_select);
 
-		adapter = new ArrayAdapter<Level>(getApplication(),
+		adapter = new ArrayAdapter<ILevel>(getApplication(),
 				R.layout.level_select_grid_item, stage.getLevels()) {
 
 			@Override
@@ -63,7 +63,7 @@ public class StageActivity extends GameActivity {
 							R.layout.level_select_grid_item, parent, false);
 				}
 
-				final Level level = getItem(position);
+				final ILevel level = getItem(position);
 				TextView id = (TextView) row.findViewById(R.id.level_id);
 				id.setText(level.getId());
 
@@ -106,7 +106,7 @@ public class StageActivity extends GameActivity {
 					@Override
 					public void onItemClick(AdapterView<?> parent, View view,
 							int position, long id) {
-						Level level = adapter.getItem(position);
+						ILevel level = adapter.getItem(position);
 						startPuzzle(level.getId());
 					}
 				});

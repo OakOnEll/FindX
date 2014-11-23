@@ -190,11 +190,17 @@ public class CustomLevelBuilder extends TempCorrectLevelBuilder {
 					+ " is not one of the level's valid operations");
 		}
 
-		// top move should have no operation, just a starting equation
-		Move move = (Move) primaryMoves.remove(0);
-
 		Operation inverse = op.inverse();
-		Equation newStartEquation = inverse.apply(move.getStartEquation());
+		Equation newStartEquation;
+		Move move = null;
+		try {
+			// top move should have no operation, just a starting equation
+			move = (Move) primaryMoves.remove(0);
+			newStartEquation = inverse.apply(move.getStartEquation());
+		} catch (RuntimeException e) {
+			primaryMoves.add(0, move);
+			throw e;
+		}
 
 		// here, need to solve the TWO equations if there was a branch
 		MoveResult applyMove = op.applyMove(newStartEquation, 1, null);

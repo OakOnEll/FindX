@@ -171,6 +171,28 @@
                 android:src="@drawable/lock"
                 android:visibility="gone" />
         </RelativeLayout>
+
+        <RelativeLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" >
+
+            <TextView
+                android:id="@+id/op6"
+                style="@style/FindXButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Button"
+                android:visibility="gone" />
+
+            <ImageView
+                android:id="@+id/op6_lock"
+                android:layout_width="18dp"
+                android:layout_height="18dp"
+                android:layout_alignBottom="@+id/op6"
+                android:layout_alignRight="@+id/op6"
+                android:src="@drawable/lock"
+                android:visibility="gone" />
+        </RelativeLayout>
     </LinearLayout>
 
     <ListView
