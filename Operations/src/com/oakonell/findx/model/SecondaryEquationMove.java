@@ -11,7 +11,7 @@ public class SecondaryEquationMove implements IMove {
 
 	@Override
 	public String getEndEquationString() {
-		return equation.toString();
+		return "<font color=\"#647cf2\">" + equation.toString() + "</font>";
 	}
 
 	@Override

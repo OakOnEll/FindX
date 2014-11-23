@@ -25,6 +25,10 @@ public class CustomLevel extends Level implements ICustomLevel{
 		serverId = builder.getServerId();
 	}
 
+	protected String getRatingTableId() {
+		return dbId + "";
+	}
+	
 	public long getDbId() {
 		return dbId;
 	}

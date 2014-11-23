@@ -120,7 +120,7 @@ public class Level implements ILevel {
 	private Cursor getExistingRatingRow(SQLiteDatabase db) {
 		Cursor query = db.query(DataBaseHelper.LEVEL_PROGRESS_TABLE_NAME, null,
 				DataBaseHelper.LevelProgressTable.LEVEL_ID + "=?",
-				new String[] { id }, null, null, null);
+				new String[] { getRatingTableId() }, null, null, null);
 		return query;
 	}
 
@@ -138,7 +138,7 @@ public class Level implements ILevel {
 		}
 
 		ContentValues values = new ContentValues();
-		values.put(DataBaseHelper.LevelProgressTable.LEVEL_ID, id);
+		values.put(DataBaseHelper.LevelProgressTable.LEVEL_ID, getRatingTableId());
 		values.put(DataBaseHelper.LevelProgressTable.MIN_MOVES, moves);
 		values.put(DataBaseHelper.LevelProgressTable.NUM_UNDOS, undosUsed);
 
@@ -147,7 +147,7 @@ public class Level implements ILevel {
 			// update
 			db.update(DataBaseHelper.LEVEL_PROGRESS_TABLE_NAME, values,
 					DataBaseHelper.LevelProgressTable.LEVEL_ID + "=?",
-					new String[] { id });
+					new String[] { getRatingTableId() });
 		} else {
 			// insert
 			db.insert(DataBaseHelper.LEVEL_PROGRESS_TABLE_NAME, null, values);
@@ -156,6 +156,10 @@ public class Level implements ILevel {
 		db.close();
 	}
 
+	protected String getRatingTableId() {
+		return id;
+	}
+	
 	public static void resetLevelProgress() {
 		DataBaseHelper helper = new DataBaseHelper(FindXApp.getContext());
 		SQLiteDatabase db = helper.getWritableDatabase();

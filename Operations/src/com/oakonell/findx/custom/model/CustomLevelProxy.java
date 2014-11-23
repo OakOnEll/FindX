@@ -22,18 +22,18 @@ public class CustomLevelProxy implements ICustomLevel {
 	private CustomLevel level;
 
 	private final Stage stage;
-	private final long id;
+	private final long dbId;
 	private final String name;
 	private final String hyphenId;
 	private final boolean isImported;
 	private final String author;
-	private final String serverId;
 	private final int sequence;
+	private String serverId;
 
 	public CustomLevelProxy(CustomStage stage, String id, long dbId,
 			String name, boolean isImported, String author, String serverId,
 			int sequence) {
-		this.id = dbId;
+		this.dbId = dbId;
 		this.stage = stage;
 		this.name = name;
 		this.hyphenId = id;
@@ -91,8 +91,8 @@ public class CustomLevelProxy implements ICustomLevel {
 			SQLiteDatabase db = helper.getReadableDatabase();
 
 			Cursor query = db.query(DataBaseHelper.CUSTOM_LEVEL_TABLE_NAME,
-					null, BaseColumns._ID + " = ?" 
-					, new String[]{id+""}, null, null, CustomLevelTable.SEQ_NUM);
+					null, BaseColumns._ID + " = ?", new String[] { dbId + "" },
+					null, null, CustomLevelTable.SEQ_NUM);
 			if (!query.moveToNext()) {
 				return null;
 			}
@@ -135,7 +135,10 @@ public class CustomLevelProxy implements ICustomLevel {
 
 	@Override
 	public void setServerId(String id) {
-		getLevel().setServerId(id);
+		if (level != null) {
+			getLevel().setServerId(id);
+		}
+		serverId = id;
 	}
 
 	// ----------
@@ -171,7 +174,7 @@ public class CustomLevelProxy implements ICustomLevel {
 	private Cursor getExistingRatingRow(SQLiteDatabase db) {
 		Cursor query = db.query(DataBaseHelper.LEVEL_PROGRESS_TABLE_NAME, null,
 				DataBaseHelper.LevelProgressTable.LEVEL_ID + "=?",
-				new String[] { id + "" }, null, null, null);
+				new String[] { dbId + "" }, null, null, null);
 		return query;
 	}
 
@@ -201,7 +204,7 @@ public class CustomLevelProxy implements ICustomLevel {
 
 	@Override
 	public long getDbId() {
-		return id;
+		return dbId;
 	}
 
 }
