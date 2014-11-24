@@ -23,6 +23,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Parcelable;
+import android.os.StrictMode;
 import android.preference.PreferenceManager;
 import android.provider.BaseColumns;
 import android.support.v4.app.NavUtils;
@@ -46,6 +47,7 @@ import com.cocosw.undobar.UndoBarController;
 import com.cocosw.undobar.UndoBarController.UndoListener;
 import com.oakonell.findx.Achievements;
 import com.oakonell.findx.BackgroundMusicHelper;
+import com.oakonell.findx.BuildConfig;
 import com.oakonell.findx.FindXApp;
 import com.oakonell.findx.GameActivity;
 import com.oakonell.findx.MenuHelper;
@@ -99,10 +101,40 @@ public class CustomStageActivity extends GameActivity {
 	private DragController mDragController;
 	private DragLayer mDragLayer;
 
+	private static final class ViewHolder {
+
+		protected TextView id;
+		protected TextView levelButton;
+		protected View menu;
+		protected RatingBar ratingBar;
+		protected View authorLayout;
+		protected TextView authorText;
+		protected ImageView lock;
+		protected String idVal;
+
+	}
+
+	private static final class LevelInfo {
+
+		protected boolean isImported;
+		protected int rating;
+
+	}
+
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.custom_stage);
+		if (BuildConfig.DEBUG) {
+			StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder()
+					.detectDiskReads().detectDiskWrites().detectNetwork() // or
+																			// .detectAll()
+																			// for
+																			// all
+																			// detectable
+																			// problems
+					.penaltyLog().build());
+		}
 
 		final ActionBar ab = getSupportActionBar();
 		ab.setDisplayHomeAsUpEnabled(true);
@@ -130,13 +162,30 @@ public class CustomStageActivity extends GameActivity {
 			public View getView(int position, View inputRow, ViewGroup parent) {
 				final ICustomLevel level = (ICustomLevel) getItem(position);
 
+				final ViewHolder holder;
 				final CustomLevelGridCell row;
 				if (inputRow == null) {
 					row = (CustomLevelGridCell) getLayoutInflater().inflate(
 							R.layout.level_select_grid_item, parent, false);
+					holder = new ViewHolder();
+
+					holder.id = (TextView) row.findViewById(R.id.level_id);
+					holder.levelButton = (TextView) row
+							.findViewById(R.id.level_name);
+					holder.menu = row.findViewById(R.id.menu);
+					holder.ratingBar = (RatingBar) row
+							.findViewById(R.id.rating);
+					holder.authorLayout = row.findViewById(R.id.author_layout);
+					holder.authorText = (TextView) row
+							.findViewById(R.id.author);
+					holder.lock = (ImageView) row.findViewById(R.id.lock);
+
+					row.setTag(holder);
 				} else {
 					row = (CustomLevelGridCell) inputRow;
+					holder = (ViewHolder) row.getTag();
 				}
+
 				row.setLevel(level);
 				row.setOnDropListener(new OnDropListener() {
 					@Override
@@ -159,15 +208,11 @@ public class CustomStageActivity extends GameActivity {
 
 				});
 
-				TextView id = (TextView) row.findViewById(R.id.level_id);
-				id.setText(level.getId());
+				holder.id.setText(level.getId());
 
-				final TextView levelButton = (TextView) row
-						.findViewById(R.id.level_name);
-				levelButton.setText(level.getName());
+				holder.levelButton.setText(level.getName());
 
-				View menu = row.findViewById(R.id.menu);
-				menu.setOnClickListener(new OnClickListener() {
+				holder.menu.setOnClickListener(new OnClickListener() {
 					@Override
 					public void onClick(View v) {
 						List<LevelMenuItem> menuItems = new ArrayList<CustomStageActivity.LevelMenuItem>();
@@ -177,32 +222,46 @@ public class CustomStageActivity extends GameActivity {
 
 				});
 
-				int rating = level.getRating();
-				RatingBar ratingBar = (RatingBar) row.findViewById(R.id.rating);
-				ratingBar.setVisibility(rating > 0 ? View.VISIBLE
-						: View.INVISIBLE);
-				ratingBar.setRating(rating);
+				holder.lock.setVisibility(View.INVISIBLE);
+				holder.authorLayout.setVisibility(View.VISIBLE);
 
-				ImageView lock = (ImageView) row.findViewById(R.id.lock);
+				holder.idVal = level.getId();
+				AsyncTask<Void, Void, LevelInfo> asyncTask = new AsyncTask<Void, Void, LevelInfo>() {
 
-				lock.setVisibility(View.INVISIBLE);
+					@Override
+					protected LevelInfo doInBackground(Void... params) {
+						int rating = level.getRating();
+						boolean isImported = level.isImported();
+						LevelInfo info = new LevelInfo();
+						info.rating = rating;
+						info.isImported = isImported;
+						return info;
+					}
 
-				View authorLayout = row.findViewById(R.id.author_layout);
-				authorLayout.setVisibility(View.VISIBLE);
+					@Override
+					protected void onPostExecute(LevelInfo info) {
+						if (!holder.idVal.equals(level.getId()))
+							return;
 
-				boolean isImported = level.isImported();
-				TextView authorText = (TextView) row.findViewById(R.id.author);
+						holder.ratingBar
+								.setVisibility(info.rating > 0 ? View.VISIBLE
+										: View.INVISIBLE);
+						holder.ratingBar.setRating(info.rating);
 
-				if (isImported) {
-					row.findViewById(R.id.byLabel).setVisibility(View.VISIBLE);
-					authorText.setVisibility(View.VISIBLE);
-					authorText.setText(level.getAuthor());
-				} else {
-					row.findViewById(R.id.byLabel)
-							.setVisibility(View.INVISIBLE);
-					authorText.setVisibility(View.INVISIBLE);
-					authorText.setText("");
-				}
+						if (info.isImported) {
+							row.findViewById(R.id.byLabel).setVisibility(
+									View.VISIBLE);
+							holder.authorText.setVisibility(View.VISIBLE);
+							holder.authorText.setText(level.getAuthor());
+						} else {
+							row.findViewById(R.id.byLabel).setVisibility(
+									View.INVISIBLE);
+							holder.authorText.setVisibility(View.INVISIBLE);
+							holder.authorText.setText("");
+						}
+					}
+				};
+				asyncTask.execute();
 
 				return row;
 			}
