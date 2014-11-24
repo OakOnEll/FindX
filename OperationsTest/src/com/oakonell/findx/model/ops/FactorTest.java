@@ -16,7 +16,7 @@ public class FactorTest extends TestCase {
 	public void testApplyMoveEquationFactored() {
 		Factor factor = new Factor(new Expression(1, -1));
 		Equation equation = new Equation(new Expression(1,0,-1),new Expression(0));
-		MoveResult moveResult= factor.applyMove(equation,1 , null);
+		MoveResult moveResult= factor.applyMove(equation,1 , null, null);
 		assertTrue(moveResult.hasMultiple());
 		
 		assertEquals("(x + 1)(x - 1) = 0", moveResult.getPrimaryMove().getEndEquationString());		
@@ -25,7 +25,7 @@ public class FactorTest extends TestCase {
 
 	
 		equation = new Equation(new Expression(0), new Expression(1,0,-1));
-		moveResult= factor.applyMove(equation,1 , null);
+		moveResult= factor.applyMove(equation,1 , null, null);
 		assertTrue(moveResult.hasMultiple());
 		
 		assertEquals("0 = (x + 1)(x - 1)", moveResult.getPrimaryMove().getEndEquationString());		
@@ -37,24 +37,24 @@ public class FactorTest extends TestCase {
 	public void testApplyMoveEquationNoSolutions() {
 		Factor factor = new Factor(new Expression(1, -1));
 		Equation equation = new Equation(new Expression(1,0,-1),new Expression(1,1,-2));
-		MoveResult moveResult= factor.applyMove(equation,1 , null);
+		MoveResult moveResult= factor.applyMove(equation,1 , null, null);
 		assertFalse(moveResult.hasMultiple());		
 		assertEquals("(x + 1)(x - 1) = (x + 2)(x - 1)", moveResult.getPrimaryMove().getEndEquationString());		
 
 	
 		equation = new Equation(new Expression(1,0,-1),new Expression(12));
-		moveResult= factor.applyMove(equation,1 , null);
+		moveResult= factor.applyMove(equation,1 , null, null);
 		assertFalse(moveResult.hasMultiple());		
 		assertEquals("(x + 1)(x - 1) = 12", moveResult.getPrimaryMove().getEndEquationString());		
 
 		
 		equation = new Equation(new Expression(12), new Expression(1,0,-1));
-		moveResult= factor.applyMove(equation,1 , null);
+		moveResult= factor.applyMove(equation,1 , null, null);
 		assertFalse(moveResult.hasMultiple());		
 		assertEquals("12 = (x + 1)(x - 1)", moveResult.getPrimaryMove().getEndEquationString());		
 
 		equation = new Equation(new Expression(1,0,-1),new Expression(1, 0, 12));
-		moveResult= factor.applyMove(equation,1 , null);
+		moveResult= factor.applyMove(equation,1 , null, null);
 		assertFalse(moveResult.hasMultiple());		
 		assertEquals("(x + 1)(x - 1) = x<sup><small>2</small></sup> + 12", moveResult.getPrimaryMove().getEndEquationString());		
 

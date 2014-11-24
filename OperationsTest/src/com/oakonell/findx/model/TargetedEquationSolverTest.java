@@ -10,7 +10,7 @@ public class TargetedEquationSolverTest extends TestCase {
 	public void testSolverLevel0() {
 		List<IMove> moves = null;
 		try {
-			Level level = Levels.get("1-1");
+			ILevel level = Levels.get("1-1");
 			TargetedEquationSolver solver = new TargetedEquationSolver();
 			Solution solution = solver.solve(level.getEquation(), new Equation(
 					new Expression(1, 0), new Expression(1)), level

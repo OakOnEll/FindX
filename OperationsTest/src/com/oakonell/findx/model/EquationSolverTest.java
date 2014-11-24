@@ -81,7 +81,7 @@ public class EquationSolverTest extends TestCase {
 
 	private void privateTestLevels(Stage stage) {
 		EquationSolver solver = new EquationSolver();
-		for (Level each : stage.getLevels()) {
+		for (ILevel each : stage.getLevels()) {
 			System.out.println("-----------------  Level " + each.getName()
 					+ " - " + each.getId());
 			if (each.getMinMoves() <= 20) {
@@ -102,7 +102,7 @@ public class EquationSolverTest extends TestCase {
 	public void testSolverLevel0() {
 		List<IMove> moves = null;
 		try {
-			Level level = Levels.get("1-1");
+			ILevel level = Levels.get("1-1");
 			EquationSolver solver = new EquationSolver();
 			Solution solution = solver.solve(level.getEquation(),
 					level.getOperations(), level.getMinMoves(), null);
@@ -122,7 +122,7 @@ public class EquationSolverTest extends TestCase {
 	public void testSolverLevel1() {
 		List<IMove> moves = null;
 		try {
-			Level level = Levels.get("1-2");
+			ILevel level = Levels.get("1-2");
 			EquationSolver solver = new EquationSolver();
 			Solution solution = solver.solve(level.getEquation(),
 					level.getOperations(), level.getMinMoves(), null);
@@ -146,7 +146,7 @@ public class EquationSolverTest extends TestCase {
 	public void testSolverLevel2() {
 		List<IMove> moves = null;
 		try {
-			Level level = Levels.get("1-3");
+			ILevel level = Levels.get("1-3");
 			EquationSolver solver = new EquationSolver();
 			Solution solution = solver.solve(level.getEquation(),
 					level.getOperations(), level.getMinMoves(), null);
@@ -169,7 +169,7 @@ public class EquationSolverTest extends TestCase {
 	public void testSolverLevel3() {
 		List<IMove> moves = null;
 		try {
-			Level level = Levels.get("1-4");
+			ILevel level = Levels.get("1-4");
 			EquationSolver solver = new EquationSolver();
 			Solution solution = solver.solve(level.getEquation(),
 					level.getOperations(), level.getMinMoves(), null);
@@ -192,7 +192,7 @@ public class EquationSolverTest extends TestCase {
 	public void testSolverLevel4() {
 		List<IMove> moves = null;
 		try {
-			Level level = Levels.get("1-5");
+			ILevel level = Levels.get("1-5");
 			EquationSolver solver = new EquationSolver();
 			Solution solution = solver.solve(level.getEquation(),
 					level.getOperations(), level.getMinMoves(), null);
@@ -215,7 +215,7 @@ public class EquationSolverTest extends TestCase {
 	public void testSolverLevel5() {
 		List<IMove> moves = null;
 		try {
-			Level level = Levels.get("1-6");
+			ILevel level = Levels.get("1-6");
 			EquationSolver solver = new EquationSolver();
 			Solution solution = solver.solve(level.getEquation(),
 					level.getOperations(), 5, null);
@@ -238,7 +238,7 @@ public class EquationSolverTest extends TestCase {
 	public void testSolverLevel6() {
 		List<IMove> moves = null;
 		try {
-			Level level = Levels.get("1-7");
+			ILevel level = Levels.get("1-7");
 			EquationSolver solver = new EquationSolver();
 			Solution solution = solver.solve(level.getEquation(),
 					level.getOperations(), level.getMinMoves(), null);
@@ -261,7 +261,7 @@ public class EquationSolverTest extends TestCase {
 	public void testSolverLevel7() {
 		List<IMove> moves = null;
 		try {
-			Level level = Levels.get("1-8");
+			ILevel level = Levels.get("1-8");
 			EquationSolver solver = new EquationSolver();
 			Solution solution = solver.solve(level.getEquation(),
 					level.getOperations(), level.getMinMoves(), null);
@@ -288,7 +288,7 @@ public class EquationSolverTest extends TestCase {
 	public void testSolverLevel8() {
 		List<IMove> moves = null;
 		try {
-			Level level = Levels.get("1-9");
+			ILevel level = Levels.get("1-9");
 			EquationSolver solver = new EquationSolver();
 			Solution solution = solver.solve(level.getEquation(),
 					level.getOperations(), level.getMinMoves(), null);
@@ -315,7 +315,7 @@ public class EquationSolverTest extends TestCase {
 	}
 
 	public void testSolverLevel9() {
-		Level level = Levels.get("1-10");
+		ILevel level = Levels.get("1-10");
 		EquationSolver solver = new EquationSolver();
 		Solution solution = solver.solve(level.getEquation(),
 				level.getOperations(), level.getMinMoves(), null);

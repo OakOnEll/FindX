@@ -9,7 +9,7 @@ import com.oakonell.findx.custom.model.AbstractEquationSolver.Solution;
 
 public class EquationMatcherTest extends TestCase {
 	public void testLevel2ButOne() {
-		Level level = Levels.get("1-2");
+		ILevel level = Levels.get("1-2");
 		// x + 3 = 7
 		List<IMove> moves = null;
 		try {
@@ -35,7 +35,7 @@ public class EquationMatcherTest extends TestCase {
 	}
 
 	public void testLevel3ButOne() {
-		Level level = Levels.get("1-4");
+		ILevel level = Levels.get("1-4");
 		// x + 1 = 9
 		List<IMove> moves = null;
 		try {
