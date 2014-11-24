@@ -101,9 +101,9 @@ public class OperationBuilderDialog {
 				@Override
 				public void visitWild(WildCard wild) {
 					isWildCheck.setChecked(true);
-					operationSpinner.setSelection(opTypes.indexOf(wild
-							.getActual().type()));
 					if (wild.isBuilt()) {
+						operationSpinner.setSelection(opTypes.indexOf(wild
+								.getActual().type()));
 						wild.getActual().accept(this);
 					}
 				}
