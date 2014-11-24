@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 import android.app.Activity;
+import android.os.AsyncTask;
 import android.text.Html;
 import android.text.format.DateUtils;
 import android.view.LayoutInflater;
@@ -32,6 +33,7 @@ public class ParseCustomLevelSearchAdapter extends ArrayAdapter<ParseObject> {
 		public RatingBar ratingBar;
 		public TextView numRatings;
 		public TextView authorship;
+		public String id;
 
 	}
 
@@ -87,21 +89,43 @@ public class ParseCustomLevelSearchAdapter extends ArrayAdapter<ParseObject> {
 		float rating = numRatings == 0 ? 0
 				: (float) (totalRatings / numRatings);
 
-		CustomLevelDBReader reader = new CustomLevelDBReader();
+		final CustomLevelDBReader reader = new CustomLevelDBReader();
 		holder.check.setOnCheckedChangeListener(null);
-		// put this in async..
-		long dbId = reader.findDbIdByServerId(context, item.getObjectId());
-		if (dbId > 0) {
-			holder.check.setChecked(true);
-			holder.check.setEnabled(false);
-		} else {
-			if (checkedPositionByIds.get(item.getObjectId()) != null) {
-				holder.check.setChecked(true);
-			} else {
-				holder.check.setChecked(false);
+
+		// update whether this level is on device or can be downloaded
+		final ViewHolder theHolder = holder;
+		theHolder.check.setVisibility(View.INVISIBLE);
+		theHolder.id = item.getObjectId();
+		AsyncTask<Void, Void, Long> asyncTask = new AsyncTask<Void, Void, Long>() {
+
+			@Override
+			protected Long doInBackground(Void... params) {
+				return reader.findDbIdByServerId(context, item.getObjectId());
 			}
-			holder.check.setEnabled(true);
-		}
+
+			@Override
+			protected void onPostExecute(Long dbId) {
+				// if the view has been reused before the db read was finished,
+				// just ignore the result
+				if (!theHolder.id.equals(item.getObjectId())) {
+					return;
+				}
+				theHolder.check.setVisibility(View.VISIBLE);
+				if (dbId > 0) {
+					theHolder.check.setChecked(true);
+					theHolder.check.setEnabled(false);
+				} else {
+					if (checkedPositionByIds.get(item.getObjectId()) != null) {
+						theHolder.check.setChecked(true);
+					} else {
+						theHolder.check.setChecked(false);
+					}
+					theHolder.check.setEnabled(true);
+				}
+			}
+		};
+		asyncTask.execute();
+
 		holder.check.setOnCheckedChangeListener(new OnCheckedChangeListener() {
 			@Override
 			public void onCheckedChanged(CompoundButton buttonView,
