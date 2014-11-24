@@ -49,12 +49,12 @@ public class LevelSolvedDialogFragment extends SherlockDialogFragment {
 	private static final int color = Color.argb(0xFF, 0x33, 0xb5, 0xe5);
 	private static final int slow_debug_factor = 1;
 	private static final int pauseGrownDuration = 500 * slow_debug_factor;
-	private static final  int sumPauseGrownDuration = 1000 * slow_debug_factor;
+	private static final int sumPauseGrownDuration = 1000 * slow_debug_factor;
 	private static final int moveDuration = 500 * slow_debug_factor;
 	private static final int growDuration = 700 * slow_debug_factor;
 	private static final int shrinkDuration = 700 * slow_debug_factor;
 	private static final int betweenSolDelay = 300 * slow_debug_factor;
-	
+
 	private int postDelay = 10;
 	private ExpressionViews lhsViews;
 	private ExpressionViews rhsViews;
@@ -873,6 +873,8 @@ public class LevelSolvedDialogFragment extends SherlockDialogFragment {
 				// pretty up the injection of the x value
 				boolean useParens = coeff.compareTo(Fraction.ONE) != 0
 						|| (solution.compareTo(Fraction.ZERO) < 0 && !StringUtils
+								.isEmpty(suffix))
+						|| (solution.getDenominator() != 1 && !StringUtils
 								.isEmpty(suffix));
 				final Spanned text = Html.fromHtml(Expression.fractionToString(
 						solution, useParens ? UseParenthesis.FORCE
