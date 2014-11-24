@@ -1,7 +1,11 @@
 package com.oakonell.findx;
 
+import java.util.concurrent.Callable;
+
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.StrictMode;
 import android.support.v4.app.NavUtils;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -26,9 +30,37 @@ public class StageActivity extends GameActivity {
 	private ArrayAdapter<ILevel> adapter;
 	private Stage stage;
 
+	private static class ViewHolder {
+		TextView id;
+		TextView levelButton;
+		View menu;
+		ImageView lock;
+		RatingBar ratingBar;
+		protected String theId;
+	}
+
+	static class LevelInfo {
+		int rating;
+		boolean unlocked;
+	}
+
+	interface WithLevelInfo {
+		void call(LevelInfo info);
+	}
+
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		if (BuildConfig.DEBUG) {
+			StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder()
+					.detectDiskReads().detectDiskWrites().detectNetwork() // or
+																			// .detectAll()
+																			// for
+																			// all
+																			// detectable
+																			// problems
+					.penaltyLog().build());
+		}
 
 		setContentView(R.layout.stage);
 
@@ -58,44 +90,106 @@ public class StageActivity extends GameActivity {
 
 			@Override
 			public View getView(int position, View row, ViewGroup parent) {
+				ViewHolder holder;
 				if (row == null) {
 					row = getLayoutInflater().inflate(
 							R.layout.level_select_grid_item, parent, false);
+					holder = new ViewHolder();
+					holder.id = (TextView) row.findViewById(R.id.level_id);
+					holder.levelButton = (TextView) row
+							.findViewById(R.id.level_name);
+					holder.menu = row.findViewById(R.id.menu);
+					holder.lock = (ImageView) row.findViewById(R.id.lock);
+					holder.ratingBar = (RatingBar) row
+							.findViewById(R.id.rating);
+
+					row.setTag(holder);
+				} else {
+					holder = (ViewHolder) row.getTag();
 				}
 
 				final ILevel level = getItem(position);
-				TextView id = (TextView) row.findViewById(R.id.level_id);
-				id.setText(level.getId());
 
-				TextView levelButton = (TextView) row
-						.findViewById(R.id.level_name);
-				levelButton.setText(level.getName());
+				holder.id.setText(level.getId());
+				holder.levelButton.setText(level.getName());
+				holder.menu.setVisibility(View.INVISIBLE);
 
-				row.findViewById(R.id.menu).setVisibility(View.INVISIBLE);
-
-				levelButton.setOnClickListener(new OnClickListener() {
+				holder.levelButton.setOnClickListener(new OnClickListener() {
 					@Override
 					public void onClick(View view) {
 						startPuzzle(level.getId());
 					}
 				});
 
-				ImageView lock = (ImageView) row.findViewById(R.id.lock);
+				final ViewHolder theHolder = holder;
+				final View theRow = row;
+				theHolder.ratingBar.setVisibility(View.INVISIBLE);
+				theHolder.theId = level.getId();
 
-				int rating = level.getRating();
-				RatingBar ratingBar = (RatingBar) row.findViewById(R.id.rating);
-				ratingBar.setVisibility(rating > 0 ? View.VISIBLE
-						: View.INVISIBLE);
-				ratingBar.setRating(rating);
-				if (level.isUnlocked()) {
-					row.setClickable(true);
-					levelButton.setEnabled(true);
-					lock.setVisibility(View.INVISIBLE);
+				final Callable<LevelInfo> levelInfoCallable = new Callable<StageActivity.LevelInfo>() {
+					@Override
+					public LevelInfo call() throws Exception {
+						LevelInfo info = new LevelInfo();
+						info.rating = level.getRating();
+						info.unlocked = level.isUnlocked();
+						return info;
+					}
+				};
+				final WithLevelInfo withInfo = new WithLevelInfo() {
+					public void call(LevelInfo info) {
+						if (!theHolder.theId.equals(level.getId()))
+							return;
+
+						theHolder.ratingBar
+								.setVisibility(info.rating > 0 ? View.VISIBLE
+										: View.INVISIBLE);
+						theHolder.ratingBar.setRating(info.rating);
+						if (info.unlocked) {
+							theRow.setClickable(true);
+							theHolder.levelButton.setEnabled(true);
+							theHolder.lock.setVisibility(View.INVISIBLE);
+						} else {
+							theRow.setClickable(false);
+							theHolder.levelButton.setEnabled(false);
+							theHolder.lock.setVisibility(View.VISIBLE);
+						}
+
+					};
+				};
+
+				// with async, it "flickers" a little, and looks not pretty
+				// with there only being ~12 levels in each pre-defined stage, this is not a big, noticable hit to not be async
+				boolean useAsync = false;
+				if (!useAsync) {
+					LevelInfo info;
+					try {
+						info = levelInfoCallable.call();
+					} catch (Exception e) {
+						throw new RuntimeException("Error getting level info",
+								e);
+					}
+					withInfo.call(info);
 				} else {
-					row.setClickable(false);
-					levelButton.setEnabled(false);
-					lock.setVisibility(View.VISIBLE);
+
+					AsyncTask<Void, Void, LevelInfo> asyncTask = new AsyncTask<Void, Void, LevelInfo>() {
+						@Override
+						protected LevelInfo doInBackground(Void... params) {
+							try {
+								return levelInfoCallable.call();
+							} catch (Exception e) {
+								throw new RuntimeException(
+										"Error getting level info", e);
+							}
+						}
+
+						@Override
+						protected void onPostExecute(LevelInfo info) {
+							withInfo.call(info);
+						}
+					};
+					asyncTask.execute();
 				}
+
 				return row;
 			}
 		};

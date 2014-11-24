@@ -144,6 +144,7 @@ public class ChooseStageActivity extends GameActivity implements
 
 				ImageView lock = (ImageView) row.findViewById(R.id.lock);
 
+				// TODO db hit?  (But may flicker annoyingly if attempt to async it- small number of calls to db may not warrant it)
 				if (stage.isUnlocked()) {
 					row.setEnabled(true);
 					stageButton.setEnabled(true);
