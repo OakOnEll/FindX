@@ -3,7 +3,9 @@ package com.oakonell.findx;
 import android.content.Context;
 import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
+import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.StrictMode;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
@@ -40,8 +42,17 @@ public class ChooseStageActivity extends GameActivity implements
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
-		if (checkForPendingPuzzle()) {
-			return;
+		checkForPendingPuzzle();
+
+		if (BuildConfig.DEBUG) {
+			StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder()
+					.detectDiskReads().detectDiskWrites().detectNetwork() // or
+																			// .detectAll()
+																			// for
+																			// all
+																			// detectable
+																			// problems
+					.penaltyLog().build());
 		}
 
 		final ActionBar ab = getSupportActionBar();
@@ -179,21 +190,27 @@ public class ChooseStageActivity extends GameActivity implements
 		startActivity(levelIntent);
 	}
 
-	private boolean checkForPendingPuzzle() {
-		DataBaseHelper helper = new DataBaseHelper(this);
-		SQLiteDatabase db = helper.getWritableDatabase();
+	private void checkForPendingPuzzle() {
+		AsyncTask<Void, Void, String> asyncTask = new AsyncTask<Void, Void, String>() {
+			@Override
+			protected String doInBackground(Void... params) {
+				DataBaseHelper helper = new DataBaseHelper(
+						ChooseStageActivity.this);
+				SQLiteDatabase db = helper.getWritableDatabase();
 
-		String id = Puzzle.readPendingLevel(db);
-		db.close();
+				String id = Puzzle.readPendingLevel(db);
+				db.close();
+				return id;
+			}
 
-		if (id != null) {
-			startPuzzle(id);
-			// don't finish- in case back used, should go back to main menu for
-			// user
-			// finish();
-			return true;
-		}
-		return false;
+			@Override
+			protected void onPostExecute(String id) {
+				if (id != null) {
+					startPuzzle(id);
+				}
+			}
+		};
+		asyncTask.execute();
 	}
 
 	private void startPuzzle(final String levelId) {
