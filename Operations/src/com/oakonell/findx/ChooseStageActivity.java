@@ -227,7 +227,7 @@ public class ChooseStageActivity extends GameActivity implements
 	protected void onResume() {
 		BackgroundMusicHelper.onActivityResume(this,
 				R.raw.prelude_no_8_in_e_flat_minor_loop);
-		if (adapter!=null) {
+		if (adapter != null) {
 			adapter.notifyDataSetChanged();
 		}
 		super.onResume();
@@ -283,9 +283,11 @@ public class ChooseStageActivity extends GameActivity implements
 		TextView signedInAsText = (TextView) findViewById(R.id.signed_in_as_text);
 		if (signedInAsText == null)
 			return;
+		String name = Games.Players.getCurrentPlayer(
+				getGameHelper().getApiClient()).getDisplayName();
+		// Games.getCurrentAccountName(getGameHelper().getApiClient())
 		signedInAsText.setText(getResources().getString(
-				R.string.you_are_signed_in_as,
-				Games.getCurrentAccountName(getGameHelper().getApiClient())));
+				R.string.you_are_signed_in_as, name));
 	}
 
 	@Override
