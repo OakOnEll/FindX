@@ -10,7 +10,6 @@ import org.apache.commons.math3.fraction.FractionFormat;
 
 import android.os.AsyncTask;
 
-import com.oakonell.findx.custom.model.CustomLevel;
 import com.oakonell.findx.custom.model.CustomLevelBuilder;
 import com.oakonell.findx.custom.model.CustomLevelDBReader;
 import com.oakonell.findx.custom.model.ICustomLevel;
@@ -309,7 +308,8 @@ public class ParseLevelHelper {
 		builder.setTitle(title);
 		builder.setAuthor(creator.getString(ParseUserExtra.nickname_field));
 		builder.setSolution(solution);
-		if (sec1Moves.isEmpty()) {
+		// TODO ugh, I should use a null for soution 2
+		if (sec1Moves.isEmpty() && solution2.compareTo(Fraction.ZERO) == 0) {
 			builder.setSolution2(null);
 		} else {
 			builder.setSolution2(solution2);

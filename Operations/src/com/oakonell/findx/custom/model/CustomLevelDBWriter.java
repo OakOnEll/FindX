@@ -158,6 +158,9 @@ public class CustomLevelDBWriter {
 			if (opIndex < 0 && operation == Multiply.NEGATE) {
 				opIndex = operations.indexOf(new SquareRoot());
 			}
+			if (opIndex < 0) {
+				throw new RuntimeException("Error finding index for operation " + operation);
+			}
 			opInfo.put(DataBaseHelper.CustomLevelMovesTable.OPERATION_ID,
 					opIndex);
 			db.insert(DataBaseHelper.CUSTOM_LEVEL_MOVES_TABLE_NAME, null,

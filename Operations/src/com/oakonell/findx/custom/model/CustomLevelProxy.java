@@ -80,6 +80,7 @@ public class CustomLevelProxy implements ICustomLevel {
 
 	@Override
 	public int getMinMoves() {
+		// TODO this causes a fault
 		return getLevel().getMinMoves();
 	}
 
@@ -120,7 +121,14 @@ public class CustomLevelProxy implements ICustomLevel {
 
 	@Override
 	public int calculateRating(int numMoves, int undosUsed) {
-		return getLevel().calculateRating(numMoves, undosUsed);
+		int rating = 3;
+		if (undosUsed > 0) {
+			rating--;
+		}
+		if (numMoves > getMinMoves()) {
+			rating--;
+		}
+		return rating;
 	}
 
 	@Override

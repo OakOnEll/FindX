@@ -20,8 +20,9 @@ public class Swap implements Operation {
 
 	@Override
 	public MoveResult applyMove(Equation equation, int moveNum,
-			List<Operation> operations) {
-		return new MoveResult(new Move(equation, this, moveNum));
+			List<Operation> operations, Operation appliedOrNull) {
+		return new MoveResult(new Move(equation, (appliedOrNull == null ? this
+				: appliedOrNull), moveNum));
 	}
 
 	@Override

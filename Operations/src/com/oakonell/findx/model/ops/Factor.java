@@ -91,7 +91,7 @@ public class Factor extends AbstractOperation {
 
 	@Override
 	public MoveResult applyMove(Equation equation, int moveNum,
-			List<Operation> operations) {
+			List<Operation> operations, Operation appliedOrNull) {
 		Expression lhs = equation.getLhs();
 		Expression rhs = equation.getRhs();
 		int num = 0;
@@ -109,8 +109,9 @@ public class Factor extends AbstractOperation {
 			if (lhs.isZero()) {
 				String factored = "0 = (" + rhsResult + ")(" + expr + ")";
 				return new MoveResult(//
-						new MultipleSolutionMove(equation, this, factored,
-								moveNum), //
+						new MultipleSolutionMove(equation,
+								(appliedOrNull == null ? this : appliedOrNull),
+								factored, moveNum), //
 						new SecondaryEquationMove(
 								new Equation(zero, rhsResult), 1), //
 						new SecondaryEquationMove(new Equation(zero, expr), 2));
@@ -118,8 +119,9 @@ public class Factor extends AbstractOperation {
 			if (rhs.isZero()) {
 				String factored = "(" + lhsResult + ")(" + expr + ") = 0";
 				return new MoveResult(//
-						new MultipleSolutionMove(equation, this, factored,
-								moveNum), //
+						new MultipleSolutionMove(equation,
+								(appliedOrNull == null ? this : appliedOrNull),
+								factored, moveNum), //
 						new SecondaryEquationMove(
 								new Equation(lhsResult, zero), 1), //
 						new SecondaryEquationMove(new Equation(expr, zero), 2));
@@ -146,8 +148,9 @@ public class Factor extends AbstractOperation {
 			builder.append(rhs);
 		}
 
-		FormattedMove move = new FormattedMove(equation, this, builder.toString(),
-				moveNum);
+		FormattedMove move = new FormattedMove(equation,
+				(appliedOrNull == null ? this : appliedOrNull),
+				builder.toString(), moveNum);
 		return new MoveResult(move);
 	}
 
@@ -182,14 +185,15 @@ public class Factor extends AbstractOperation {
 		Expression result = factor(otherExpr);
 		return result != null;
 	}
-	
 
 	@Override
 	public boolean isAppliableWith(List<Operation> operations) {
-		// Make sure that the current operations allow solving this factor's expression itself
+		// Make sure that the current operations allow solving this factor's
+		// expression itself
 		EquationSolver solver = new EquationSolver();
-		Solution solve = solver.solve(new Equation(expr, new Expression(0)), operations, 5, null);
+		Solution solve = solver.solve(new Equation(expr, new Expression(0)),
+				operations, 5, null);
 		return solve != null;
 	}
-	
+
 }

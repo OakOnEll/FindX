@@ -10,6 +10,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.provider.BaseColumns;
+import android.util.Log;
 
 import com.oakonell.findx.data.DataBaseHelper;
 import com.oakonell.findx.model.Equation;
@@ -160,8 +161,12 @@ public class CustomLevelDBReader {
 		List<Integer> secondary2MoveOpIds = readMoveOperationIds(db,
 				builder.getId(), "2");
 
-		populateBuilderMovesFromOperationIndices(builder, startEquation,
-				primaryMoveOpIds, secondary1MoveOpIds, secondary2MoveOpIds);
+		try {
+			populateBuilderMovesFromOperationIndices(builder, startEquation,
+					primaryMoveOpIds, secondary1MoveOpIds, secondary2MoveOpIds);
+		} catch (Exception e) {
+			Log.e("CustomLevelDBReader", "Error reading moves from level ", e);
+		}
 	}
 
 	public static void populateBuilderMovesFromOperationIndices(
@@ -178,13 +183,18 @@ public class CustomLevelDBReader {
 				throw new RuntimeException(
 						"Shouldn't have any primary moves after a branch");
 			}
+			if (id == -1) {
+				throw new RuntimeException(
+						"Have an invalid operation index in ["
+								+ primaryMoveOpIds + "]");
+			}
 			Operation operation = builder.getOperations().get(id);
 			if (operation == null) {
 				throw new RuntimeException("No operation in map with id " + id
 						+ ", while reading custom level " + builder.getId());
 			}
-			MoveResult moveResult = operation
-					.applyMove(equation, moveNum, null);
+			MoveResult moveResult = operation.applyMove(equation, moveNum,
+					null, null);
 			builder.getPrimaryMoves().add(moveResult.getPrimaryMove());
 			if (moveResult.hasMultiple()) {
 				branchResult = moveResult;
@@ -194,12 +204,17 @@ public class CustomLevelDBReader {
 
 			moveNum++;
 		}
+		// TODO there may be multiple solutions without any moves..eg, x^2=1
 		EquationAndMove eqAndMove = new EquationAndMove();
 		if (secondary1MoveOpIds.isEmpty()) {
 			if (branchResult != null) {
-				throw new RuntimeException("No secondary operators");
+				if (branchResult.getSecondary1().isSolved()
+						&& branchResult.getSecondary2().isSolved()) {
+					return;
+				}
+			} else {
+				return;
 			}
-			return;
 		}
 
 		eqAndMove.equation = branchResult.getSecondary1().getStartEquation();
@@ -312,7 +327,7 @@ public class CustomLevelDBReader {
 						DataBaseHelper.CustomLevelOperationsTable.X_COEFF,
 						DataBaseHelper.CustomLevelOperationsTable.CONST));
 				break;
-				
+
 			case FACTOR:
 				op = new Factor(readExpression(opQuery,
 						DataBaseHelper.CustomLevelOperationsTable.X2_COEFF,

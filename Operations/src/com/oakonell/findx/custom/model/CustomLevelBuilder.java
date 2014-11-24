@@ -203,7 +203,7 @@ public class CustomLevelBuilder extends TempCorrectLevelBuilder {
 		}
 
 		// here, need to solve the TWO equations if there was a branch
-		MoveResult applyMove = op.applyMove(newStartEquation, 1, null);
+		MoveResult applyMove = op.applyMove(newStartEquation, 1, null, null);
 		if (applyMove.hasMultiple()) {
 			// TODO put up a progress dialog for resolving roots
 			// completely replace the moves list with these two solution moves

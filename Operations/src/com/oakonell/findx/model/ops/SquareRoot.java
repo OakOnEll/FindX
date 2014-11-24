@@ -18,17 +18,19 @@ public class SquareRoot extends AbstractOperation {
 
 	@Override
 	public MoveResult applyMove(Equation equation, int moveNum,
-			List<Operation> operations) {
+			List<Operation> operations, Operation appliedOrNull) {
 		Equation rootEquation1 = apply(equation);
 
 		if (rootEquation1.getLhs().isZero() || rootEquation1.getRhs().isZero()) {
-			return super.applyMove(equation, moveNum, operations);
+			return super
+					.applyMove(equation, moveNum, operations, appliedOrNull);
 		}
 
-		IMove imove = new MultipleSolutionMove(equation, this, rootEquation1
-				.getLhs().toString()
-				+ " = ± ( "
-				+ rootEquation1.getRhs().toString() + " )", moveNum);
+		IMove imove = new MultipleSolutionMove(equation,
+				(appliedOrNull == null ? this : appliedOrNull), rootEquation1
+						.getLhs().toString()
+						+ " = ± ( "
+						+ rootEquation1.getRhs().toString() + " )", moveNum);
 		IMove secondary1Move = new SecondaryEquationMove(rootEquation1, 1);
 		Equation equationInWaiting = new Equation(rootEquation1.getLhs(),
 				Multiply.NEGATE.apply(rootEquation1.getRhs()));

@@ -46,13 +46,15 @@ public class LevelSolvedDialogFragment extends SherlockDialogFragment {
 	private PuzzleActivity activity;
 	private Handler handler = new Handler();
 	// 6633b5e5
-	private int color = Color.argb(0xFF, 0x33, 0xb5, 0xe5);
-	private int slow_debug_factor = 1;
-	private int pauseGrownDuration = 500 * slow_debug_factor;
-	private int sumPauseGrownDuration = 1000 * slow_debug_factor;
-	private int moveDuration = 500 * slow_debug_factor;
-	private int growDuration = 700 * slow_debug_factor;
-	private int shrinkDuration = 700 * slow_debug_factor;
+	private static final int color = Color.argb(0xFF, 0x33, 0xb5, 0xe5);
+	private static final int slow_debug_factor = 1;
+	private static final int pauseGrownDuration = 500 * slow_debug_factor;
+	private static final  int sumPauseGrownDuration = 1000 * slow_debug_factor;
+	private static final int moveDuration = 500 * slow_debug_factor;
+	private static final int growDuration = 700 * slow_debug_factor;
+	private static final int shrinkDuration = 700 * slow_debug_factor;
+	private static final int betweenSolDelay = 300 * slow_debug_factor;
+	
 	private int postDelay = 10;
 	private ExpressionViews lhsViews;
 	private ExpressionViews rhsViews;
@@ -340,8 +342,14 @@ public class LevelSolvedDialogFragment extends SherlockDialogFragment {
 				@Override
 				public void run() {
 					resetViews(view, lhs, rhs, lhsViews, rhsViews);
-					startSolutionCheckAnimation(view, sol2, sol2Views, lhs,
-							rhs, lhsViews, rhsViews, reset);
+					// start the second one delayed, to allow views to redraw
+					handler.postDelayed(new Runnable() {
+						@Override
+						public void run() {
+							startSolutionCheckAnimation(view, sol2, sol2Views,
+									lhs, rhs, lhsViews, rhsViews, reset);
+						}
+					}, betweenSolDelay);
 				}
 			};
 			next = checkSecondSolution;
@@ -810,7 +818,7 @@ public class LevelSolvedDialogFragment extends SherlockDialogFragment {
 		if (BuildConfig.DEBUG) {
 			TextView debugTextView = (TextView) frameParent
 					.findViewById(R.id.anim_debug);
-//			debugTextView.setVisibility(View.VISIBLE);
+			// debugTextView.setVisibility(View.VISIBLE);
 			debugTextView.setText(string);
 		}
 	}
@@ -854,7 +862,8 @@ public class LevelSolvedDialogFragment extends SherlockDialogFragment {
 
 		float x = targetLocation[0] - sourceLocation[0];
 		float y = targetLocation[1] - sourceLocation[1];
-		// the grow is added to the move, henc ethe 1/2 factor in the translation
+		// the grow is added to the move, henc ethe 1/2 factor in the
+		// translation
 		final TranslateAnimation move = new TranslateAnimation(0, x / 2, 0,
 				y / 2);
 		move.setDuration(moveDuration);

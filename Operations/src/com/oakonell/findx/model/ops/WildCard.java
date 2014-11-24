@@ -30,12 +30,12 @@ public class WildCard implements Operation {
 
 	@Override
 	public MoveResult applyMove(Equation equation, int moveNum,
-			List<Operation> operations) {
+			List<Operation> operations, Operation appliedOrNull) {
 		if (actual == null) {
 			throw new IllegalStateException(
 					"Actual operation for wildcard has not been assigned");
 		}
-		return actual.applyMove(equation, moveNum, operations);
+		return actual.applyMove(equation, moveNum, operations, this);
 	}
 
 	@Override

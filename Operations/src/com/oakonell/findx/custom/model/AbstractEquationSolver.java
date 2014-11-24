@@ -41,7 +41,7 @@ public abstract class AbstractEquationSolver {
 			int moveNum = 1;
 			MoveResult applyMove = null;
 			for (Operation each : moves) {
-				applyMove = each.applyMove(equation, moveNum, null);
+				applyMove = each.applyMove(equation, moveNum, null, null);
 				primaryMoves.add(applyMove.getPrimaryMove());
 				equation = applyMove.getPrimaryEndEquation();
 				moveNum++;
@@ -225,7 +225,7 @@ public abstract class AbstractEquationSolver {
 				continue;
 			}
 
-			MoveResult moveResult = each.applyMove(state.equation, depth, null);
+			MoveResult moveResult = each.applyMove(state.equation, depth, null, null);
 			if (moveResult.hasMultiple()) {
 				// this has trouble matching an equation, assume only "solved"
 				// solutions for now

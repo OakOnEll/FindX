@@ -536,7 +536,7 @@ public class Puzzle {
 
 		// weird order to allow for an apply exception being thrown
 		MoveResult moveResult = operation.applyMove(startEquation,
-				numMoves + 1, operations);
+				numMoves + 1, operations, null);
 		numMoves++;
 		if (operation instanceof SquareRoot) {
 			squareRootOpIndex = operations.indexOf(new SquareRoot());

@@ -8,8 +8,9 @@ public interface Operation {
 	}
 
 	Equation apply(Equation equation);
-	
-	MoveResult applyMove(Equation equation, int moveNum, List<Operation> operations); 
+
+	MoveResult applyMove(Equation equation, int moveNum,
+			List<Operation> operations, Operation appliedOrNull);
 
 	boolean isInverse(Operation op);
 
@@ -27,6 +28,5 @@ public interface Operation {
 	Operation afterUsed();
 
 	boolean isAppliableWith(List<Operation> operations);
-
 
 }
