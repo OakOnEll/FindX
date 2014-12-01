@@ -34,6 +34,7 @@ public class ParseCustomLevelSearchAdapter extends ArrayAdapter<ParseObject> {
 		public TextView numRatings;
 		public TextView authorship;
 		public String id;
+		protected boolean userUpdate = true;
 
 	}
 
@@ -111,6 +112,7 @@ public class ParseCustomLevelSearchAdapter extends ArrayAdapter<ParseObject> {
 					return;
 				}
 				theHolder.check.setVisibility(View.VISIBLE);
+				theHolder.userUpdate  = false;
 				if (dbId > 0) {
 					theHolder.check.setChecked(true);
 					theHolder.check.setEnabled(false);
@@ -122,6 +124,7 @@ public class ParseCustomLevelSearchAdapter extends ArrayAdapter<ParseObject> {
 					}
 					theHolder.check.setEnabled(true);
 				}
+				theHolder.userUpdate = true;
 			}
 		};
 		asyncTask.execute();
@@ -130,7 +133,7 @@ public class ParseCustomLevelSearchAdapter extends ArrayAdapter<ParseObject> {
 			@Override
 			public void onCheckedChanged(CompoundButton buttonView,
 					boolean isChecked) {
-				if (callback != null) {
+				if (theHolder.userUpdate && callback != null) {
 					callback.checkStateChanged(position, isChecked);
 				}
 			}
