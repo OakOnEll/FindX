@@ -2,6 +2,7 @@
 <com.oakonell.findx.custom.CustomLevelGridCell xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:paddingBottom="15dp"
     android:gravity="fill_vertical|center_horizontal"
     android:orientation="vertical" >
 
@@ -12,6 +13,9 @@
         android:layout_gravity="center_horizontal"
         android:layout_weight="1"
         android:text="TextView"
+        android:paddingLeft="5sp"
+        android:paddingRight="5sp"
+        android:background="@drawable/readable_text_background"
         android:textAppearance="?android:attr/textAppearanceLarge" />
 
     <FrameLayout

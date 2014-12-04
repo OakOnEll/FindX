@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res/com.oakonell.findx"
     android:id="@+id/selectLevel"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
@@ -26,10 +27,13 @@
                 android:layout_height="wrap_content"
                 android:layout_marginRight="10dp"
                 android:layout_weight="1"
-                android:textColor="#808080" />
+                android:background="@drawable/readable_text_background"
+                android:padding="5dp"
+                android:textColor="@color/abs__primary_text_holo_dark" />
 
             <Button
                 android:id="@+id/sign_out_button"
+                style="@style/FindXButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/sign_out" />
@@ -54,9 +58,11 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="10dp"
-                android:layout_weight="1"
+                android:layout_weight="1"               
+                android:padding="5dp"
                 android:text="@string/sign_in_why"
-                android:textColor="#808080" />
+                android:textColor="@color/abs__primary_text_holo_dark"
+                android:background="@drawable/readable_text_background" />
         </LinearLayout>
     </RelativeLayout>
 
@@ -65,12 +71,28 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
-        android:shadowDx="5"
-        android:shadowDy="5"
-        android:shadowRadius="5"
         android:text="@string/select_stage"
         android:textAppearance="?android:attr/textAppearanceLarge"
-        android:textColor="#FFF000" />
+        android:textColor="#FFF000"
+        android:background="@drawable/readable_text_background" />
+
+    <!--
+    app:strokeColor="#77000FFF"
+    app:strokeWidth="1dp"
+
+    app:innerShadowDy="2dp"
+    app:innerShadowDx="0dp"
+    app:innerShadowColor="#FF000000"
+    app:innerShadowRadius="1dp"
+    
+    app:outerShadowDy="3dp"
+    app:outerShadowDx="0dp"
+    app:outerShadowColor="#FF0088ff"
+    app:outerShadowRadius="5dp"
+
+    app:strokeColor="#FF0000FF"
+    app:strokeJoinStyle="miter"
+    app:strokeWidth="2dp" -->
 
     <GridView
         android:id="@+id/stage_select"
@@ -83,9 +105,9 @@
 
     <LinearLayout
         android:id="@+id/linearLayout1"
-        android:gravity="center_horizontal|center_vertical"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" >
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal|center_vertical" >
 
         <Button
             android:id="@+id/custom"
@@ -94,13 +116,12 @@
             android:layout_height="wrap_content"
             android:text="@string/custom" />
 
-        <ImageButton
+        <ImageView
             android:id="@+id/view_achievements"
+            style="@style/FindXButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:src="@drawable/ic_play_games_badge_achievements_green" 
-            />
-
+            android:src="@drawable/ic_play_games_badge_achievements_green" />
     </LinearLayout>
 
 </LinearLayout>
