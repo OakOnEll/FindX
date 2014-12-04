@@ -35,34 +35,25 @@ public class LevelsTest extends TestCase {
 			LevelSolution levelSolution = each.getLevelSolution();
 			Equation equation = each.getEquation();
 			List<Integer> firstOperations = levelSolution.getFirstOperations();
-			boolean lastOpWasSquareRoot = false;
 			MoveResult moveResult = null;
 			for (Integer index : firstOperations) {
-//				if (lastOpWasSquareRoot) {
-//					throw new RuntimeException(
-//							"Performed a Square Root with more primary moves remaining?");
-//				}
 				Operation op = each.getOperations().get(index);
-				 moveResult = op.applyMove(equation, 0, each.getOperations(), null);
-				 equation = moveResult.getPrimaryEndEquation();
-				lastOpWasSquareRoot = op instanceof SquareRoot;
+				System.out.println(equation + ": " + op);
+				moveResult = op.applyMove(equation, 0, each.getOperations(),
+						null);
+				equation = moveResult.getPrimaryEndEquation();
 			}
-//			if (!lastOpWasSquareRoot ||  equation.isSolved()) {
-//				assertTrue("Level " + each.getId() + " " + each.getName()
-//						+ " is not solved by stored solution ",
-//						equation.isSolved());
-//				continue;
-//			}
-			if (equation != null && equation.isSolved()) continue;
+			if (equation != null && equation.isSolved())
+				continue;
 
 			List<Operation> operations = new ArrayList<Operation>(
 					each.getOperations());
 			Multiply multiplyNegOne = Multiply.NEGATE;
 			Collections
 					.replaceAll(operations, new SquareRoot(), multiplyNegOne);
-						
-			
-			Equation secondEquation = moveResult.getSecondary1().getStartEquation();
+
+			Equation secondEquation = moveResult.getSecondary1()
+					.getStartEquation();
 			equation = secondEquation;
 			List<Integer> secondOps;
 			List<Integer> ops;
@@ -71,7 +62,8 @@ public class LevelsTest extends TestCase {
 				secondOps = levelSolution.getSecondaryOperations2();
 				assertEquals("Level " + each.getId() + " " + each.getName()
 						+ " can't find secondary solutions",
-						levelSolution.getSecondaryEquation2(), moveResult.getSecondary2().getStartEquation());
+						levelSolution.getSecondaryEquation2(), moveResult
+								.getSecondary2().getStartEquation());
 			} else {
 				ops = levelSolution.getSecondaryOperations2();
 				secondOps = levelSolution.getSecondaryOperations1();
@@ -81,18 +73,22 @@ public class LevelsTest extends TestCase {
 			}
 			for (Integer index : ops) {
 				Operation op = each.getOperations().get(index);
+				System.out.println(equation + ": " + op);
 				equation = op.apply(equation);
 			}
 			assertTrue("Level " + each.getId() + " " + each.getName()
-					+ " is not solved by stored solution ", equation.isSolved());
+					+ " is not solved by stored solution - end equation "
+					+ equation, equation.isSolved());
 
 			equation = moveResult.getSecondary2().getStartEquation();
 			for (Integer index : secondOps) {
 				Operation op = each.getOperations().get(index);
+				System.out.println(equation + ": " + op);
 				equation = op.apply(equation);
 			}
 			assertTrue("Level " + each.getId() + " " + each.getName()
-					+ " is not solved by stored solution ", equation.isSolved());
+					+ " is not solved by stored solution- end equation "
+					+ equation, equation.isSolved());
 
 		}
 

@@ -3,8 +3,8 @@
 
     <string name="app_name">Find X</string>
     
-    <string name="sign_in_why">Sign in with Google to share achievements contribute levels.</string>
-    <string name="you_are_signed_in_as">You are signed into Google+ as %s</string>
+    <string name="sign_in_why">Sign in with Google to share achievements and contribute levels.</string>
+    <string name="you_are_signed_in_as">Welcome %s!</string>
     <string name="sign_out">Sign out</string>
     <string name="signing_in">Signing in with Google</string>
     <string name="signing_out">Signing out</string>
@@ -140,6 +140,8 @@
     <string name="gamehelper_license_failed">License check failed.</string>
     <string name="gamehelper_unknown_error">Unknown error.</string>
     
-    <string name="stage4_title">Stage 4</string>
+    <string name="stage4_title">Ph. D.</string>
+    <string name="stage5_title">Post Doc</string>
+    <string name="stage6_title">Professor</string>
     
 </resources>

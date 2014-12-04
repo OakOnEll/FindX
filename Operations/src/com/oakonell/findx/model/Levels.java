@@ -15,7 +15,6 @@ import android.provider.BaseColumns;
 
 import com.oakonell.findx.FindXApp;
 import com.oakonell.findx.R;
-import com.oakonell.findx.custom.model.CustomLevelBuilder;
 import com.oakonell.findx.custom.model.CustomLevelDBReader;
 import com.oakonell.findx.custom.model.CustomLevelProxy;
 import com.oakonell.findx.custom.model.CustomStage;
@@ -24,10 +23,12 @@ import com.oakonell.findx.data.DataBaseHelper.CustomLevelTable;
 import com.oakonell.findx.model.Level.LevelSolution;
 import com.oakonell.findx.model.ops.Add;
 import com.oakonell.findx.model.ops.Divide;
+import com.oakonell.findx.model.ops.Factor;
 import com.oakonell.findx.model.ops.Multiply;
 import com.oakonell.findx.model.ops.SquareRoot;
 import com.oakonell.findx.model.ops.Subtract;
 import com.oakonell.findx.model.ops.Swap;
+import com.oakonell.findx.model.ops.WildCard;
 
 public class Levels {
 	private static Map<String, Stage> stages = new LinkedHashMap<String, Stage>();
@@ -59,6 +60,16 @@ public class Levels {
 				R.raw.partita_no_1_in_b_flat_major_pus_1_sarabande, stage3);
 		stages.put(stage4.getId(), stage4);
 		configureStage4(stage4);
+
+		Stage stage5 = new Stage("5", R.string.stage5_title,
+				R.raw.partita_no_1_in_b_flat_major_pus_1_sarabande, stage4);
+		stages.put(stage5.getId(), stage5);
+		configureStage5(stage5);
+
+		Stage stage6 = new Stage("6", R.string.stage6_title,
+				R.raw.partita_no_1_in_b_flat_major_pus_1_sarabande, stage5);
+		stages.put(stage6.getId(), stage6);
+		configureStage6(stage6);
 
 		customStage = new CustomStage("C", R.string.custom_stage_title);
 
@@ -498,7 +509,7 @@ public class Levels {
 								2, 2, 2, 2, 2, 4)));
 	}
 
-	private static void configureStage4(Stage stage) {
+	private static void configureStage5(Stage stage) {
 		Expression left;
 		Expression right;
 		Equation eq;
@@ -536,6 +547,296 @@ public class Levels {
 
 		addLevel(stage, new Level(stage, "Hip to be Square", eq, ops,
 				levelSolution));
+
+		// level
+		left = new Expression(1, -2, 0);
+		right = new Expression(-1);
+		eq = new Equation(left, right); // x^2 - 2x = - 1
+		ops = new ArrayList<Operation>();
+		ops.add(new Add(new Expression(1)));
+		ops.add(new SquareRoot());
+		// solutions = new ArrayList<Fraction>();
+		// solutions.add(Fraction.ONE);
+		// levelSolution = new LevelSolution(solutions, Arrays.asList(0, 1),
+		// new Equation(new Expression(1, 0), new Expression(1)),
+		// Collections.<Integer> emptyList(), new Equation(new Expression(
+		// 1, 0), new Expression(-1)),
+		// Collections.<Integer> emptyList());
+
+		addLevel(
+				stage,
+				new Level(stage, "Taking root", eq, ops, Arrays.asList(0, 1, 0)));
+
+		// level
+		solutions = new ArrayList<Fraction>();
+		left = new Expression(1, -6, 0);
+		right = new Expression(7);
+		eq = new Equation(left, right); // x^2 - 6x = 7
+		ops = new ArrayList<Operation>();
+		ops.add(new Add(new Expression(9)));
+		ops.add(new Add(new Expression(1)));
+		ops.add(new Add(new Expression(3)));
+		ops.add(new SquareRoot());
+		solutions.add(new Fraction(7));
+		solutions.add(Fraction.MINUS_ONE);
+		levelSolution = new LevelSolution(solutions, Arrays.asList(0, 3),
+				new Equation(new Expression(1, -3), new Expression(4)),
+				Arrays.asList(2), new Equation(new Expression(1, -3),
+						new Expression(-4)), Arrays.asList(2));
+
+		addLevel(stage, new Level(stage, "Completing the Square Tutorial", eq,
+				ops, levelSolution));
+
+		// level 5
+		solutions = new ArrayList<Fraction>();
+		left = new Expression(1, -6, 9);
+		right = new Expression(Fraction.ZERO, new Fraction(25, 4));
+		eq = new Equation(left, right); // x^2 - 6x + 9 = 25/4
+		ops = new ArrayList<Operation>();
+		ops.add(new Add(new Expression(9)));
+		ops.add(new Add(new Expression(1)));
+		ops.add(new Add(new Expression(3)));
+		ops.add(new SquareRoot());
+		solutions.add(new Fraction(1, 2));
+		solutions.add(new Fraction(11, 2));
+		levelSolution = new LevelSolution(solutions, Arrays.asList(3),
+				new Equation(new Expression(1, -3), new Expression(
+						Fraction.ZERO, new Fraction(5, 2))), Arrays.asList(2),
+				new Equation(new Expression(1, -3), new Expression(
+						Fraction.ZERO, new Fraction(-5, 2))), Arrays.asList(2));
+
+		addLevel(stage, new Level(stage, "Fractional Root", eq, ops,
+				levelSolution));
+
+		// rooting around
+		solutions = new ArrayList<Fraction>();
+		left = new Expression(0, 1, 0);
+		right = new Expression(-1, 1, 1);
+		eq = new Equation(left, right); // x = -x^2 + x + 1
+		ops = new ArrayList<Operation>();
+		ops.add(new Add(new Expression(1, 0, 0)));
+		ops.add(new Add(new Expression(-1, 0)));
+		ops.add(new SquareRoot());
+		solutions.add(Fraction.ONE);
+		solutions.add(Fraction.MINUS_ONE);
+		levelSolution = new LevelSolution(solutions, Arrays.asList(0, 1, 2),
+				new Equation(new Expression(1, 0), new Expression(1)),
+				Collections.<Integer> emptyList(), new Equation(new Expression(
+						1, 0), new Expression(-1)),
+				Collections.<Integer> emptyList());
+
+		addLevel(stage, new Level(stage, "Rootin' Around", eq, ops,
+				levelSolution));
+
+		// getting to the root? (7)
+		solutions = new ArrayList<Fraction>();
+		left = new Expression(1, -24, 130);
+		right = new Expression(0, 22);
+		eq = new Equation(left, right); // x^2 - 24x + 130 = 22
+		ops = new ArrayList<Operation>();
+		ops.add(new SquareRoot());
+		ops.add(new Add(new Expression(0, 3)));
+		ops.add(new Add(new Expression(0, 4)));
+		solutions.add(new Fraction(18));
+		solutions.add(new Fraction(6));
+		levelSolution = new LevelSolution(solutions, Arrays.asList(1, 1, 2, 2,0),
+				new Equation(new Expression(1, -12), new Expression(0,
+				6)), Arrays.asList(2,2, 2)
+				, new Equation(new Expression(1,-12), new Expression(0,-6)),
+				Arrays.asList(2,2, 2));
+
+		addLevel(stage, new Level(stage, "Getting to the Root", eq, ops,
+				levelSolution));
+
+		// 8
+		solutions = new ArrayList<Fraction>();
+		left = new Expression(-1, -20, 49);
+		right = new Expression(-2,-6,36);
+		eq = new Equation(left, right); // -x^2 - 20x + 49 = -2x^2 - 6x +36
+		ops = new ArrayList<Operation>();
+		ops.add(new Add(new Expression(3, 0)));
+		ops.add(new Add(new Expression(0, 7)));
+		ops.add(new Add(new Expression(2,0, 0)));
+		ops.add(new SquareRoot());
+		solutions.add(new Fraction(1));
+		solutions.add(new Fraction(13));
+		levelSolution = new LevelSolution(solutions, Arrays.asList(0, 0, 2,3),
+				new Equation(new Expression(1, -7), new Expression(0,
+				6)), Arrays.asList(1)
+				, new Equation(new Expression(1,-7), new Expression(0,-6)),
+				Arrays.asList(1));
+
+		addLevel(stage, new Level(stage, "Name me!", eq, ops,
+				levelSolution));
+				
+		// 9  Four square a day
+		solutions = new ArrayList<Fraction>();
+		left = new Expression(4, 4, 9);
+		right = new Expression(3,-2,16);
+		eq = new Equation(left, right); // 4X^2 + 4X + 9 = 3X^2 - 2X + 16
+		ops = new ArrayList<Operation>();
+		ops.add(new Add(new Expression(-3, 0,0)));
+		ops.add(new Add(new Expression(0, 2,0)));
+		ops.add(new Add(new Expression(0,0, -1)));
+		ops.add(new SquareRoot());
+		solutions.add(new Fraction(1));
+		solutions.add(new Fraction(-7));
+		levelSolution = new LevelSolution(solutions, Arrays.asList(1, 0, 3),
+				new Equation(new Expression(1, 3), new Expression(0,
+				4)), Arrays.asList(2,2,2)
+				, new Equation(new Expression(1,3), new Expression(0,-4)),
+				Arrays.asList(2,2,2));
+
+		addLevel(stage, new Level(stage, "Four Square a Day", eq, ops,
+				levelSolution));
+		
+		// 10  
+		solutions = new ArrayList<Fraction>();
+		left = new Expression(8, -18, 9);
+		right = new Expression(0,0,0);
+		eq = new Equation(left, right); // 9x^2 - 19x + 9 = 0
+		ops = new ArrayList<Operation>();
+		ops.add(new Add(new Expression(1,0,0))); //0   add x
+		ops.add(new Add(new Expression(0,3)));   //1    add 3
+		ops.add(new Add(new Expression(0,1, 0))); //2   add x
+		ops.add(new Divide(new Fraction(2))); //3  divide by 2
+		ops.add(new SquareRoot());  //4    squaare root, multiply -1
+		solutions.add(new Fraction(3,4));
+		solutions.add(new Fraction(3,2));
+		levelSolution = new LevelSolution(solutions, Arrays.asList(0, 4),
+				new Equation(new Expression(3, -3), new Expression(1,
+				0)), Arrays.asList(4,2,4,1,3)
+				, new Equation(new Expression(3,-3), new Expression(-1,0)),
+				Arrays.asList(2,1,3,3));
+
+		addLevel(stage, new Level(stage, "Name me!", eq, ops,
+				levelSolution));
+		
+		// 11 
+		solutions = new ArrayList<Fraction>();
+		left = new Expression(3, 22, 24);
+		right = new Expression(0,0,0);
+		eq = new Equation(left, right); // 2x^2 + 22x + 24 = 0
+		ops = new ArrayList<Operation>();
+		ops.add(new Add(new Expression(new Fraction(1,2),Fraction.ZERO,Fraction.ZERO))); //0   add 1/2x^2
+		ops.add(new Subtract(new Expression(0,1,0)));   //1    subtract x 
+		ops.add(new Add(new Expression(Fraction.ZERO,Fraction.ZERO, new Fraction(1,4)))); //2   add 1/4
+		ops.add(new Divide(new Fraction(3))); //3  divide by 3
+		ops.add(new SquareRoot());  //4    square root, multiply -1
+		ops.add(new Add(new Expression(2)));  //5    add 2
+		solutions.add(new Fraction(-6));
+		solutions.add(new Fraction(-4,3));
+		levelSolution = new LevelSolution(solutions, Arrays.asList(0,0,1,1,2,2,2,2,4),
+				new Equation(new Expression(2, 5), new Expression(1,
+				-1)), Arrays.asList(1,4,5,5,2,2,2,2,4)
+				, new Equation(new Expression(2,5), new Expression(-1,1)),
+				Arrays.asList(4,1,2,2,2,2,5,5,4,3));
+
+		addLevel(stage, new Level(stage, "Name me!", eq, ops,
+				levelSolution));
+		
+		// root of all evil (last one for stage?) 12
+		solutions = new ArrayList<Fraction>();
+		left = new Expression(3, -24, 0);
+		right = new Expression(0, -6, 0);
+		eq = new Equation(left, right); // 3x^2 - 24x = -6
+		ops = new ArrayList<Operation>();
+		ops.add(new Add(new Expression(1, 0, 0)));
+		ops.add(new Add(new Expression(6, 0)));
+		ops.add(new Add(new Expression(0, 3)));
+		ops.add(new SquareRoot());
+		ops.add(new Add(new Expression(1, 0)));
+		ops.add(new Divide(3));
+		solutions.add(Fraction.ZERO);
+		solutions.add(new Fraction(6));
+		levelSolution = new LevelSolution(solutions, Arrays.asList(1, 1, 0, 2,
+				2, 2, 3), new Equation(new Expression(2, -3), new Expression(1,
+				3)), Arrays.asList(2, 3, 4, 3), new Equation(new Expression(2,
+				-3), new Expression(-1, -3)), Arrays.asList(2,4, 5));
+
+		addLevel(stage, new Level(stage, "Root of all Evil", eq, ops,
+				levelSolution));
+	}
+
+	private static void configureStage4(Stage stage) {
+		Expression left;
+		Expression right;
+		Equation eq;
+		List<Operation> ops;
+		List<Fraction> solutions = new ArrayList<Fraction>();
+		LevelSolution levelSolution;
+
+		// level
+		left = new Expression(1, 0, -1);
+		right = new Expression(0);
+		eq = new Equation(left, right); // x^2 - 1 = 0
+		ops = new ArrayList<Operation>();
+		ops.add(new Factor(new Expression(1, -1)));
+		ops.add(new Add(new Expression(1)));
+		ops.add(new Add(new Expression(-1)));
+		solutions.add(Fraction.ONE);
+		solutions.add(Fraction.MINUS_ONE);
+		levelSolution = new LevelSolution(solutions, Arrays.asList(0),
+				new Equation(new Expression(1, 1), new Expression(0)),
+				Arrays.asList(2), new Equation(new Expression(1, -1),
+						new Expression(0)), Arrays.asList(1));
+
+		addLevel(stage, new Level(stage, "The factor", eq, ops, levelSolution));
+
+		// level - fudge factor
+		left = new Expression(5, 0, -40);
+		right = new Expression(10,0);
+		eq = new Equation(left, right); // 5x^2 - 40 = 10x
+		ops = new ArrayList<Operation>();
+		ops.add(new Factor(new Expression(5, 10)));  // 0   factor (5x+10)
+		ops.add(new Add(new Expression(-2)));        // 1   add -2
+		ops.add(new Add(new Expression(2)));         // 2   add 2
+		ops.add(new Divide(new Fraction(5)));        // 3   divide by 5
+		ops.add(new Subtract(new Expression(10,0))); // 4   subtract 10x
+		solutions.add(new Fraction(4));
+		solutions.add(new Fraction(-2));
+		levelSolution = new LevelSolution(solutions, Arrays.asList(4,0),
+				new Equation(new Expression(1, -4), new Expression(0)),
+				Arrays.asList(2,2), 
+				new Equation(new Expression(5, 10),
+						new Expression(0)), Arrays.asList(3,1));
+
+		addLevel(stage, new Level(stage, "The fudge factor", eq, ops,
+				levelSolution));
+
+		//3
+		//4
+		//5
+		//6
+		//7
+		//8
+		//9
+		//10
+		//11
+		//12
+		
+	}
+
+	private static void configureStage6(Stage stage) {
+		Expression left;
+		Expression right;
+		Equation eq;
+		List<Operation> ops;
+		List<Fraction> solutions = new ArrayList<Fraction>();
+		LevelSolution levelSolution;
+
+		// level
+		left = new Expression(1, -1);
+		right = new Expression(0);
+		eq = new Equation(left, right); // x - 1 = 0
+		ops = new ArrayList<Operation>();
+		WildCard wild = new WildCard();
+		wild.setActual(new Add(new Expression(1)));
+		ops.add(wild);
+		solutions.add(Fraction.ONE);
+		levelSolution = new LevelSolution(Arrays.asList(0), eq, ops);
+
+		addLevel(stage, new Level(stage, "Wild Card", eq, ops, levelSolution));
 	}
 
 	private static void addLevel(Stage stage, Level level) {
@@ -594,8 +895,9 @@ public class Levels {
 			String name = query.getString(query
 					.getColumnIndex(DataBaseHelper.CustomLevelTable.NAME));
 
-			boolean isImported = query.getInt(query
-					.getColumnIndex(DataBaseHelper.CustomLevelTable.IS_IMPORTED)) > 0;
+			boolean isImported = query
+					.getInt(query
+							.getColumnIndex(DataBaseHelper.CustomLevelTable.IS_IMPORTED)) > 0;
 			String author = query.getString(query
 					.getColumnIndex(DataBaseHelper.CustomLevelTable.AUTHOR));
 			String serverId = query.getString(query
@@ -603,7 +905,6 @@ public class Levels {
 			int sequence = query.getInt(query
 					.getColumnIndex(DataBaseHelper.CustomLevelTable.SEQ_NUM));
 
-			
 			// TODO make this only read the custom level main info
 			// and lazily load the other info on demand
 			CustomLevelProxy level = new CustomLevelProxy(custom, "C-" + num,
