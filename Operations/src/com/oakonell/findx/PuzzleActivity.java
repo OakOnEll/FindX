@@ -39,7 +39,6 @@ import com.oakonell.findx.DelayedTextView.TextViewInfo;
 import com.oakonell.findx.custom.CustomStageActivity;
 import com.oakonell.findx.custom.OperationBuilderDialog;
 import com.oakonell.findx.custom.OperationBuilderDialog.OperationBuiltContinuation;
-import com.oakonell.findx.custom.model.CustomLevel;
 import com.oakonell.findx.custom.model.CustomStage;
 import com.oakonell.findx.custom.model.ICustomLevel;
 import com.oakonell.findx.custom.parse.CustomLevelDetailActivity;
@@ -381,7 +380,7 @@ public class PuzzleActivity extends GameActivity {
 				resourceId = R.id.op5;
 				break;
 			case 6:
-				resourceId = R.id.op5;
+				resourceId = R.id.op6;
 				break;
 			default:
 				throw new RuntimeException("Unexpected number of operations");

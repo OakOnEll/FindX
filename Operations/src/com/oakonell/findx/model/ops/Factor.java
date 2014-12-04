@@ -156,8 +156,9 @@ public class Factor extends AbstractOperation {
 
 	@Override
 	protected Expression apply(Expression lhs) {
-		throw new UnsupportedOperationException(
-				"can't call apply factor on an expression- use applyMove");
+		return null;
+//		throw new UnsupportedOperationException(
+//				"can't call apply factor on an expression- use applyMove");
 	}
 
 	private Expression factor(Expression otherExpr) {
