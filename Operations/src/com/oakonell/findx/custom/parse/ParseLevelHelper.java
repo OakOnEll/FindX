@@ -8,8 +8,13 @@ import java.util.Map;
 import org.apache.commons.math3.fraction.Fraction;
 import org.apache.commons.math3.fraction.FractionFormat;
 
+import android.content.Context;
 import android.os.AsyncTask;
 
+import com.google.android.gms.analytics.GoogleAnalytics;
+import com.google.android.gms.analytics.HitBuilders;
+import com.google.android.gms.analytics.Tracker;
+import com.oakonell.findx.R;
 import com.oakonell.findx.custom.model.CustomLevelBuilder;
 import com.oakonell.findx.custom.model.CustomLevelDBReader;
 import com.oakonell.findx.custom.model.ICustomLevel;
@@ -98,7 +103,7 @@ public class ParseLevelHelper {
 		final String flaggedBy_field = "flaggedBy";
 	}
 
-	public static String postLevel(ICustomLevel theLevel) {
+	public static String postLevel(Context context, ICustomLevel theLevel) {
 		try {
 
 			ParseObject level = postMainLevel(theLevel);
@@ -113,6 +118,12 @@ public class ParseLevelHelper {
 			postLevelMoves(level, theLevel.getLevelSolution()
 					.getSecondaryOperations2(), 2);
 
+			
+			GoogleAnalytics analytics = GoogleAnalytics.getInstance(context);
+			Tracker googleTracker = analytics.newTracker(R.string.ga_trackingId);
+			googleTracker.send(new HitBuilders.EventBuilder().setCategory("custom")
+					.setAction("post").setLabel(id).build());
+			
 			return id;
 		} catch (ParseException e) {
 			throw new RuntimeException("Error writing level to parse", e);
@@ -233,7 +244,12 @@ public class ParseLevelHelper {
 				.getX2Coefficient().toString());
 	}
 
-	public static CustomLevelBuilder load(ParseObject level) {
+	public static CustomLevelBuilder load(Context context, ParseObject level) {
+		GoogleAnalytics analytics = GoogleAnalytics.getInstance(context);
+		Tracker googleTracker = analytics.newTracker(R.string.ga_trackingId);
+		googleTracker.send(new HitBuilders.EventBuilder().setCategory("custom")
+				.setAction("load").setLabel(level.getObjectId()).build());
+		
 		FractionFormat format = new FractionFormat();
 
 		Equation startEquation = readEquation(level);

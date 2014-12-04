@@ -810,7 +810,8 @@ public class CustomStageActivity extends GameActivity {
 
 			@Override
 			protected Void doInBackground(Void... params) {
-				String id = ParseLevelHelper.postLevel(theLevel);
+				String id = ParseLevelHelper.postLevel(
+						CustomStageActivity.this, theLevel);
 
 				// update the level to note it is saved to server
 				CustomLevelBuilder builder = new CustomLevelBuilder();

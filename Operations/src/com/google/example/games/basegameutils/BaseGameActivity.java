@@ -21,6 +21,7 @@ import android.os.Bundle;
 import android.util.Log;
 
 import com.actionbarsherlock.app.SherlockFragmentActivity;
+import com.google.android.gms.analytics.GoogleAnalytics;
 import com.google.android.gms.common.api.GoogleApiClient;
 
 /**
@@ -109,12 +110,15 @@ public abstract class BaseGameActivity extends SherlockFragmentActivity implemen
     protected void onStart() {
         super.onStart();
         mHelper.onStart(this);
+		GoogleAnalytics.getInstance(this).reportActivityStart(this);
     }
 
     @Override
     protected void onStop() {
         super.onStop();
         mHelper.onStop();
+		GoogleAnalytics.getInstance(this).reportActivityStop(this);
+
     }
 
     @Override
@@ -176,4 +180,6 @@ public abstract class BaseGameActivity extends SherlockFragmentActivity implemen
     protected GameHelper.SignInFailureReason getSignInError() {
         return mHelper.getSignInError();
     }
+
+    
 }

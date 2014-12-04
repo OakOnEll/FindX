@@ -6,6 +6,7 @@ import android.widget.TextView;
 
 import com.actionbarsherlock.app.ActionBar;
 import com.actionbarsherlock.app.SherlockFragmentActivity;
+import com.google.android.gms.analytics.GoogleAnalytics;
 import com.oakonell.findx.R;
 import com.oakonell.utils.Utils;
 
@@ -31,4 +32,17 @@ public class AboutFindXActivity extends SherlockFragmentActivity {
 		aboutText.loadUrl("file:///android_asset/credits.html");
 		// aboutText.setText(Html.fromHtml(text));
 	}
+	
+	@Override
+	protected void onStart() {
+		super.onStart();
+		GoogleAnalytics.getInstance(this).reportActivityStart(this);
+	}
+
+	@Override
+	protected void onStop() {
+		super.onStop();
+		GoogleAnalytics.getInstance(this).reportActivityStop(this);
+	}
+
 }

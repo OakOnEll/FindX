@@ -460,7 +460,7 @@ public class CustomLevelSearchActivity extends SherlockListActivity {
 					i++;
 					publishProgress(i);
 					Integer position = entry.getValue();
-					CustomLevelBuilder builder = ParseLevelHelper.load(adapter
+					CustomLevelBuilder builder = ParseLevelHelper.load(CustomLevelSearchActivity.this,  adapter
 							.getItem(position));
 					builder.save();
 					checkedPositionByIds.remove(entry.getKey());

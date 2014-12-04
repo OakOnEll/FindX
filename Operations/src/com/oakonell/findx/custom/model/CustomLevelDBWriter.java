@@ -9,6 +9,10 @@ import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.provider.BaseColumns;
 
+import com.google.android.gms.analytics.GoogleAnalytics;
+import com.google.android.gms.analytics.HitBuilders;
+import com.google.android.gms.analytics.Tracker;
+import com.oakonell.findx.R;
 import com.oakonell.findx.data.DataBaseHelper;
 import com.oakonell.findx.model.Equation;
 import com.oakonell.findx.model.IMove;
@@ -33,9 +37,19 @@ public class CustomLevelDBWriter {
 		DataBaseHelper helper = new DataBaseHelper(context);
 		SQLiteDatabase db = helper.getWritableDatabase();
 		if (builder.getId() == 0) {
+			GoogleAnalytics analytics = GoogleAnalytics.getInstance(context);
+			Tracker googleTracker = analytics
+					.newTracker(R.string.ga_trackingId);
+			googleTracker.send(new HitBuilders.EventBuilder()
+					.setCategory("custom").setAction("add").build());
 			add(builder, db);
 		} else {
 			// update
+			GoogleAnalytics analytics = GoogleAnalytics.getInstance(context);
+			Tracker googleTracker = analytics
+					.newTracker(R.string.ga_trackingId);
+			googleTracker.send(new HitBuilders.EventBuilder()
+					.setCategory("custom").setAction("update").build());
 			update(builder, db);
 		}
 		db.close();
@@ -159,7 +173,8 @@ public class CustomLevelDBWriter {
 				opIndex = operations.indexOf(new SquareRoot());
 			}
 			if (opIndex < 0) {
-				throw new RuntimeException("Error finding index for operation " + operation);
+				throw new RuntimeException("Error finding index for operation "
+						+ operation);
 			}
 			opInfo.put(DataBaseHelper.CustomLevelMovesTable.OPERATION_ID,
 					opIndex);

@@ -30,6 +30,7 @@ import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuInflater;
 import com.actionbarsherlock.view.MenuItem;
 import com.commonsware.cwac.merge.MergeAdapter;
+import com.google.android.gms.analytics.GoogleAnalytics;
 import com.oakonell.findx.BuildConfig;
 import com.oakonell.findx.PuzzleActivity;
 import com.oakonell.findx.R;
@@ -193,6 +194,7 @@ public class CustomLevelDetailActivity extends SherlockFragmentActivity {
 	@Override
 	protected void onStart() {
 		super.onStart();
+		GoogleAnalytics.getInstance(this).reportActivityStart(this);
 
 		// find the level
 		ParseQuery<ParseObject> levelQuery = ParseQuery
@@ -424,7 +426,8 @@ public class CustomLevelDetailActivity extends SherlockFragmentActivity {
 		AsyncTask<Void, Void, CustomLevelBuilder> task = new AsyncTask<Void, Void, CustomLevelBuilder>() {
 			@Override
 			protected CustomLevelBuilder doInBackground(Void... params) {
-				CustomLevelBuilder builder = ParseLevelHelper.load(level);
+				CustomLevelBuilder builder = ParseLevelHelper.load(
+						CustomLevelDetailActivity.this, level);
 
 				builder.save();
 				Levels.resetCustomStage();
@@ -508,4 +511,11 @@ public class CustomLevelDetailActivity extends SherlockFragmentActivity {
 		}
 		return super.onOptionsItemSelected(item);
 	}
+
+	@Override
+	protected void onStop() {
+		super.onStop();
+		GoogleAnalytics.getInstance(this).reportActivityStop(this);
+	}
+
 }
