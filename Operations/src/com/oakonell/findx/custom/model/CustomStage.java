@@ -49,10 +49,17 @@ public class CustomStage extends Stage {
 	}
 
 	public void delete(ICustomLevel level) {
+		long id = level.getDbId();
+
+		deleteLevelById(id);
+
+		Levels.resetCustomStage();
+	}
+
+	public static void deleteLevelById(long id) {
 		DataBaseHelper helper = new DataBaseHelper(FindXApp.getContext());
 		SQLiteDatabase db = helper.getWritableDatabase();
 
-		long id = level.getDbId();
 		String dbId = id + "";
 		db.delete(DataBaseHelper.CUSTOM_LEVEL_TABLE_NAME, BaseColumns._ID
 				+ "=?", new String[] { dbId });
@@ -64,8 +71,6 @@ public class CustomStage extends Stage {
 				new String[] { dbId });
 
 		db.close();
-
-		Levels.resetCustomStage();
 	}
 
 	public ICustomLevel getLevelByDBId(long id) {

@@ -7,10 +7,13 @@ import org.apache.commons.math3.fraction.Fraction;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.content.ContentValues;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.os.StrictMode;
+import android.provider.BaseColumns;
 import android.support.v4.app.NavUtils;
 import android.text.Editable;
 import android.text.Html;
@@ -34,12 +37,15 @@ import com.oakonell.findx.MenuHelper;
 import com.oakonell.findx.R;
 import com.oakonell.findx.custom.OperationBuilderDialog.OperationBuiltContinuation;
 import com.oakonell.findx.custom.model.CustomLevelBuilder;
+import com.oakonell.findx.custom.model.CustomStage;
 import com.oakonell.findx.custom.model.RandomHelper;
 import com.oakonell.findx.custom.model.TempCorrectLevelBuilder.OptimizedListener;
 import com.oakonell.findx.custom.widget.FractionEditText;
 import com.oakonell.findx.custom.widget.FractionEditText.OnFractionChanged;
 import com.oakonell.findx.custom.widget.PopupContextMenu;
 import com.oakonell.findx.custom.widget.PopupContextMenu.ButtonContextMenuOnClickListener;
+import com.oakonell.findx.data.DataBaseHelper;
+import com.oakonell.findx.data.DataBaseHelper.CustomLevelTable;
 import com.oakonell.findx.model.Equation;
 import com.oakonell.findx.model.Expression;
 import com.oakonell.findx.model.Expression.UseParenthesis;
@@ -51,6 +57,9 @@ import com.oakonell.findx.model.ops.WildCard;
 import com.oakonell.utils.NumberPicker;
 
 public class CustomPuzzleBuilderActivity extends GameActivity {
+	private static final String SAVED_ID = "saved_id";
+	private static final String ORIGINAL_ID = "original_id";
+	private static final String ORIGINAL_SERVER_ID = "original_server_id";
 	public static final String LEVEL_ID = "id";
 	public static final String COPY = "copy";
 
@@ -94,17 +103,37 @@ public class CustomPuzzleBuilderActivity extends GameActivity {
 		ab.setDisplayShowTitleEnabled(true);
 
 		Intent intent = getIntent();
-		long levelId = intent.getLongExtra(LEVEL_ID, 0);
-		// TODO async task these builder accesses?
-		if (levelId != 0) {
-			builder.load(levelId);
+
+		long savedId = savedInstanceState != null ? savedInstanceState.getLong(SAVED_ID, -1) : -1;
+		if (savedId >= 0) {
+			builder.load(savedId);
+			long originalId = savedInstanceState.getLong(ORIGINAL_ID, -1);
+			if (originalId > 0) {
+				builder.setId(originalId);
+			}
+			String originalServerId = savedInstanceState
+					.getString(ORIGINAL_SERVER_ID);
+			if (originalServerId != null) {
+				builder.setServerId(originalServerId);
+			}
+			CustomStage.deleteLevelById(savedId);
+			hasChanges = true;
 		} else {
-			// get the max sequence
-			builder.defaultMaxSequence();
-		}
-		if (intent.getBooleanExtra(COPY, false)) {
-			builder.prepareAsCopy();
-			builder.setTitle(getText(R.string.copy_prefix) + builder.getTitle());
+			long levelId = intent.getLongExtra(LEVEL_ID, 0);
+			// TODO async task these builder accesses?
+			if (levelId != 0) {
+				builder.load(levelId);
+				hasChanges = false;
+			} else {
+				// get the max sequence
+				hasChanges = true;
+				builder.defaultMaxSequence();
+			}
+			if (intent.getBooleanExtra(COPY, false)) {
+				builder.prepareAsCopy();
+				builder.setTitle(getText(R.string.copy_prefix)
+						+ builder.getTitle());
+			}
 		}
 
 		for (Operation each : builder.getOperations()) {
@@ -276,6 +305,7 @@ public class CustomPuzzleBuilderActivity extends GameActivity {
 
 			@Override
 			public void afterTextChanged(Editable editable) {
+				hasChanges = true;
 				if (editable.toString().trim().length() == 0) {
 					title.setError(getText(R.string.title_required));
 					return;
@@ -373,6 +403,7 @@ public class CustomPuzzleBuilderActivity extends GameActivity {
 		builder.save();
 		// TODO async task this?
 		Levels.resetCustomStage();
+		hasChanges = false;
 		CustomPuzzleBuilderActivity.this.finish();
 	}
 
@@ -459,6 +490,7 @@ public class CustomPuzzleBuilderActivity extends GameActivity {
 
 	private void addRandomMoves(int numMoves) {
 		randomHelper.addRandomMoves(builder, numMoves);
+		hasChanges = true;
 		// finish up
 		updateUI();
 	}
@@ -474,7 +506,7 @@ public class CustomPuzzleBuilderActivity extends GameActivity {
 			saveButton.setEnabled(false);
 			return;
 		}
-		saveButton.setEnabled(builder.hasMoves());
+		saveButton.setEnabled(hasChanges && builder.hasMoves());
 	}
 
 	private void handleOperatorButtons() {
@@ -487,6 +519,7 @@ public class CustomPuzzleBuilderActivity extends GameActivity {
 		handleOperatorButton(R.id.op3, R.id.op3_lock, operations, 2);
 		handleOperatorButton(R.id.op4, R.id.op4_lock, operations, 3);
 		handleOperatorButton(R.id.op5, R.id.op5_lock, operations, 4);
+		handleOperatorButton(R.id.op6, R.id.op6_lock, operations, 5);
 	}
 
 	private void handleOperatorButton(int op1, int lockId,
@@ -536,9 +569,11 @@ public class CustomPuzzleBuilderActivity extends GameActivity {
 				try {
 					builder.apply(operation);
 				} catch (Exception e) {
-					Toast.makeText(getContext(), "Operation resulted in an error!",
+					Toast.makeText(getContext(),
+							"Operation resulted in an error!",
 							Toast.LENGTH_SHORT).show();
 				}
+				hasChanges = true;
 				updateUI();
 			}
 		});
@@ -597,7 +632,9 @@ public class CustomPuzzleBuilderActivity extends GameActivity {
 						public void onClick(DialogInterface dialog, int which) {
 							// delete any moves after this operation
 							builder.removeOperation(operation);
+							hasChanges = true;
 							// targeted update?
+							updateUI();
 							handleOperatorButtons();
 							adapter.notifyDataSetChanged();
 							alertDialog.dismiss();
@@ -614,6 +651,7 @@ public class CustomPuzzleBuilderActivity extends GameActivity {
 			alertDialog.show();
 		} else {
 			builder.removeOperation(operation);
+			hasChanges = true;
 			// targeted update?
 			handleOperatorButtons();
 		}
@@ -627,6 +665,8 @@ public class CustomPuzzleBuilderActivity extends GameActivity {
 					@Override
 					public void operationBuilt(Operation newOperation) {
 						builder.replaceOperation(operation, newOperation);
+						hasChanges = true;
+						updateUI();
 						handleOperatorButtons();
 						adapter.notifyDataSetChanged();
 					}
@@ -642,6 +682,8 @@ public class CustomPuzzleBuilderActivity extends GameActivity {
 					public void operationBuilt(Operation operation) {
 						builder.addOperation(operation);
 						handleOperatorButtons();
+						hasChanges = true;
+						updateUI();
 						if (!builder.isAppliable(operation)) {
 							// if the new operator is not appliable immediately,
 							// let the user know
@@ -670,7 +712,8 @@ public class CustomPuzzleBuilderActivity extends GameActivity {
 	}
 
 	private void confirmAndLeave(final Runnable run) {
-		if (builder.getOperations().isEmpty() && !builder.hasMoves()) {
+		if (!hasChanges
+				|| (builder.getOperations().isEmpty() && !builder.hasMoves())) {
 			run.run();
 			return;
 		}
@@ -722,6 +765,8 @@ public class CustomPuzzleBuilderActivity extends GameActivity {
 					public void onClick(DialogInterface dialog, int which) {
 						// delete any moves after this operation
 						builder.deleteMove(item);
+						hasChanges = true;
+						updateUI();
 						handleOperatorButtons();
 						adapter.notifyDataSetChanged();
 						alertDialog.dismiss();
@@ -759,6 +804,8 @@ public class CustomPuzzleBuilderActivity extends GameActivity {
 						Operation op = builder.getOperations().get(index);
 						if (index != defaultItemIndex) {
 							builder.replaceMove(item, op);
+							hasChanges = true;
+							updateUI();
 							handleOperatorButtons();
 							adapter.notifyDataSetChanged();
 						} else {
@@ -807,5 +854,38 @@ public class CustomPuzzleBuilderActivity extends GameActivity {
 		handleSaveButtonEnablement();
 		handleOperatorButtons();
 		adapter.notifyDataSetChanged();
+	}
+
+	boolean hasChanges;
+
+	@Override
+	protected void onSaveInstanceState(Bundle outState) {
+		super.onSaveInstanceState(outState);
+
+		// save the current state of the custom level, and restore it in
+		// onCreate when bundle exists
+		if (hasChanges) {
+			long originalId = builder.getId();
+			if (builder.getId() > 0) {
+				outState.putLong(ORIGINAL_ID, originalId);
+				outState.putString(ORIGINAL_SERVER_ID, builder.getServerId());
+				// already exists, create a duplicate, and store
+				builder.prepareAsCopy();
+			}
+			builder.save();
+
+			// mark for deletion, so that it is "invisible" from the custom
+			// stage view
+			final DataBaseHelper helper = new DataBaseHelper(this);
+			SQLiteDatabase db = helper.getWritableDatabase();
+			ContentValues values = new ContentValues();
+			values.put(CustomLevelTable.TO_DELETE, 1);
+			db.update(DataBaseHelper.CUSTOM_LEVEL_TABLE_NAME, values,
+					BaseColumns._ID + "=?",
+					new String[] { builder.getId() + "" });
+			db.close();
+
+			outState.putLong(SAVED_ID, builder.getId());
+		}
 	}
 }
