@@ -160,6 +160,17 @@ public class Achievements {
 				R.string.achievement_the_masters_degree_label,
 				"Master's Degree", "3"));
 
+		levelEndAchievements.add(new PerfectStateAchievement(
+				R.string.achievement_the_doctor_is_in,
+				R.string.achievement_the_doctor_is_in_label,
+				"The Doctor Is In", "4"));
+		levelEndAchievements.add(new PerfectStateAchievement(
+				R.string.achievement_post_doc,
+				R.string.achievement_post_doc_label, "Post Doc", "5"));
+		levelEndAchievements.add(new PerfectStateAchievement(
+				R.string.achievement_tenure, R.string.achievement_tenure_label,
+				"Tenure", "6"));
+
 		inLevelAchievements.add(lostCause);
 
 		achievements.addAll(levelEndAchievements);

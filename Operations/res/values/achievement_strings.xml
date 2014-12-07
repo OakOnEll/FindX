@@ -8,5 +8,9 @@
     <string name="achievement_journeyman_label">Journey-Man</string>
     <string name="achievement_the_masters_degree_label">Master\'s Degree</string>
     <string name="achievement_the_contributor_label">The Contributor</string>
-  <string name="achievement_the_lost_cause_label">The Lost Cause</string>
+    <string name="achievement_the_lost_cause_label">The Lost Cause</string>
+    <string name="achievement_the_doctor_is_in_label">The Doctor is In</string>
+    <string name="achievement_post_doc_label">Post Doc</string>
+    <string name="achievement_tenure_label">Tenure</string>
+
 </resources>

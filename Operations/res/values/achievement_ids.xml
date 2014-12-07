@@ -11,5 +11,7 @@ Save this file as res/values/games-ids.xml in your project.
   <string name="achievement_the_masters_degree">CgkI0eiT7qgKEAIQBQ</string>
   <string name="achievement_the_contributor">CgkI0eiT7qgKEAIQBw</string>
   <string name="achievement_the_lost_cause">CgkI0eiT7qgKEAIQCA</string>
-  
+  <string name="achievement_the_doctor_is_in">CgkI0eiT7qgKEAIQCQ</string>
+  <string name="achievement_post_doc">CgkI0eiT7qgKEAIQCw</string>
+  <string name="achievement_tenure">CgkI0eiT7qgKEAIQCg</string>  
   </resources>
