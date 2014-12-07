@@ -56,6 +56,7 @@ public class PuzzleActivity extends GameActivity {
 	private static final int BOO_LENGTH_MS = 1500;
 	protected static final int ERASE_LENGTH_MS = 1500;
 	private static final int UNDO_ERASE_MS = 700;
+	private boolean animatingMove = false;
 
 	public static enum Sounds {
 		APPLAUSE, BOO, ERASE, UNDO, CHALK;
@@ -78,6 +79,9 @@ public class PuzzleActivity extends GameActivity {
 							: (lhs.index == rhs.index ? 0 : 1);
 				}
 			});
+
+	private boolean levelIsFinished;
+	private ListView movesView;
 
 	/** Called when the activity is first created. */
 	@Override
@@ -192,6 +196,8 @@ public class PuzzleActivity extends GameActivity {
 		undo.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
+				if (animatingMove)
+					return;
 				undoLastMove(movesView);
 			}
 
@@ -202,6 +208,8 @@ public class PuzzleActivity extends GameActivity {
 		restart.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View view) {
+				if (animatingMove)
+					return;
 				restartLevel();
 			}
 		});
@@ -211,6 +219,8 @@ public class PuzzleActivity extends GameActivity {
 
 			@Override
 			public void onClick(View view) {
+				if (animatingMove)
+					return;
 				if (puzzle.isSolved()) {
 					return;
 				}
@@ -311,6 +321,7 @@ public class PuzzleActivity extends GameActivity {
 	}
 
 	private void animateWriteMove() {
+		animatingMove = true;
 		MoveWithView obj;
 		synchronized (movesToAnimate) {
 			obj = movesToAnimate.iterator().next();
@@ -398,6 +409,8 @@ public class PuzzleActivity extends GameActivity {
 		opButton.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View view) {
+				if (animatingMove)
+					return;
 				if (puzzle.isSolved()) {
 					return;
 				}
@@ -465,10 +478,8 @@ public class PuzzleActivity extends GameActivity {
 
 	}
 
-	private boolean levelIsFinished;
-	private ListView movesView;
-
 	private void moveAnimationFinished() {
+		animatingMove = false;
 		if (levelIsFinished) {
 			Handler handler = new Handler();
 			Runnable runnable = new Runnable() {
