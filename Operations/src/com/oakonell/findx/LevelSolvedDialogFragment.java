@@ -289,7 +289,6 @@ public class LevelSolvedDialogFragment extends SherlockDialogFragment {
 
 	private void populateViews(TextView finishText, int rating,
 			int existingRating, RatingBar ratingBar, View view) {
-		activity.soundManager.playSound(Sounds.APPLAUSE);
 		if (rating > existingRating) {
 			if (existingRating > 0) {
 				finishText.setText(R.string.level_new_record);
@@ -529,6 +528,7 @@ public class LevelSolvedDialogFragment extends SherlockDialogFragment {
 		debugAnim("animateSum");
 		// TODO after set text, need to adjust position, so still centered on
 		// same spot
+		activity.soundManager.playSound(Sounds.GROW);
 
 		final Fraction sum = firstTerm.add(secondTerm);
 
@@ -546,6 +546,7 @@ public class LevelSolvedDialogFragment extends SherlockDialogFragment {
 				final Runnable setAndShrink = new Runnable() {
 					@Override
 					public void run() {
+						activity.soundManager.playSound(Sounds.POP);
 						firstView.setVisibility(View.GONE);
 						addView.setVisibility(View.GONE);
 						final String text = Expression.fractionToString(sum,
@@ -562,6 +563,7 @@ public class LevelSolvedDialogFragment extends SherlockDialogFragment {
 								final ScaleAnimation shrink = new ScaleAnimation(
 										2, 1, 2, 1, Animation.RELATIVE_TO_SELF,
 										0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
+								activity.soundManager.playSound(Sounds.SHRINK);
 								shrink.setDuration(shrinkDuration);
 								shrink.setAnimationListener(new EmptyAnimationListener(
 										animations) {
@@ -643,6 +645,7 @@ public class LevelSolvedDialogFragment extends SherlockDialogFragment {
 			final Fraction x2Coefficient, final ExpressionViews exprViews,
 			final LinkedList<Runnable> animations) {
 		debugAnim("animateEvaluateX2");
+		activity.soundManager.playSound(Sounds.GROW);
 		// TODO not moving the animation?
 		final Fraction sol1_2 = sol1.multiply(sol1);
 
@@ -659,6 +662,7 @@ public class LevelSolvedDialogFragment extends SherlockDialogFragment {
 			public void onTheAnimationEnd(Animation animation) {
 				if (!bool.compareAndSet(false, true))
 					return;
+				activity.soundManager.playSound(Sounds.POP);
 				boolean useParens = x2Coefficient.compareTo(Fraction.ONE) != 0;
 				final String text = Expression.fractionToString(sol1_2,
 						useParens ? UseParenthesis.FORCE : UseParenthesis.NO,
@@ -673,6 +677,7 @@ public class LevelSolvedDialogFragment extends SherlockDialogFragment {
 				pause.setAnimationListener(new EmptyAnimationListener() {
 					@Override
 					protected void onTheAnimationEnd(Animation animation) {
+						activity.soundManager.playSound(Sounds.SHRINK);
 						final ScaleAnimation shrink = new ScaleAnimation(2, 1,
 								2, 1, Animation.RELATIVE_TO_SELF, 0.5f,
 								Animation.RELATIVE_TO_SELF, 0.5f);
@@ -729,6 +734,7 @@ public class LevelSolvedDialogFragment extends SherlockDialogFragment {
 			final TextView xcoeffView, final TextView xcoeffLblView,
 			final LinkedList<Runnable> animations) {
 		debugAnim("animateBasicEvaluateX");
+		activity.soundManager.playSound(Sounds.GROW);
 		Fraction aCoeff = xCoefficient;
 		if (xCoefficient.compareTo(Fraction.ZERO) < 0 && xcoeffAddView != null
 				&& xcoeffAddView.getVisibility() == View.VISIBLE) {
@@ -770,6 +776,7 @@ public class LevelSolvedDialogFragment extends SherlockDialogFragment {
 		growSet.setAnimationListener(new EmptyAnimationListener() {
 			@Override
 			public void onTheAnimationEnd(Animation animation) {
+				activity.soundManager.playSound(Sounds.POP);
 				xcoeffLblView.setText(replaceText);
 				xcoeffView.setVisibility(View.GONE);
 
@@ -780,6 +787,7 @@ public class LevelSolvedDialogFragment extends SherlockDialogFragment {
 				pause.setAnimationListener(new EmptyAnimationListener() {
 					@Override
 					protected void onTheAnimationEnd(Animation animation) {
+						activity.soundManager.playSound(Sounds.SHRINK);
 						final ScaleAnimation shrink = new ScaleAnimation(2, 1,
 								2, 1, Animation.RELATIVE_TO_SELF, 0.5f,
 								Animation.RELATIVE_TO_SELF, 0.5f);
@@ -843,6 +851,7 @@ public class LevelSolvedDialogFragment extends SherlockDialogFragment {
 			final TextView target, final String suffix,
 			final LinkedList<Runnable> animations) {
 		debugAnim("animateBasicReplaceX");
+		activity.soundManager.playSound(Sounds.WHOOSH);
 		final int currentTextColor = target.getCurrentTextColor();
 
 		int[] sourceLocation = prepareAnimationView(solViews.sol,

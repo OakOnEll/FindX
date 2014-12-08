@@ -59,7 +59,7 @@ public class PuzzleActivity extends GameActivity {
 	private boolean animatingMove = false;
 
 	public static enum Sounds {
-		APPLAUSE, BOO, ERASE, UNDO, CHALK;
+		APPLAUSE, BOO, ERASE, UNDO, CHALK, POP, GROW,SHRINK, WHOOSH;
 	}
 
 	private Puzzle puzzle;
@@ -112,6 +112,12 @@ public class PuzzleActivity extends GameActivity {
 		soundManager.addSound(Sounds.ERASE, R.raw.chalkboard_erase);
 		soundManager.addSound(Sounds.UNDO, R.raw.chalkboard_erase_short);
 		soundManager.addSound(Sounds.CHALK, R.raw.writing_on_chalkboard1);
+
+		soundManager.addSound(Sounds.POP, R.raw.greenvwbeetle__244655__pop_1);
+		soundManager.addSound(Sounds.GROW, R.raw.slide_up_79678__joedeshon__slide_whistle_up_fast_01);
+		soundManager.addSound(Sounds.SHRINK, R.raw.slide_down_79672__joedeshon__slide_whistle_down_fast_01);
+		soundManager.addSound(Sounds.WHOOSH,
+				R.raw.robinhood76_250988___05483_sweeping_air_whoosh);
 
 		saveState = true;
 
@@ -505,6 +511,7 @@ public class PuzzleActivity extends GameActivity {
 	}
 
 	protected void levelFinished() {
+		soundManager.playSound(Sounds.APPLAUSE);
 		LevelSolvedDialogFragment frag = new LevelSolvedDialogFragment();
 		frag.initialize(puzzle, this);
 		frag.show(getSupportFragmentManager(), "solved");
