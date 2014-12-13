@@ -36,18 +36,14 @@ public class CustomLevelDBWriter {
 	public void write(Context context, CustomLevelBuilder builder) {
 		DataBaseHelper helper = new DataBaseHelper(context);
 		SQLiteDatabase db = helper.getWritableDatabase();
+		GoogleAnalytics analytics = GoogleAnalytics.getInstance(context);
+		Tracker googleTracker = analytics.newTracker(R.string.ga_trackingId);
 		if (builder.getId() == 0) {
-			GoogleAnalytics analytics = GoogleAnalytics.getInstance(context);
-			Tracker googleTracker = analytics
-					.newTracker(R.string.ga_trackingId);
 			googleTracker.send(new HitBuilders.EventBuilder()
 					.setCategory("custom").setAction("add").build());
 			add(builder, db);
 		} else {
 			// update
-			GoogleAnalytics analytics = GoogleAnalytics.getInstance(context);
-			Tracker googleTracker = analytics
-					.newTracker(R.string.ga_trackingId);
 			googleTracker.send(new HitBuilders.EventBuilder()
 					.setCategory("custom").setAction("update").build());
 			update(builder, db);

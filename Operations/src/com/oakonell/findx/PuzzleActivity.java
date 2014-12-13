@@ -34,6 +34,9 @@ import android.widget.Toast;
 import com.actionbarsherlock.app.ActionBar;
 import com.actionbarsherlock.view.MenuInflater;
 import com.actionbarsherlock.view.MenuItem;
+import com.google.android.gms.analytics.GoogleAnalytics;
+import com.google.android.gms.analytics.HitBuilders;
+import com.google.android.gms.analytics.Tracker;
 import com.oakonell.findx.DelayedTextView.SoundInfo;
 import com.oakonell.findx.DelayedTextView.TextViewInfo;
 import com.oakonell.findx.custom.CustomStageActivity;
@@ -59,7 +62,7 @@ public class PuzzleActivity extends GameActivity {
 	private boolean animatingMove = false;
 
 	public static enum Sounds {
-		APPLAUSE, BOO, ERASE, UNDO, CHALK, POP, GROW,SHRINK, WHOOSH;
+		APPLAUSE, BOO, ERASE, UNDO, CHALK, POP, GROW, SHRINK, WHOOSH;
 	}
 
 	private Puzzle puzzle;
@@ -114,8 +117,10 @@ public class PuzzleActivity extends GameActivity {
 		soundManager.addSound(Sounds.CHALK, R.raw.writing_on_chalkboard1);
 
 		soundManager.addSound(Sounds.POP, R.raw.greenvwbeetle__244655__pop_1);
-		soundManager.addSound(Sounds.GROW, R.raw.slide_up_79678__joedeshon__slide_whistle_up_fast_01);
-		soundManager.addSound(Sounds.SHRINK, R.raw.slide_down_79672__joedeshon__slide_whistle_down_fast_01);
+		soundManager.addSound(Sounds.GROW,
+				R.raw.slide_up_79678__joedeshon__slide_whistle_up_fast_01);
+		soundManager.addSound(Sounds.SHRINK,
+				R.raw.slide_down_79672__joedeshon__slide_whistle_down_fast_01);
 		soundManager.addSound(Sounds.WHOOSH,
 				R.raw.robinhood76_250988___05483_sweeping_air_whoosh);
 
@@ -125,6 +130,14 @@ public class PuzzleActivity extends GameActivity {
 		if (puzzle == null) {
 			String puzzleId = intent.getStringExtra(PUZZLE_ID);
 			puzzle = new Puzzle(puzzleId);
+
+			GoogleAnalytics analytics = GoogleAnalytics.getInstance(this);
+			Tracker googleTracker = analytics
+					.newTracker(R.string.ga_trackingId);
+			googleTracker.send(new HitBuilders.EventBuilder()
+					.setCategory("puzzle").setAction("start")
+					.setLabel(puzzle.getId()).build());
+
 		}
 
 		fromCustom = intent.getBooleanExtra(IS_CUSTOM, false);
@@ -234,6 +247,12 @@ public class PuzzleActivity extends GameActivity {
 
 					@Override
 					public void run() {
+						GoogleAnalytics analytics = GoogleAnalytics.getInstance(PuzzleActivity.this);
+						Tracker googleTracker = analytics.newTracker(R.string.ga_trackingId);
+						googleTracker.send(new HitBuilders.EventBuilder().setCategory("puzzle")
+								.setAction("giveup")
+								.setLabel(puzzle.getId()).build());
+
 						navigateUp();
 					}
 
@@ -511,6 +530,7 @@ public class PuzzleActivity extends GameActivity {
 	}
 
 	protected void levelFinished() {
+
 		soundManager.playSound(Sounds.APPLAUSE);
 		LevelSolvedDialogFragment frag = new LevelSolvedDialogFragment();
 		frag.initialize(puzzle, this);
@@ -518,6 +538,11 @@ public class PuzzleActivity extends GameActivity {
 	}
 
 	public void restart(boolean animate) {
+		GoogleAnalytics analytics = GoogleAnalytics.getInstance(this);
+		Tracker googleTracker = analytics.newTracker(R.string.ga_trackingId);
+		googleTracker.send(new HitBuilders.EventBuilder().setCategory("puzzle")
+				.setAction("restart").setLabel(puzzle.getId()).build());
+
 		Runnable restart = new Runnable() {
 			@Override
 			public void run() {
@@ -732,6 +757,11 @@ public class PuzzleActivity extends GameActivity {
 				handleRestartEnabling();
 			}
 		};
+
+		GoogleAnalytics analytics = GoogleAnalytics.getInstance(this);
+		Tracker googleTracker = analytics.newTracker(R.string.ga_trackingId);
+		googleTracker.send(new HitBuilders.EventBuilder().setCategory("puzzle")
+				.setAction("undo").setLabel(puzzle.getId()).build());
 
 		soundManager.playSound(Sounds.UNDO);
 		int lastIndex = puzzle.getMoves().size() - 1;

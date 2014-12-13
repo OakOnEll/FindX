@@ -32,6 +32,9 @@ import android.widget.RatingBar;
 import android.widget.TextView;
 
 import com.actionbarsherlock.app.SherlockDialogFragment;
+import com.google.android.gms.analytics.GoogleAnalytics;
+import com.google.android.gms.analytics.HitBuilders;
+import com.google.android.gms.analytics.Tracker;
 import com.oakonell.findx.PuzzleActivity.Sounds;
 import com.oakonell.findx.model.Equation;
 import com.oakonell.findx.model.Expression;
@@ -149,6 +152,12 @@ public class LevelSolvedDialogFragment extends SherlockDialogFragment {
 				puzzle);
 
 		puzzle.updateRating();
+
+		GoogleAnalytics analytics = GoogleAnalytics.getInstance(getActivity());
+		Tracker googleTracker = analytics.newTracker(R.string.ga_trackingId);
+		googleTracker.send(new HitBuilders.EventBuilder().setCategory("puzzle")
+				.setAction("solved")
+				.setLabel(puzzle.getId() + puzzle.getRating()).build());
 
 		anim_container = view.findViewById(R.id.anim_container);
 		anim_text = (TextView) view.findViewById(R.id.anim_text);
