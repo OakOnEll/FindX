@@ -879,10 +879,11 @@ public class Levels {
 		eq = new Equation(left, right); // 12x^2 + 25x + 4 = -8
 		ops = new ArrayList<Operation>();
 		ops.add(new Factor(new Expression(4, 3))); // 0 factor (4x+3)
-		ops.add(new Divide(new Fraction(3))); //      1 divide by 3
-		ops.add(new Subtract(new Expression(4))); //  2 subtract 4
-		ops.add(new Add(new Expression(Fraction.ZERO,
-				new Fraction(-3, 2)))); //            3 add -3/2
+		ops.add(new Divide(new Fraction(3))); // 1 divide by 3
+		ops.add(new Subtract(new Expression(4))); // 2 subtract 4
+		ops.add(new Add(new Expression(Fraction.ZERO, new Fraction(-3, 2)))); // 3
+																				// add
+																				// -3/2
 		ops.add(new Divide(new Fraction(2))); // 4 divide by 2
 		ops.add(new Add(new Expression(12))); // 5 add 12
 		solutions.add(new Fraction(-4, 3));
@@ -900,21 +901,101 @@ public class Levels {
 		eq = new Equation(left, right); // 4x^2 + 42x + 60 = 6
 		ops = new ArrayList<Operation>();
 		ops.add(new Factor(new Expression(2, 3))); // 0 factor (2x+3)
-		ops.add(new Subtract(new Expression(3))); //  1 subtract 3
-		ops.add(new Multiply(new Fraction(1,2))); //  2 multiply by 1/2
+		ops.add(new Subtract(new Expression(3))); // 1 subtract 3
+		ops.add(new Multiply(new Fraction(1, 2))); // 2 multiply by 1/2
 		solutions.add(new Fraction(-9));
 		solutions.add(new Fraction(-3, 2));
-		levelSolution = new LevelSolution(solutions, Arrays.asList(2,1,0),
+		levelSolution = new LevelSolution(solutions, Arrays.asList(2, 1, 0),
 				new Equation(new Expression(1, 9), new Expression(0)),
-				Arrays.asList(1,1,1), new Equation(new Expression(2, 3),
-						new Expression(0)), Arrays.asList(1,2));
+				Arrays.asList(1, 1, 1), new Equation(new Expression(2, 3),
+						new Expression(0)), Arrays.asList(1, 2));
 
 		addLevel(stage, new Level(stage, "Name me!", eq, ops, levelSolution));
 
 		// 9
+		left = new Expression(2, -4, -6);
+		right = new Expression(-2, 0, 18);
+		eq = new Equation(left, right); // 2x^2 - 4x - 6 = -2x^2 + 18
+		ops = new ArrayList<Operation>();
+		ops.add(new Add(new Expression(-6))); // 0 add -6
+		ops.add(new Add(new Expression(2))); // 1 add 2
+		ops.add(new Factor(new Expression(2, -6))); // 2 factor (2x-6)
+		ops.add(new Divide(new Fraction(2))); // 3 divide by 2
+		ops.add(new Add(new Expression(2, 0, 0))); // 4 Add 2x^2
+		solutions.add(new Fraction(-2));
+		solutions.add(new Fraction(3));
+		levelSolution = new LevelSolution(solutions, Arrays.asList(4, 1, 3, 1,
+				0, 0, 2),
+				new Equation(new Expression(1, 2), new Expression(0)),
+				Arrays.asList(0, 1, 1), new Equation(new Expression(2, -6),
+						new Expression(0)), Arrays.asList(1, 3, 1));
+
+		addLevel(stage, new Level(stage, "Name me!", eq, ops, levelSolution));
+
 		// 10
+		left = new Expression(9, -146, -20);
+		right = new Expression(-3, -4);
+		eq = new Equation(left, right); // 9x^2 - 146x - 20 = -3x - 4
+		ops = new ArrayList<Operation>();
+		ops.add(new Factor(new Expression(new Fraction(3), new Fraction(1, 3))));
+		// ---------------------------------------- 0 factor (3x+1/3)
+		ops.add(new Add(new Expression(4))); // ----1 add 4
+		ops.add(new Divide(new Fraction(3))); // ---2 divide by 3
+		ops.add(new Add(new Expression(Fraction.ZERO, new Fraction(-1, 9)))); // 3
+																				// add
+																				// -1/9
+		ops.add(new Add(new Expression(1, 0))); // - 4 Add x
+		solutions.add(new Fraction(16));
+		solutions.add(new Fraction(-1, 9));
+		levelSolution = new LevelSolution(solutions, Arrays.asList(1, 2, 4, 0),
+				new Equation(new Expression(1, -16), new Expression(0)),
+				Arrays.asList(1, 1, 1, 1),
+				new Equation(
+						new Expression(new Fraction(3), new Fraction(1, 3)),
+						new Expression(0)), Arrays.asList(2, 3));
+
+		addLevel(stage, new Level(stage, "Name me!", eq, ops, levelSolution));
+
 		// 11
+		left = new Expression(-9, 48, 180);
+		right = new Expression(-3, 12);
+		eq = new Equation(left, right); // -9x^2 + 48x + 180 = -3x + 12
+		ops = new ArrayList<Operation>();
+		ops.add(new Add(new Expression(-5))); // -----0 add -5
+		ops.add(new Add(new Expression(1, 0))); // ---1 add x
+		ops.add(new Factor(new Expression(3, 7))); // 2 factor (3x+7)
+		ops.add(new Add(new Expression(-2))); // -----3 Add -2
+		ops.add(new Divide(new Fraction(3))); // -----4 divide by 3
+		ops.add(new Swap()); // ----------------------5 swap
+		solutions.add(new Fraction(-2));
+		solutions.add(new Fraction(3));
+		levelSolution = new LevelSolution(solutions, Arrays.asList(3, 1, 1, 1,
+				0, 0, 2), new Equation(new Expression(-3, 24),
+				new Expression(0)), Arrays.asList(5, 4, 1), new Equation(
+				new Expression(3, 7), new Expression(0)),
+				Arrays.asList(0, 3, 4));
+
+		addLevel(stage, new Level(stage, "Name me!", eq, ops, levelSolution));
+
 		// 12
+		left = new Expression(new Fraction(7, 4), Fraction.MINUS_ONE,
+				new Fraction(-5, 4));
+		right = new Expression(Fraction.ZERO, new Fraction(-1, 2));
+		eq = new Equation(left, right); // (7/4)x^2 - x - 5/4 = -1/2
+		ops = new ArrayList<Operation>();
+		ops.add(new Factor(new Expression(7, 3))); // 0 factor (7x+3)
+		ops.add(new Divide(new Fraction(14))); // ----1 divide by 14
+		ops.add(new Multiply(new Fraction(2))); // ---2 multiply by 2
+		ops.add(new Add(new Expression(-3))); // -----3 add -3
+		ops.add(new Add(new Expression(4))); // ------4 Add 4
+		solutions.add(new Fraction(1));
+		solutions.add(new Fraction(-3, 7));
+		levelSolution = new LevelSolution(solutions, Arrays.asList(2, 4, 3, 2,0),
+				new Equation(new Expression(1, -1), new Expression(0)),
+				Arrays.asList(3, 4), new Equation(new Expression(7, 3),
+						new Expression(0)), Arrays.asList(3, 1, 2));
+
+		addLevel(stage, new Level(stage, "Name me!", eq, ops, levelSolution));
 
 	}
 
