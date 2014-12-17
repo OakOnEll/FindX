@@ -11,6 +11,13 @@ public class WildCard implements Operation {
 	private Operation actual;
 	private boolean isBuilt;
 
+	public WildCard() {
+	}
+
+	public WildCard(Operation actual) {
+		this.actual = actual;
+	}
+
 	public Operation getActual() {
 		return actual;
 	}
