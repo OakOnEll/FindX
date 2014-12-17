@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.apache.commons.math3.fraction.Fraction;
+
 import junit.framework.TestCase;
 
 import com.oakonell.findx.custom.model.AbstractEquationSolver.Solution;
@@ -34,6 +36,9 @@ public class LevelsTest extends TestCase {
 					+ " - " + each.getId());
 			// test that stored solution solves the level\
 			LevelSolution levelSolution = each.getLevelSolution();
+			if (levelSolution.getSolutions().size() > 2) {
+				fail(each + " has too many solutions");
+			}
 			Equation equation = each.getEquation();
 			List<Integer> firstOperations = levelSolution.getFirstOperations();
 			MoveResult moveResult = null;
@@ -44,8 +49,14 @@ public class LevelsTest extends TestCase {
 						null);
 				equation = moveResult.getPrimaryEndEquation();
 			}
-			if (equation != null && equation.isSolved())
+			if (equation != null && equation.isSolved()) {
+				if (levelSolution.getSolutions().size() > 1) {
+					fail(each + " has too many solutions");
+					assertTrue(equation.getRhs().getConstant()
+							.compareTo(levelSolution.getSolutions().get(0)) == 0);
+				}
 				continue;
+			}
 
 			List<Operation> operations = new ArrayList<Operation>(
 					each.getOperations());
@@ -88,6 +99,8 @@ public class LevelsTest extends TestCase {
 			assertTrue("Level " + each.getId() + " " + each.getName()
 					+ " is not solved by stored solution - end equation "
 					+ equation, equation.isSolved());
+			assertSolutionInLevel(equation.getRhs().getConstant(),
+					levelSolution);
 
 			equation = moveResult.getSecondary2().getStartEquation();
 			for (Integer index : secondOps) {
@@ -98,8 +111,20 @@ public class LevelsTest extends TestCase {
 			assertTrue("Level " + each.getId() + " " + each.getName()
 					+ " is not solved by stored solution- end equation "
 					+ equation, equation.isSolved());
+			assertSolutionInLevel(equation.getRhs().getConstant(),
+					levelSolution);
 
 		}
 
+	}
+
+	private void assertSolutionInLevel(Fraction constant,
+			LevelSolution levelSolution) {
+		for (Fraction each : levelSolution.getSolutions()) {
+			if (each.compareTo(constant) == 0)
+				return;
+		}
+		fail("Solution " + constant + " is not in solutions: "
+				+ levelSolution.getSolutions());
 	}
 }

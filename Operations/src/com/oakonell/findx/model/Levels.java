@@ -790,6 +790,7 @@ public class Levels {
 		ops.add(new Add(new Expression(2))); // 2 add 2
 		ops.add(new Divide(new Fraction(5))); // 3 divide by 5
 		ops.add(new Subtract(new Expression(10, 0))); // 4 subtract 10x
+		solutions = new ArrayList<Fraction>();
 		solutions.add(new Fraction(4));
 		solutions.add(new Fraction(-2));
 		levelSolution = new LevelSolution(solutions, Arrays.asList(4, 0),
@@ -810,7 +811,7 @@ public class Levels {
 		ops.add(new Add(new Expression(5))); // 2 add 5
 		ops.add(new Add(new Expression(-2))); // 3 add -2
 		ops.add(new Add(new Expression(-5))); // 4 add -5
-		solutions.add(new Fraction(3));
+		solutions = new ArrayList<Fraction>();		solutions.add(new Fraction(3));
 		solutions.add(new Fraction(5));
 		levelSolution = new LevelSolution(solutions, Arrays.asList(3, 3, 4, 1),
 				new Equation(new Expression(1, -3), new Expression(0)),
@@ -827,6 +828,7 @@ public class Levels {
 		ops.add(new Factor(new Expression(4, 3))); // 0 factor (4X+3)
 		ops.add(new Divide(new Fraction(2))); // 1 divide by 2
 		ops.add(new Subtract(new Expression(3))); // 2 subtract 3
+		solutions = new ArrayList<Fraction>();
 		solutions.add(new Fraction(-3));
 		solutions.add(new Fraction(-3, 4));
 		levelSolution = new LevelSolution(solutions, Arrays.asList(1, 2, 1, 0),
@@ -845,6 +847,7 @@ public class Levels {
 		ops.add(new Add(new Expression(-5))); // 1 add -5
 		ops.add(new Divide(new Fraction(2))); // 2 divide by 2
 		ops.add(new Add(new Expression(1))); // 3 add 1
+		solutions = new ArrayList<Fraction>();
 		solutions.add(new Fraction(1, 2));
 		solutions.add(new Fraction(-5));
 		levelSolution = new LevelSolution(solutions, Arrays.asList(3, 2, 1, 0),
@@ -864,6 +867,7 @@ public class Levels {
 		ops.add(new Divide(new Fraction(3))); // 2 divide by 3
 		ops.add(new Add(new Expression(3))); // 3 add 3
 		ops.add(new Add(new Expression(-1, 0))); // 4 add -x
+		solutions = new ArrayList<Fraction>();
 		solutions.add(new Fraction(1));
 		solutions.add(new Fraction(-1, 3));
 		levelSolution = new LevelSolution(solutions, Arrays.asList(4, 1, 0),
@@ -886,6 +890,7 @@ public class Levels {
 																				// -3/2
 		ops.add(new Divide(new Fraction(2))); // 4 divide by 2
 		ops.add(new Add(new Expression(12))); // 5 add 12
+		solutions = new ArrayList<Fraction>();
 		solutions.add(new Fraction(-4, 3));
 		solutions.add(new Fraction(-3, 4));
 		levelSolution = new LevelSolution(solutions, Arrays.asList(2, 5, 0),
@@ -903,6 +908,7 @@ public class Levels {
 		ops.add(new Factor(new Expression(2, 3))); // 0 factor (2x+3)
 		ops.add(new Subtract(new Expression(3))); // 1 subtract 3
 		ops.add(new Multiply(new Fraction(1, 2))); // 2 multiply by 1/2
+		solutions = new ArrayList<Fraction>();
 		solutions.add(new Fraction(-9));
 		solutions.add(new Fraction(-3, 2));
 		levelSolution = new LevelSolution(solutions, Arrays.asList(2, 1, 0),
@@ -922,6 +928,7 @@ public class Levels {
 		ops.add(new Factor(new Expression(2, -6))); // 2 factor (2x-6)
 		ops.add(new Divide(new Fraction(2))); // 3 divide by 2
 		ops.add(new Add(new Expression(2, 0, 0))); // 4 Add 2x^2
+		solutions = new ArrayList<Fraction>();
 		solutions.add(new Fraction(-2));
 		solutions.add(new Fraction(3));
 		levelSolution = new LevelSolution(solutions, Arrays.asList(4, 1, 3, 1,
@@ -945,6 +952,7 @@ public class Levels {
 																				// add
 																				// -1/9
 		ops.add(new Add(new Expression(1, 0))); // - 4 Add x
+		solutions = new ArrayList<Fraction>();
 		solutions.add(new Fraction(16));
 		solutions.add(new Fraction(-1, 9));
 		levelSolution = new LevelSolution(solutions, Arrays.asList(1, 2, 4, 0),
@@ -967,8 +975,9 @@ public class Levels {
 		ops.add(new Add(new Expression(-2))); // -----3 Add -2
 		ops.add(new Divide(new Fraction(3))); // -----4 divide by 3
 		ops.add(new Swap()); // ----------------------5 swap
-		solutions.add(new Fraction(-2));
-		solutions.add(new Fraction(3));
+		solutions = new ArrayList<Fraction>();
+		solutions.add(new Fraction(-7,3));
+		solutions.add(new Fraction(8));
 		levelSolution = new LevelSolution(solutions, Arrays.asList(3, 1, 1, 1,
 				0, 0, 2), new Equation(new Expression(-3, 24),
 				new Expression(0)), Arrays.asList(5, 4, 1), new Equation(
@@ -988,6 +997,7 @@ public class Levels {
 		ops.add(new Multiply(new Fraction(2))); // ---2 multiply by 2
 		ops.add(new Add(new Expression(-3))); // -----3 add -3
 		ops.add(new Add(new Expression(4))); // ------4 Add 4
+		solutions = new ArrayList<Fraction>();
 		solutions.add(new Fraction(1));
 		solutions.add(new Fraction(-3, 7));
 		levelSolution = new LevelSolution(solutions, Arrays.asList(2, 4, 3, 2,
@@ -1032,8 +1042,7 @@ public class Levels {
 		ops.add(new Add(new Expression(Fraction.ZERO, new Fraction(-1, 2)))); // ---2
 																				// add
 																				// -1/2
-		solutions.add(new Fraction(-1));
-		solutions.add(new Fraction(1));
+		solutions = new ArrayList<Fraction>();
 		solutions.add(Fraction.ONE);
 		solutions.add(Fraction.MINUS_ONE);
 		levelSolution = new LevelSolution(solutions, Arrays.asList(0, 1),
@@ -1056,6 +1065,7 @@ public class Levels {
 		ops.add(new WildCard(new Add(new Expression(Fraction.ZERO,
 				new Fraction(7, 8)))));
 		// -------------------------------------------3 Wild Add 7/8
+		solutions = new ArrayList<Fraction>();
 		solutions.add(new Fraction(5));
 		levelSolution = new LevelSolution(Arrays.asList(0, 3, 2, 2, 1), eq, ops);
 
@@ -1073,6 +1083,7 @@ public class Levels {
 												// 3
 		ops.add(new Factor(new Expression(1, -7))); // ---------------3 factor
 													// (x-7)
+		solutions = new ArrayList<Fraction>();
 		solutions.add(new Fraction(10));
 		solutions.add(new Fraction(7));
 		levelSolution = new LevelSolution(solutions, Arrays.asList(1, 1, 3),
@@ -1101,6 +1112,7 @@ public class Levels {
 													// subtract 1
 		ops.add(new Multiply(new Fraction(-1))); // -------------------------------5
 													// multiply by -1
+		solutions = new ArrayList<Fraction>();
 		solutions.add(new Fraction(1));
 		solutions.add(new Fraction(-1, 2));
 		levelSolution = new LevelSolution(solutions, Arrays.asList(2, 0, 1),
@@ -1121,6 +1133,7 @@ public class Levels {
 													// wild sqrt
 		ops.add(new WildCard(new Divide(new Fraction(3)))); // ----------------2
 															// divide by 3
+		solutions = new ArrayList<Fraction>();
 		solutions.add(new Fraction(5));
 		solutions.add(new Fraction(-5));
 		levelSolution = new LevelSolution(solutions, Arrays.asList(0, 1),
@@ -1137,6 +1150,7 @@ public class Levels {
 		ops = new ArrayList<Operation>();
 		ops.add(new WildCard(new Add(new Expression(5)))); // --0 Wild add 5
 		ops.add(new SquareRoot()); // --------------------------1 wild sqrt
+		solutions = new ArrayList<Fraction>();
 		solutions.add(new Fraction(5));
 		levelSolution = new LevelSolution(Arrays.asList(0, 0, 1, 0), eq, ops);
 
@@ -1157,6 +1171,7 @@ public class Levels {
 		ops.add(new Add(new Expression(-3))); // ---------------------3 add -3
 		ops.add(new Divide(new Fraction(2))); // ---------------------4 divide
 												// by 2
+		solutions = new ArrayList<Fraction>();
 		solutions.add(new Fraction(20));
 		solutions.add(new Fraction(3, 2));
 		levelSolution = new LevelSolution(solutions, Arrays.asList(2, 2, 2, 2,
@@ -1178,7 +1193,7 @@ public class Levels {
 		ops.add(new Swap()); // --------------------------------------3 swap
 		ops.add(new WildCard(new SquareRoot())); // ------------------4 wild square root
 		
-		solutions.add(new Fraction(-6));
+		solutions = new ArrayList<Fraction>();		solutions.add(new Fraction(-6));
 		solutions.add(new Fraction(-4, 5));
 		levelSolution = new LevelSolution(solutions, Arrays.asList(4), 
 				new Equation(new Expression(2, -1), new Expression(3,5)), Arrays.asList(0,1,3),
@@ -1199,6 +1214,7 @@ public class Levels {
 		ops.add(Multiply.NEGATE); // ---------------------------------4 multiply by -1
 		ops.add(new Add(new Expression(-10,-17,0))); // --------------5 add -10x^2 - 17x
 		
+		solutions = new ArrayList<Fraction>();
 		solutions.add(new Fraction(-1, 2));
 		solutions.add(new Fraction(-3));
 		levelSolution = new LevelSolution(solutions, Arrays.asList(1,1,1,1,1,1,5,3),
