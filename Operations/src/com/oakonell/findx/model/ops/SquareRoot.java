@@ -47,7 +47,9 @@ public class SquareRoot extends AbstractOperation {
 			}
 
 			if (!hasMutiplyNeg1) {
-				Collections.replaceAll(operations, this, Multiply.NEGATE);
+				Operation toReplace = appliedOrNull;
+				if (toReplace == null) toReplace = this;
+				Collections.replaceAll(operations, toReplace, Multiply.NEGATE);
 			}
 		}
 

@@ -307,8 +307,9 @@ public class Puzzle {
 	}
 
 	private int getOperatorIndex(IMoveWithOperation move) {
-		if ((move.getOperation() instanceof SquareRoot)
-				&& squareRootOpIndex >= 0) {
+		Operation operation = move.getOperation();
+		if ((operation instanceof SquareRoot || ((operation instanceof WildCard) && ((WildCard) operation)
+				.getActual() instanceof SquareRoot)) && squareRootOpIndex >= 0) {
 			// if a square root operator was used, we marked its index
 			return squareRootOpIndex;
 		}
@@ -324,7 +325,7 @@ public class Puzzle {
 
 			// Wild cards are stored as the WildCard operation, and so will
 			// match
-			if (each.equals(move.getOperation())) {
+			if (each.equals(operation)) {
 				return index;
 			}
 			index++;
@@ -538,7 +539,9 @@ public class Puzzle {
 		MoveResult moveResult = operation.applyMove(startEquation,
 				numMoves + 1, operations, null);
 		numMoves++;
-		if (operation instanceof SquareRoot) {
+		if (operation instanceof SquareRoot
+				|| ((operation instanceof WildCard) && ((WildCard) operation)
+						.getActual() instanceof SquareRoot)) {
 			squareRootOpIndex = operations.indexOf(new SquareRoot());
 		}
 

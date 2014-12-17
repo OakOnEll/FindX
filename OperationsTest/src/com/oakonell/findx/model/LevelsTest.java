@@ -13,6 +13,7 @@ import com.oakonell.findx.model.Level;
 import com.oakonell.findx.model.Level.LevelSolution;
 import com.oakonell.findx.model.ops.Multiply;
 import com.oakonell.findx.model.ops.SquareRoot;
+import com.oakonell.findx.model.ops.WildCard;
 import com.oakonell.findx.model.Levels;
 import com.oakonell.findx.model.Move;
 import com.oakonell.findx.model.Operation;
@@ -51,6 +52,14 @@ public class LevelsTest extends TestCase {
 			Multiply multiplyNegOne = Multiply.NEGATE;
 			Collections
 					.replaceAll(operations, new SquareRoot(), multiplyNegOne);
+			for (Operation op : each.getOperations()) {
+				if (!(op instanceof WildCard))
+					continue;
+				WildCard wild = (WildCard) op;
+				if (wild.getActual() instanceof SquareRoot) {
+					Collections.replaceAll(operations, op, multiplyNegOne);
+				}
+			}
 
 			Equation secondEquation = moveResult.getSecondary1()
 					.getStartEquation();
@@ -72,7 +81,7 @@ public class LevelsTest extends TestCase {
 						levelSolution.getSecondaryEquation1(), secondEquation);
 			}
 			for (Integer index : ops) {
-				Operation op = each.getOperations().get(index);
+				Operation op = operations.get(index);
 				System.out.println(equation + ": " + op);
 				equation = op.apply(equation);
 			}
@@ -82,7 +91,7 @@ public class LevelsTest extends TestCase {
 
 			equation = moveResult.getSecondary2().getStartEquation();
 			for (Integer index : secondOps) {
-				Operation op = each.getOperations().get(index);
+				Operation op = operations.get(index);
 				System.out.println(equation + ": " + op);
 				equation = op.apply(equation);
 			}

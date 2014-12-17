@@ -97,7 +97,7 @@ public class WildCard implements Operation {
 
 	@Override
 	public Operation afterUsed() {
-		return actual;
+		return actual.afterUsed();
 	}
 
 	@Override
