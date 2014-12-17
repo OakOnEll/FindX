@@ -68,7 +68,7 @@ public class WildCard implements Operation {
 
 	@Override
 	public boolean canApply(Equation equation) {
-		if (actual == null) {
+		if (!isBuilt || actual == null) {
 			return true;
 		}
 		return actual.canApply(equation);
@@ -102,7 +102,7 @@ public class WildCard implements Operation {
 
 	@Override
 	public boolean isAppliableWith(List<Operation> operations) {
-		if (actual == null) {
+		if (!isBuilt || actual == null) {
 			return true;
 		}
 		return actual.isAppliableWith(operations);
