@@ -93,6 +93,7 @@ public abstract class BaseGameActivity extends SherlockFragmentActivity implemen
         if (mHelper == null) {
             mHelper = new GameHelper(this, mRequestedClients);
             mHelper.enableDebugLog(mDebugLog);
+            mHelper.setMaxAutoSignInAttempts(1);
         }
         return mHelper;
     }

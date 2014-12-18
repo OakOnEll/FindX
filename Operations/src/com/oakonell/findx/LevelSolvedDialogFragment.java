@@ -615,7 +615,7 @@ public class LevelSolvedDialogFragment extends SherlockDialogFragment {
 								* (resultDenom / secondTerm.getDenominator());
 					}
 					anim_text.setText(newFirstNum + "/" + resultDenom + " "
-							+ addView.getText() + " " + Math.abs(newSecondNum)
+							+ addView.getText() + " " + newSecondNum
 							+ "/" + resultDenom);
 
 					final ScaleAnimation pause = new ScaleAnimation(2, 2, 2, 2,

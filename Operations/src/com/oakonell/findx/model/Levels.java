@@ -1225,8 +1225,52 @@ public class Levels {
 
 		addLevel(stage, new Level(stage, "Name me!", eq, ops, levelSolution));
 
-		// 11
+		// 11 - solvable by either sqrt or factor...?
+		left = new Expression(-1, 5, 4);
+		right = new Expression(2,3,-4);
+		eq = new Equation(left, right); // -x^2 + 5x + 4 = 2x^2 + 3x - 4
+		ops = new ArrayList<Operation>();
+		ops.add(new Add(new Expression(1,0,0))); // -----------------0 add x^2
+		ops.add(new Add(new Expression(1,0))); // -------------------1 add x
+		ops.add(new Add(new Expression(1))); // ---------------------2 add 1
+		ops.add(new WildCard(new Factor(new Expression(1,-2)))); // -3 wild factor x-2
+		ops.add(new Divide(3)); // ----------------------------------4 divide by -3
+		ops.add(Multiply.NEGATE); // --------------------------------5 negate
+		
+		solutions = new ArrayList<Fraction>();
+		solutions.add(new Fraction(-4,3));
+		solutions.add(new Fraction(2));
+		levelSolution = new LevelSolution(solutions, Arrays.asList(0,5,1,1,1,1,1,2,2,2,2,3),
+				new Equation(new Expression(0),new Expression(-3,-4)),
+				Arrays.asList(1,1,1,4),
+				new Equation(new Expression(0), new Expression(1,-2) ), Arrays.asList(5,1)
+				);
+
+		addLevel(stage, new Level(stage, "Name me!", eq, ops, levelSolution));
+
 		// 12
+		left = new Expression(-1, 5, 4);
+		right = new Expression(2,3,-4);
+		eq = new Equation(left, right); // -x^2 + 5x + 4 = 2x^2 + 3x - 4
+		ops = new ArrayList<Operation>();
+		ops.add(new Add(new Expression(1,0,0))); // -----------------0 add x^2
+		ops.add(new Add(new Expression(1,0))); // -------------------1 add x
+		ops.add(new Add(new Expression(1))); // ---------------------2 add 1
+		ops.add(new WildCard(new SquareRoot())); // -----------------3 wild square root
+		ops.add(new Divide(3)); // ----------------------------------4 divide by 3
+		ops.add(new Swap()); // -------------------------------------5 swap
+		
+		solutions = new ArrayList<Fraction>();
+		solutions.add(new Fraction(-4,3));
+		solutions.add(new Fraction(2));
+		levelSolution = new LevelSolution(solutions, Arrays.asList(0,0,1,2,2,2,2,2,3),
+				new Equation(new Expression(1,3),new Expression(2,1)),
+				Arrays.asList(3,1,2,5,3),
+				new Equation(new Expression(1,3), new Expression(-2,-1) ), Arrays.asList(1,1,3,2,2,2,3,4)
+				);
+
+		addLevel(stage, new Level(stage, "Deja Vu", eq, ops, levelSolution));
+
 	}
 
 	private static void addLevel(Stage stage, Level level) {

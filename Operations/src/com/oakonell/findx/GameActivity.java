@@ -12,9 +12,15 @@ import com.oakonell.findx.Achievements.AchievementContext;
 public abstract class GameActivity extends BaseGameActivity implements
 		AchievementContext {
 
+	public GameActivity() {
+		super();
+	}
+
 	@Override
 	public void onSignInFailed() {
-		Toast.makeText(this, "Sign in failed", Toast.LENGTH_SHORT).show();
+		if (BuildConfig.DEBUG) {
+			Toast.makeText(this, "Sign in failed", Toast.LENGTH_SHORT).show();
+		}
 	}
 
 	@Override

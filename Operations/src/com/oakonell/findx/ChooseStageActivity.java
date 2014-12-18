@@ -259,7 +259,7 @@ public class ChooseStageActivity extends GameActivity implements
 
 	@Override
 	public void onSignInFailed() {
-		Toast.makeText(this, "Sign in failed", Toast.LENGTH_SHORT).show();
+		super.onSignInFailed();
 		showLogin();
 	}
 
