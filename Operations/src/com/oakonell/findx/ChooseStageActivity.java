@@ -37,6 +37,7 @@ public class ChooseStageActivity extends GameActivity implements
 
 	private View signOutView;
 	private View signInView;
+	protected Runnable onSignIn;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -108,8 +109,15 @@ public class ChooseStageActivity extends GameActivity implements
 							.getAchievementsIntent(getGameHelper()
 									.getApiClient()), RC_UNUSED);
 				} else {
-					// TODO display pending achievements
-					showAlert(getString(R.string.achievements_not_available));
+					onSignIn = new Runnable() {
+						@Override
+						public void run() {
+							startActivityForResult(Games.Achievements
+									.getAchievementsIntent(getGameHelper()
+											.getApiClient()), RC_UNUSED);													
+						}
+					};
+					getGameHelper().beginUserInitiatedSignIn();
 				}
 			}
 		});
@@ -259,6 +267,7 @@ public class ChooseStageActivity extends GameActivity implements
 
 	@Override
 	public void onSignInFailed() {
+		onSignIn = null;
 		super.onSignInFailed();
 		showLogin();
 	}
@@ -276,6 +285,10 @@ public class ChooseStageActivity extends GameActivity implements
 		Achievements achievements = app.getAchievements();
 		if (achievements.hasPending()) {
 			achievements.pushToGoogle(this);
+		}
+		
+		if (onSignIn != null) {
+			onSignIn.run();
 		}
 
 	}

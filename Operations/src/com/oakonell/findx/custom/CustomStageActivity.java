@@ -101,6 +101,8 @@ public class CustomStageActivity extends GameActivity {
 	private DragController mDragController;
 	private DragLayer mDragLayer;
 
+	private Runnable onSignIn;
+
 	private static final class ViewHolder {
 
 		protected TextView id;
@@ -758,8 +760,13 @@ public class CustomStageActivity extends GameActivity {
 	private void postLevel(final ICustomLevel theLevel) {
 		ParseUser parseUser = ParseUser.getCurrentUser();
 		if (parseUser == null) {
-			// prompt to Log in
-			Toast.makeText(this, "Not logged in", Toast.LENGTH_SHORT).show();
+			onSignIn = new Runnable() {
+				@Override
+				public void run() {
+					postLevel(theLevel);
+				}
+			};
+			getGameHelper().beginUserInitiatedSignIn();
 			return;
 		}
 		if (StringUtils.isEmpty(parseUser
@@ -895,5 +902,19 @@ public class CustomStageActivity extends GameActivity {
 		}
 
 		return MenuHelper.onOptionsItemSelected(this, item);
+	}
+
+	@Override
+	public void onSignInSucceeded() {
+		super.onSignInSucceeded();
+		if (onSignIn != null) {
+			onSignIn.run();
+		}
+	}
+
+	@Override
+	public void onSignInFailed() {
+		super.onSignInFailed();
+		onSignIn = null;
 	}
 }
