@@ -3,9 +3,11 @@
     android:layout_width="wrap_content"
     android:layout_height="wrap_content" >
 
-    <LinearLayout        
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_above="@+id/keyboard_view"
+        android:layout_alignParentTop="true"
         android:orientation="vertical" >
 
         <CheckBox
@@ -28,7 +30,8 @@
                 android:id="@+id/x2_coeff"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="1" >
+                android:layout_weight="1"
+                android:inputType="none" >
             </com.oakonell.findx.custom.widget.FractionEditText>
 
             <TextView
@@ -42,7 +45,8 @@
                 android:id="@+id/x_coeff"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="1" >
+                android:layout_weight="1"
+                android:inputType="none" >
 
                 <requestFocus />
             </com.oakonell.findx.custom.widget.FractionEditText>
@@ -58,7 +62,8 @@
                 android:id="@+id/constant"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="1" />
+                android:layout_weight="1"
+                android:inputType="none" />
         </LinearLayout>
 
         <Button
@@ -87,5 +92,14 @@
                 android:text="@string/cancel" />
         </LinearLayout>
     </LinearLayout>
+
+    <android.inputmethodservice.KeyboardView
+        android:id="@+id/keyboard_view"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:focusableInTouchMode="true"
+        android:visibility="gone" >
+    </android.inputmethodservice.KeyboardView>
 
 </RelativeLayout>

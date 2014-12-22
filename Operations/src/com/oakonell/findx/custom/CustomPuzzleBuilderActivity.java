@@ -55,6 +55,7 @@ import com.oakonell.findx.model.Move;
 import com.oakonell.findx.model.Operation;
 import com.oakonell.findx.model.ops.WildCard;
 import com.oakonell.utils.NumberPicker;
+import com.simplicityapks.functioncapture.CustomKeyboard;
 
 public class CustomPuzzleBuilderActivity extends GameActivity {
 	private static final String SAVED_ID = "saved_id";
@@ -80,6 +81,7 @@ public class CustomPuzzleBuilderActivity extends GameActivity {
 
 	CalculateMinMovesProgressTask task;
 	private RandomHelper randomHelper = new RandomHelper();
+	private CustomKeyboard customKeyboard;
 
 	/** Called when the activity is first created. */
 	@Override
@@ -104,7 +106,8 @@ public class CustomPuzzleBuilderActivity extends GameActivity {
 
 		Intent intent = getIntent();
 
-		long savedId = savedInstanceState != null ? savedInstanceState.getLong(SAVED_ID, -1) : -1;
+		long savedId = savedInstanceState != null ? savedInstanceState.getLong(
+				SAVED_ID, -1) : -1;
 		if (savedId >= 0) {
 			builder.load(savedId);
 			long originalId = savedInstanceState.getLong(ORIGINAL_ID, -1);
@@ -272,6 +275,11 @@ public class CustomPuzzleBuilderActivity extends GameActivity {
 			}
 		});
 
+		customKeyboard = new CustomKeyboard(this, R.id.keyboard_view,
+				R.xml.keyboard);
+		// register the custom keyboard for the fraction input
+		customKeyboard.registerEditText(R.id.x_equals);
+
 		xSolution = (FractionEditText) findViewById(R.id.x_equals);
 		xSecondarySolution = (TextView) findViewById(R.id.x_equals_secondary);
 		title = (EditText) findViewById(R.id.title);
@@ -285,7 +293,7 @@ public class CustomPuzzleBuilderActivity extends GameActivity {
 			@Override
 			public void fractionChanged(FractionEditText view, Fraction fraction) {
 				builder.setSolution(fraction);
-				updateUI();
+				updateUI(false);
 			}
 		});
 
@@ -744,6 +752,11 @@ public class CustomPuzzleBuilderActivity extends GameActivity {
 
 	@Override
 	public void onBackPressed() {
+		if (customKeyboard != null && customKeyboard.isCustomKeyboardVisible()) {
+			customKeyboard.hideCustomKeyboard();
+			return;
+		}
+
 		confirmAndLeave(new Runnable() {
 			@Override
 			public void run() {
@@ -838,7 +851,12 @@ public class CustomPuzzleBuilderActivity extends GameActivity {
 	}
 
 	private void updateUI() {
-		if (!builder.getSolution().equals(xSolution.getFraction())) {
+		updateUI(true);
+	}
+
+	private void updateUI(boolean updateSolution) {
+		if (updateSolution
+				&& !builder.getSolution().equals(xSolution.getFraction())) {
 			xSolution.setFraction(builder.getSolution());
 		}
 		xSolution.setEnabled(builder.canSetSolution());
@@ -888,4 +906,5 @@ public class CustomPuzzleBuilderActivity extends GameActivity {
 			outState.putLong(SAVED_ID, builder.getId());
 		}
 	}
+
 }

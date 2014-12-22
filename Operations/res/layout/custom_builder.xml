@@ -1,243 +1,261 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical" >
-
-    <EditText
-        android:id="@+id/title"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="@string/custom_title_hint" >
-
-        <requestFocus android:layout_width="match_parent" />
-    </EditText>
+    android:layout_height="match_parent" >
 
     <LinearLayout
-        android:id="@+id/linearLayout1"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:weightSum="3" >
+        android:layout_height="match_parent"
+        android:layout_above="@+id/keyboard_view"
+        android:layout_alignParentTop="true"
+        android:orientation="vertical" >
 
-        <TextView
-            android:id="@+id/textView1"
-            android:layout_width="wrap_content"
+        <EditText
+            android:id="@+id/title"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:layout_weight="1"
-            android:gravity="right"
-            android:text="@string/solution_x_label"
-            android:textAppearance="?android:attr/textAppearanceLarge" />
+            android:hint="@string/custom_title_hint"
+            android:inputType="text" >
 
-        <com.oakonell.findx.custom.widget.FractionEditText
-            android:id="@+id/x_equals"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1" />
+            <requestFocus android:layout_width="match_parent" />
+        </EditText>
 
-        <TextView
-            android:id="@+id/x_equals_secondary"
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:id="@+id/linearLayout1"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="TextView" />
+            android:weightSum="3" >
+
+            <TextView
+                android:id="@+id/textView1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_weight="1"
+                android:gravity="right"
+                android:text="@string/solution_x_label"
+                android:textAppearance="?android:attr/textAppearanceLarge" />
+
+            <com.oakonell.findx.custom.widget.FractionEditText
+                android:id="@+id/x_equals"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:inputType="none" />
+
+            <TextView
+                android:id="@+id/x_equals_secondary"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="TextView" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/linearLayout2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" >
+
+            <TextView
+                android:id="@+id/add_op"
+                style="@style/FindXButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="+" />
+
+            <RelativeLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" >
+
+                <TextView
+                    android:id="@+id/op1"
+                    style="@style/FindXButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Button"
+                    android:visibility="gone" />
+
+                <ImageView
+                    android:id="@+id/op1_lock"
+                    android:layout_width="18dp"
+                    android:layout_height="18dp"
+                    android:layout_alignBottom="@+id/op1"
+                    android:layout_alignRight="@+id/op1"
+                    android:src="@drawable/lock"
+                    android:visibility="gone" />
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" >
+
+                <TextView
+                    android:id="@+id/op2"
+                    style="@style/FindXButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Button"
+                    android:visibility="gone" />
+
+                <ImageView
+                    android:id="@+id/op2_lock"
+                    android:layout_width="18dp"
+                    android:layout_height="18dp"
+                    android:layout_alignBottom="@+id/op2"
+                    android:layout_alignRight="@+id/op2"
+                    android:src="@drawable/lock"
+                    android:visibility="gone" />
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" >
+
+                <TextView
+                    android:id="@+id/op3"
+                    style="@style/FindXButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Button"
+                    android:visibility="gone" />
+
+                <ImageView
+                    android:id="@+id/op3_lock"
+                    android:layout_width="18dp"
+                    android:layout_height="18dp"
+                    android:layout_alignBottom="@+id/op3"
+                    android:layout_alignRight="@+id/op3"
+                    android:src="@drawable/lock"
+                    android:visibility="gone" />
+            </RelativeLayout>
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/linearLayout3"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal" >
+
+            <RelativeLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" >
+
+                <TextView
+                    android:id="@+id/op4"
+                    style="@style/FindXButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Button"
+                    android:visibility="gone" />
+
+                <ImageView
+                    android:id="@+id/op4_lock"
+                    android:layout_width="18dp"
+                    android:layout_height="18dp"
+                    android:layout_alignBottom="@+id/op4"
+                    android:layout_alignRight="@+id/op4"
+                    android:src="@drawable/lock"
+                    android:visibility="gone" />
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" >
+
+                <TextView
+                    android:id="@+id/op5"
+                    style="@style/FindXButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Button"
+                    android:visibility="gone" />
+
+                <ImageView
+                    android:id="@+id/op5_lock"
+                    android:layout_width="18dp"
+                    android:layout_height="18dp"
+                    android:layout_alignBottom="@+id/op5"
+                    android:layout_alignRight="@+id/op5"
+                    android:src="@drawable/lock"
+                    android:visibility="gone" />
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" >
+
+                <TextView
+                    android:id="@+id/op6"
+                    style="@style/FindXButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Button"
+                    android:visibility="gone" />
+
+                <ImageView
+                    android:id="@+id/op6_lock"
+                    android:layout_width="18dp"
+                    android:layout_height="18dp"
+                    android:layout_alignBottom="@+id/op6"
+                    android:layout_alignRight="@+id/op6"
+                    android:src="@drawable/lock"
+                    android:visibility="gone" />
+            </RelativeLayout>
+        </LinearLayout>
+
+        <ListView
+            android:id="@+id/moves"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1" >
+        </ListView>
+
+        <LinearLayout
+            android:id="@+id/linearLayout5"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal" >
+
+            <Button
+                android:id="@+id/add_random_moves"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/add_random_moves" />
+
+            <Button
+                android:id="@+id/calc_min_moves"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/calc_min_moves" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/linearLayout4"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal" >
+
+            <Button
+                android:id="@+id/save"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/save" />
+
+            <Button
+                android:id="@+id/cancel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/cancel" />
+        </LinearLayout>
     </LinearLayout>
 
-    <LinearLayout
-        android:id="@+id/linearLayout2"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" >
-
-        <TextView
-            android:id="@+id/add_op"
-            style="@style/FindXButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="+" />
-
-        <RelativeLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" >
-
-            <TextView
-                android:id="@+id/op1"
-                style="@style/FindXButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Button"
-                android:visibility="gone" />
-
-            <ImageView
-                android:id="@+id/op1_lock"
-                android:layout_width="18dp"
-                android:layout_height="18dp"
-                android:layout_alignBottom="@+id/op1"
-                android:layout_alignRight="@+id/op1"
-                android:src="@drawable/lock"
-                android:visibility="gone" />
-        </RelativeLayout>
-
-        <RelativeLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" >
-
-            <TextView
-                android:id="@+id/op2"
-                style="@style/FindXButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Button"
-                android:visibility="gone" />
-
-            <ImageView
-                android:id="@+id/op2_lock"
-                android:layout_width="18dp"
-                android:layout_height="18dp"
-                android:layout_alignBottom="@+id/op2"
-                android:layout_alignRight="@+id/op2"
-                android:src="@drawable/lock"
-                android:visibility="gone" />
-        </RelativeLayout>
-
-        <RelativeLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" >
-
-            <TextView
-                android:id="@+id/op3"
-                style="@style/FindXButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Button"
-                android:visibility="gone" />
-
-            <ImageView
-                android:id="@+id/op3_lock"
-                android:layout_width="18dp"
-                android:layout_height="18dp"
-                android:layout_alignBottom="@+id/op3"
-                android:layout_alignRight="@+id/op3"
-                android:src="@drawable/lock"
-                android:visibility="gone" />
-        </RelativeLayout>
-    </LinearLayout>
-
-    <LinearLayout
-        android:id="@+id/linearLayout3"
-        android:layout_width="match_parent"
+    <android.inputmethodservice.KeyboardView
+        android:id="@+id/keyboard_view"
+        android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:gravity="center_horizontal" >
+        android:layout_alignParentBottom="true"
+        android:focusableInTouchMode="true"
+        android:visibility="gone" >
+    </android.inputmethodservice.KeyboardView>
 
-        <RelativeLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" >
-
-            <TextView
-                android:id="@+id/op4"
-                style="@style/FindXButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Button"
-                android:visibility="gone" />
-
-            <ImageView
-                android:id="@+id/op4_lock"
-                android:layout_width="18dp"
-                android:layout_height="18dp"
-                android:layout_alignBottom="@+id/op4"
-                android:layout_alignRight="@+id/op4"
-                android:src="@drawable/lock"
-                android:visibility="gone" />
-        </RelativeLayout>
-
-        <RelativeLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" >
-
-            <TextView
-                android:id="@+id/op5"
-                style="@style/FindXButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Button"
-                android:visibility="gone" />
-
-            <ImageView
-                android:id="@+id/op5_lock"
-                android:layout_width="18dp"
-                android:layout_height="18dp"
-                android:layout_alignBottom="@+id/op5"
-                android:layout_alignRight="@+id/op5"
-                android:src="@drawable/lock"
-                android:visibility="gone" />
-        </RelativeLayout>
-
-        <RelativeLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" >
-
-            <TextView
-                android:id="@+id/op6"
-                style="@style/FindXButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Button"
-                android:visibility="gone" />
-
-            <ImageView
-                android:id="@+id/op6_lock"
-                android:layout_width="18dp"
-                android:layout_height="18dp"
-                android:layout_alignBottom="@+id/op6"
-                android:layout_alignRight="@+id/op6"
-                android:src="@drawable/lock"
-                android:visibility="gone" />
-        </RelativeLayout>
-    </LinearLayout>
-
-    <ListView
-        android:id="@+id/moves"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_weight="1" >
-    </ListView>
-
-    <LinearLayout
-        android:id="@+id/linearLayout5"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center_horizontal" >
-
-        <Button
-            android:id="@+id/add_random_moves"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/add_random_moves" />
-
-        <Button
-            android:id="@+id/calc_min_moves"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/calc_min_moves" />
-    </LinearLayout>
-
-    <LinearLayout
-        android:id="@+id/linearLayout4"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center_horizontal" >
-
-        <Button
-            android:id="@+id/save"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/save" />
-
-        <Button
-            android:id="@+id/cancel"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/cancel" />
-    </LinearLayout>
-
-</LinearLayout>
+</RelativeLayout>

@@ -6,10 +6,14 @@ import java.util.List;
 import org.apache.commons.math3.exception.MathParseException;
 import org.apache.commons.math3.fraction.Fraction;
 
+import android.app.Activity;
 import android.app.Dialog;
 import android.content.Context;
+import android.content.DialogInterface;
+import android.inputmethodservice.KeyboardView;
 import android.text.Editable;
 import android.text.Html;
+import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.AdapterView;
@@ -38,6 +42,7 @@ import com.oakonell.findx.model.ops.SquareRoot;
 import com.oakonell.findx.model.ops.Subtract;
 import com.oakonell.findx.model.ops.Swap;
 import com.oakonell.findx.model.ops.WildCard;
+import com.simplicityapks.functioncapture.CustomKeyboard;
 
 public class OperationBuilderDialog {
 
@@ -51,9 +56,9 @@ public class OperationBuilderDialog {
 		this.randomHelper = randomHelper;
 	}
 
-	public void buildExpression(Context context, Operation existingOperation,
+	public void buildExpression(Activity activity, Operation existingOperation,
 			final OperationBuiltContinuation continuation) {
-		final Dialog dialog = new Dialog(context);
+		final Dialog dialog = new Dialog(activity);
 
 		dialog.setContentView(R.layout.operation_builder);
 		dialog.setTitle(R.string.edit_operation);
@@ -63,7 +68,7 @@ public class OperationBuilderDialog {
 		final Spinner operationSpinner = (Spinner) dialog
 				.findViewById(R.id.operation_spinner);
 		final ArrayAdapter<CharSequence> adapter = new ArrayAdapter<CharSequence>(
-				context, android.R.layout.simple_spinner_item);
+				activity, android.R.layout.simple_spinner_item);
 		adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 		operationSpinner.setAdapter(adapter);
 
@@ -90,6 +95,15 @@ public class OperationBuilderDialog {
 
 		final FractionEditText constantText = (FractionEditText) dialog
 				.findViewById(R.id.constant);
+
+		KeyboardView theKeyboardView = (KeyboardView) dialog
+				.findViewById(R.id.keyboard_view);
+		final CustomKeyboard keyboard = new CustomKeyboard(activity, dialog,
+				theKeyboardView, R.xml.keyboard);
+
+		keyboard.registerEditText(x2CoeffText);
+		keyboard.registerEditText(xCoeffText);
+		keyboard.registerEditText(constantText);
 
 		if (existingOperation == null) {
 			operationSpinner.setSelection(0);
@@ -400,6 +414,28 @@ public class OperationBuilderDialog {
 			@Override
 			public void onClick(View v) {
 				dialog.cancel();
+			}
+		});
+
+		// override the back key- if the keyboard is open, close it
+		//    otherwise existing cancel dialog behavior
+		dialog.setOnKeyListener(new DialogInterface.OnKeyListener() {
+			@Override
+			public boolean onKey(DialogInterface dialog, int keyCode,
+					KeyEvent event) {
+				if (keyCode == KeyEvent.KEYCODE_BACK
+						&& event.getAction() == KeyEvent.ACTION_UP
+						&& !event.isCanceled()) {
+
+					if (keyboard.isCustomKeyboardVisible()) {
+						keyboard.hideCustomKeyboard();
+						return true;
+					}
+
+					dialog.cancel();
+					return true;
+				}
+				return false;
 			}
 		});
 
