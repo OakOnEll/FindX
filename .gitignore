@@ -214,3 +214,5 @@ pip-log.txt
 #Mr Developer
 .mr.developer.cfg
 Operations/res/values/parse_ids.xml
+Operations/gen/com/oakonell/utils/R.java
+Operations/gen/com/oakonell/findx/R.java
