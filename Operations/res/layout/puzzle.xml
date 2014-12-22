@@ -223,12 +223,12 @@
         </LinearLayout>
     </LinearLayout>
 
-    <it.anddev.tutorial.CustomKeyboardView
+    <android.inputmethodservice.KeyboardView
         android:id="@+id/keyboard_view"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:visibility="gone" >
-    </it.anddev.tutorial.CustomKeyboardView>
+    </android.inputmethodservice.KeyboardView>
 
 </RelativeLayout>
