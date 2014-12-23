@@ -32,7 +32,6 @@ import android.widget.RatingBar;
 import android.widget.TextView;
 
 import com.actionbarsherlock.app.SherlockDialogFragment;
-import com.google.android.gms.analytics.GoogleAnalytics;
 import com.google.android.gms.analytics.HitBuilders;
 import com.google.android.gms.analytics.Tracker;
 import com.oakonell.findx.PuzzleActivity.Sounds;
@@ -147,14 +146,13 @@ public class LevelSolvedDialogFragment extends SherlockDialogFragment {
 		final int rating = puzzle.getRating();
 		final int existingRating = puzzle.getExistingRating();
 
-		FindXApp app = (FindXApp) activity.getApplication();
+		FindXApp app = activity.getFindXApplication();
 		app.getAchievements().testAndSetLevelCompleteAchievements(activity,
 				puzzle);
 
 		puzzle.updateRating();
 
-		GoogleAnalytics analytics = GoogleAnalytics.getInstance(getActivity());
-		Tracker googleTracker = analytics.newTracker(R.string.ga_trackingId);
+		Tracker googleTracker = activity.getFindXApplication().getTracker();
 		googleTracker.send(new HitBuilders.EventBuilder().setCategory("puzzle")
 				.setAction("solved")
 				.setLabel(puzzle.getId() + puzzle.getRating()).build());
@@ -615,8 +613,8 @@ public class LevelSolvedDialogFragment extends SherlockDialogFragment {
 								* (resultDenom / secondTerm.getDenominator());
 					}
 					anim_text.setText(newFirstNum + "/" + resultDenom + " "
-							+ addView.getText() + " " + newSecondNum
-							+ "/" + resultDenom);
+							+ addView.getText() + " " + newSecondNum + "/"
+							+ resultDenom);
 
 					final ScaleAnimation pause = new ScaleAnimation(2, 2, 2, 2,
 							Animation.RELATIVE_TO_SELF, 0.5f,

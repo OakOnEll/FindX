@@ -58,6 +58,7 @@ import com.actionbarsherlock.widget.SearchView;
 import com.actionbarsherlock.widget.SearchView.OnCloseListener;
 import com.actionbarsherlock.widget.SearchView.OnSuggestionListener;
 import com.oakonell.findx.BuildConfig;
+import com.oakonell.findx.FindXApp;
 import com.oakonell.findx.R;
 import com.oakonell.findx.custom.model.CustomLevelBuilder;
 import com.oakonell.findx.custom.parse.ParseConnectivity.ParseUserExtra;
@@ -460,9 +461,9 @@ public class CustomLevelSearchActivity extends SherlockListActivity {
 					i++;
 					publishProgress(i);
 					Integer position = entry.getValue();
-					CustomLevelBuilder builder = ParseLevelHelper.load(CustomLevelSearchActivity.this,  adapter
+					CustomLevelBuilder builder = ParseLevelHelper.load((FindXApp)getApplication(),CustomLevelSearchActivity.this,  adapter
 							.getItem(position));
-					builder.save();
+					builder.save((FindXApp) getApplication());
 					checkedPositionByIds.remove(entry.getKey());
 					// int firstPosition =
 					// getListView().getFirstVisiblePosition();

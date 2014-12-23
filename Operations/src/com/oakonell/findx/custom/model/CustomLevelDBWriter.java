@@ -4,15 +4,15 @@ import java.util.List;
 
 import org.apache.commons.math3.fraction.Fraction;
 
+import android.app.Application;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.provider.BaseColumns;
 
-import com.google.android.gms.analytics.GoogleAnalytics;
 import com.google.android.gms.analytics.HitBuilders;
 import com.google.android.gms.analytics.Tracker;
-import com.oakonell.findx.R;
+import com.oakonell.findx.FindXApp;
 import com.oakonell.findx.data.DataBaseHelper;
 import com.oakonell.findx.model.Equation;
 import com.oakonell.findx.model.IMove;
@@ -33,11 +33,11 @@ import com.oakonell.findx.model.ops.WildCard;
 
 public class CustomLevelDBWriter {
 
-	public void write(Context context, CustomLevelBuilder builder) {
+	public void write(FindXApp app, Context context,
+			CustomLevelBuilder builder) {
 		DataBaseHelper helper = new DataBaseHelper(context);
 		SQLiteDatabase db = helper.getWritableDatabase();
-		GoogleAnalytics analytics = GoogleAnalytics.getInstance(context);
-		Tracker googleTracker = analytics.newTracker(R.string.ga_trackingId);
+		Tracker googleTracker = app.getTracker();
 		if (builder.getId() == 0) {
 			googleTracker.send(new HitBuilders.EventBuilder()
 					.setCategory("custom").setAction("add").build());

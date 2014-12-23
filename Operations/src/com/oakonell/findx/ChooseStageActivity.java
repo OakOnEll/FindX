@@ -1,5 +1,6 @@
 package com.oakonell.findx;
 
+import android.app.Application;
 import android.content.Context;
 import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
@@ -114,7 +115,7 @@ public class ChooseStageActivity extends GameActivity implements
 						public void run() {
 							startActivityForResult(Games.Achievements
 									.getAchievementsIntent(getGameHelper()
-											.getApiClient()), RC_UNUSED);													
+											.getApiClient()), RC_UNUSED);
 						}
 					};
 					getGameHelper().beginUserInitiatedSignIn();
@@ -152,7 +153,8 @@ public class ChooseStageActivity extends GameActivity implements
 
 				ImageView lock = (ImageView) row.findViewById(R.id.lock);
 
-				// TODO db hit?  (But may flicker annoyingly if attempt to async it- small number of calls to db may not warrant it)
+				// TODO db hit? (But may flicker annoyingly if attempt to async
+				// it- small number of calls to db may not warrant it)
 				if (stage.isUnlocked()) {
 					row.setEnabled(true);
 					stageButton.setEnabled(true);
@@ -278,7 +280,7 @@ public class ChooseStageActivity extends GameActivity implements
 
 		ParseConnectivity.connect(this, getGameHelper());
 
-		FindXApp app = (FindXApp) getApplication();
+		FindXApp app = getFindXApplication();
 		Intent settingsIntent = Games.getSettingsIntent(getApiClient());
 		app.setSettingsIntent(settingsIntent);
 
@@ -286,7 +288,7 @@ public class ChooseStageActivity extends GameActivity implements
 		if (achievements.hasPending()) {
 			achievements.pushToGoogle(this);
 		}
-		
+
 		if (onSignIn != null) {
 			onSignIn.run();
 		}
@@ -330,4 +332,6 @@ public class ChooseStageActivity extends GameActivity implements
 	public Context getContext() {
 		return this;
 	}
+
+
 }

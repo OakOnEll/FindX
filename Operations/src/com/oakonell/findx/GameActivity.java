@@ -25,7 +25,7 @@ public abstract class GameActivity extends BaseGameActivity implements
 
 	@Override
 	public void onSignInSucceeded() {
-		FindXApp app = (FindXApp) getApplication();
+		FindXApp app = getFindXApplication();
 		Intent settingsIntent = Games.getSettingsIntent(getApiClient());
 		app.setSettingsIntent(settingsIntent);
 	}
@@ -40,4 +40,8 @@ public abstract class GameActivity extends BaseGameActivity implements
 		return this;
 	}
 
+	@Override
+	public FindXApp getFindXApplication() {
+		return (FindXApp) getApplication();
+	}
 }

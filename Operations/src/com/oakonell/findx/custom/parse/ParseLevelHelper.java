@@ -8,13 +8,13 @@ import java.util.Map;
 import org.apache.commons.math3.fraction.Fraction;
 import org.apache.commons.math3.fraction.FractionFormat;
 
+import android.app.Application;
 import android.content.Context;
 import android.os.AsyncTask;
 
-import com.google.android.gms.analytics.GoogleAnalytics;
 import com.google.android.gms.analytics.HitBuilders;
 import com.google.android.gms.analytics.Tracker;
-import com.oakonell.findx.R;
+import com.oakonell.findx.FindXApp;
 import com.oakonell.findx.custom.model.CustomLevelBuilder;
 import com.oakonell.findx.custom.model.CustomLevelDBReader;
 import com.oakonell.findx.custom.model.ICustomLevel;
@@ -104,7 +104,8 @@ public class ParseLevelHelper {
 		final String flaggedBy_field = "flaggedBy";
 	}
 
-	public static String postLevel(Context context, ICustomLevel theLevel) {
+	public static String postLevel(FindXApp app, Context context,
+			ICustomLevel theLevel) {
 		try {
 
 			ParseObject level = postMainLevel(theLevel);
@@ -119,9 +120,7 @@ public class ParseLevelHelper {
 			postLevelMoves(level, theLevel.getLevelSolution()
 					.getSecondaryOperations2(), 2);
 
-			GoogleAnalytics analytics = GoogleAnalytics.getInstance(context);
-			Tracker googleTracker = analytics
-					.newTracker(R.string.ga_trackingId);
+			Tracker googleTracker = app.getTracker();
 			googleTracker.send(new HitBuilders.EventBuilder()
 					.setCategory("custom").setAction("post").setLabel(id)
 					.build());
@@ -246,9 +245,9 @@ public class ParseLevelHelper {
 				.getX2Coefficient().toString());
 	}
 
-	public static CustomLevelBuilder load(Context context, ParseObject level) {
-		GoogleAnalytics analytics = GoogleAnalytics.getInstance(context);
-		Tracker googleTracker = analytics.newTracker(R.string.ga_trackingId);
+	public static CustomLevelBuilder load(FindXApp app, Context context,
+			ParseObject level) {
+		Tracker googleTracker = app.getTracker();
 		googleTracker.send(new HitBuilders.EventBuilder().setCategory("custom")
 				.setAction("load").setLabel(level.getObjectId()).build());
 

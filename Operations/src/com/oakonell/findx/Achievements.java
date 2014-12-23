@@ -232,9 +232,8 @@ public class Achievements {
 							return;
 						if (achievementResult.getStatus().getStatusCode() == GamesStatusCodes.STATUS_ACHIEVEMENT_UNLOCKED) {
 
-							Tracker myTracker = GoogleAnalytics.getInstance(
-									context.getContext()).newTracker(
-									R.string.ga_trackingId);
+							Tracker myTracker = context.getFindXApplication()
+									.getTracker();
 							Log.i(TAG, "Unlocked achievement " + getName());
 							Map<String, String> event = new HitBuilders.EventBuilder()
 									.setCategory(
@@ -334,9 +333,7 @@ public class Achievements {
 							text + ": " + e.getMessage(), Toast.LENGTH_LONG)
 							.show();
 				}
-				Tracker myTracker = GoogleAnalytics.getInstance(
-						context.getContext())
-						.newTracker(R.string.ga_trackingId);
+				Tracker myTracker = context.getFindXApplication().getTracker();
 				Map<String, String> event = new HitBuilders.ExceptionBuilder()
 						.setDescription(
 								new StandardExceptionParser(context
@@ -353,6 +350,8 @@ public class Achievements {
 
 	public interface AchievementContext {
 		GameHelper getHelper();
+
+		FindXApp getFindXApplication();
 
 		Context getContext();
 	}
@@ -374,9 +373,7 @@ public class Achievements {
 							text + ": " + e.getMessage(), Toast.LENGTH_LONG)
 							.show();
 				}
-				Tracker myTracker = GoogleAnalytics.getInstance(
-						context.getContext())
-						.newTracker(R.string.ga_trackingId);
+				Tracker myTracker = context.getFindXApplication().getTracker();
 				Map<String, String> event = new HitBuilders.ExceptionBuilder()
 						.setDescription(
 								new StandardExceptionParser(context

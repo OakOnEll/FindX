@@ -849,7 +849,7 @@ public class CustomStageActivity extends GameActivity {
 
 			@Override
 			protected Void doInBackground(Void... params) {
-				String id = ParseLevelHelper.postLevel(
+				String id = ParseLevelHelper.postLevel(getFindXApplication(),
 						CustomStageActivity.this, theLevel);
 
 				// update the level to note it is saved to server
@@ -863,7 +863,7 @@ public class CustomStageActivity extends GameActivity {
 						ParseUserExtra.nickname_field);
 				builder.setAuthor(author);
 				CustomLevelDBWriter writer = new CustomLevelDBWriter();
-				writer.write(CustomStageActivity.this, builder);
+				writer.write(getFindXApplication(),CustomStageActivity.this, builder);
 
 				theLevel.setServerId(id);
 				theLevel.setAuthor(author);
@@ -901,7 +901,7 @@ public class CustomStageActivity extends GameActivity {
 						CustomLevelBuilder builder = new CustomLevelBuilder();
 						builder.load(theLevel.getDbId());
 						builder.setTitle(newTitle);
-						builder.save();
+						builder.save(getFindXApplication());
 						continuation.run();
 					}
 				})

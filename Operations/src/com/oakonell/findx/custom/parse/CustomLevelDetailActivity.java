@@ -36,6 +36,7 @@ import com.actionbarsherlock.view.MenuItem;
 import com.commonsware.cwac.merge.MergeAdapter;
 import com.google.android.gms.analytics.GoogleAnalytics;
 import com.oakonell.findx.BuildConfig;
+import com.oakonell.findx.FindXApp;
 import com.oakonell.findx.PuzzleActivity;
 import com.oakonell.findx.R;
 import com.oakonell.findx.custom.model.CustomLevelBuilder;
@@ -456,9 +457,10 @@ public class CustomLevelDetailActivity extends SherlockFragmentActivity {
 			@Override
 			protected CustomLevelBuilder doInBackground(Void... params) {
 				CustomLevelBuilder builder = ParseLevelHelper.load(
+						(FindXApp) getApplication(),
 						CustomLevelDetailActivity.this, level);
 
-				builder.save();
+				builder.save((FindXApp) getApplication());
 				Levels.resetCustomStage();
 				return builder;
 			}

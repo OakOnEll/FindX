@@ -442,9 +442,9 @@ public class CustomLevelBuilder extends TempCorrectLevelBuilder {
 		reader.read(FindXApp.getContext(), this, id);
 	}
 
-	public void save() {
+	public void save(FindXApp app) {
 		CustomLevelDBWriter writer = new CustomLevelDBWriter();
-		writer.write(FindXApp.getContext(), this);
+		writer.write(app, FindXApp.getContext(), this);
 	}
 
 	public CustomLevel convertToLevel(Stage custom) {

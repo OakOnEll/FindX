@@ -408,7 +408,7 @@ public class CustomPuzzleBuilderActivity extends GameActivity {
 	}
 
 	private void saveLevel() {
-		builder.save();
+		builder.save(getFindXApplication());
 		// TODO async task this?
 		Levels.resetCustomStage();
 		hasChanges = false;
@@ -890,7 +890,7 @@ public class CustomPuzzleBuilderActivity extends GameActivity {
 				// already exists, create a duplicate, and store
 				builder.prepareAsCopy();
 			}
-			builder.save();
+			builder.save(getFindXApplication());
 
 			// mark for deletion, so that it is "invisible" from the custom
 			// stage view

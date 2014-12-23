@@ -131,9 +131,7 @@ public class PuzzleActivity extends GameActivity {
 			String puzzleId = intent.getStringExtra(PUZZLE_ID);
 			puzzle = new Puzzle(puzzleId);
 
-			GoogleAnalytics analytics = GoogleAnalytics.getInstance(this);
-			Tracker googleTracker = analytics
-					.newTracker(R.string.ga_trackingId);
+			Tracker googleTracker = getFindXApplication().getTracker();
 			googleTracker.send(new HitBuilders.EventBuilder()
 					.setCategory("puzzle").setAction("start")
 					.setLabel(puzzle.getId()).build());
@@ -247,10 +245,10 @@ public class PuzzleActivity extends GameActivity {
 
 					@Override
 					public void run() {
-						GoogleAnalytics analytics = GoogleAnalytics.getInstance(PuzzleActivity.this);
-						Tracker googleTracker = analytics.newTracker(R.string.ga_trackingId);
-						googleTracker.send(new HitBuilders.EventBuilder().setCategory("puzzle")
-								.setAction("giveup")
+						Tracker googleTracker = ((FindXApp) PuzzleActivity.this
+								.getApplication()).getTracker();
+						googleTracker.send(new HitBuilders.EventBuilder()
+								.setCategory("puzzle").setAction("giveup")
 								.setLabel(puzzle.getId()).build());
 
 						navigateUp();
@@ -455,7 +453,7 @@ public class PuzzleActivity extends GameActivity {
 							Toast.LENGTH_SHORT).show();
 				}
 
-				FindXApp app = (FindXApp) getApplication();
+				FindXApp app = getFindXApplication();
 				app.getAchievements().testAndSetInLevelAchievements(
 						PuzzleActivity.this, puzzle);
 
@@ -538,8 +536,7 @@ public class PuzzleActivity extends GameActivity {
 	}
 
 	public void restart(boolean animate) {
-		GoogleAnalytics analytics = GoogleAnalytics.getInstance(this);
-		Tracker googleTracker = analytics.newTracker(R.string.ga_trackingId);
+		Tracker googleTracker = getFindXApplication().getTracker();
 		googleTracker.send(new HitBuilders.EventBuilder().setCategory("puzzle")
 				.setAction("restart").setLabel(puzzle.getId()).build());
 
@@ -758,8 +755,7 @@ public class PuzzleActivity extends GameActivity {
 			}
 		};
 
-		GoogleAnalytics analytics = GoogleAnalytics.getInstance(this);
-		Tracker googleTracker = analytics.newTracker(R.string.ga_trackingId);
+		Tracker googleTracker = getFindXApplication().getTracker();
 		googleTracker.send(new HitBuilders.EventBuilder().setCategory("puzzle")
 				.setAction("undo").setLabel(puzzle.getId()).build());
 
