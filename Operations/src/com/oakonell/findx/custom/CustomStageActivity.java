@@ -1,5 +1,6 @@
 package com.oakonell.findx.custom;
 
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -28,6 +29,7 @@ import android.preference.PreferenceManager;
 import android.provider.BaseColumns;
 import android.support.v4.app.NavUtils;
 import android.util.Base64;
+import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
@@ -322,6 +324,12 @@ public class CustomStageActivity extends GameActivity {
 	}
 
 	private void shareLevel(final ICustomLevel level) {
+		if (level.savedToServer()) {
+			shareImportedLevel(level);
+			return;
+		}
+		String author;
+
 		// TODO can share
 		// in progress levels- passed via URL encoding, as the old
 		// posted level, via a new url that passes the parseObject id
@@ -331,15 +339,9 @@ public class CustomStageActivity extends GameActivity {
 				shareLevel(level);
 			}
 		};
-
-		String author;
-		if (level.isImported()) {
-			author = level.getAuthor();
-		} else {
-			author = getAuthor(runnable);
-			if (author == null) {
-				return;
-			}
+		author = getAuthor(runnable);
+		if (author == null) {
+			return;
 		}
 
 		try {
@@ -495,6 +497,7 @@ public class CustomStageActivity extends GameActivity {
 			ShareHelper.share(CustomStageActivity.this, titleText, shareText);
 
 		} catch (Exception e) {
+			Log.e("CustomStage", "Error sharing level", e);
 			Toast.makeText(
 					getApplicationContext(),
 					"Encountered an exception trying to share the level:"
@@ -502,6 +505,33 @@ public class CustomStageActivity extends GameActivity {
 					.show();
 
 		}
+	}
+
+	private void shareImportedLevel(final ICustomLevel level) {
+		String title = level.getName();
+		String author = level.getAuthor();
+
+		SharedPreferences preferences = PreferenceManager
+				.getDefaultSharedPreferences(CustomStageActivity.this);
+		String defaultText = CustomStageActivity.this
+				.getString(R.string.default_custom_level_share_message);
+		String shareText = preferences.getString(CustomStageActivity.this
+				.getString(R.string.pref_default_share_custom_level_key),
+				defaultText);
+
+		shareText = shareText.replaceAll("%a", author);
+		shareText = shareText.replaceAll(
+				"%u",
+				"http://www.oakonell.com/findx/custom_shared?id="
+						+ level.getServerId()) + "&t=" + URLEncoder.encode(title) + "&a=" + URLEncoder.encode(author);
+		shareText = shareText.replaceAll("%l",
+				title + "\n " + level.getMultilineDescription() + "\n");
+
+		String titleText = CustomStageActivity.this
+				.getString(R.string.share_custom_level_title);
+		titleText = titleText.replaceAll("%t", title);
+
+		ShareHelper.share(CustomStageActivity.this, titleText, shareText);
 	}
 
 	private String getAuthor(final Runnable runnable) {
@@ -826,10 +856,15 @@ public class CustomStageActivity extends GameActivity {
 				reader.read(CustomStageActivity.this, builder,
 						theLevel.getDbId());
 				builder.setServerId(id);
+
+				String author = ParseUser.getCurrentUser().getString(
+						ParseUserExtra.nickname_field);
+				builder.setAuthor(author);
 				CustomLevelDBWriter writer = new CustomLevelDBWriter();
 				writer.write(CustomStageActivity.this, builder);
 
 				theLevel.setServerId(id);
+				theLevel.setAuthor(author);
 
 				return null;
 			}

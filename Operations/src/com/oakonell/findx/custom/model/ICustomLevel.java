@@ -18,4 +18,6 @@ public interface ICustomLevel extends ILevel {
 
 	void setServerId(String id);
 
+	void setAuthor(String author);
+
 }

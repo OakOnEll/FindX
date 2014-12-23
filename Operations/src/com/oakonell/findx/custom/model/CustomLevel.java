@@ -4,7 +4,7 @@ import com.oakonell.findx.model.Level;
 import com.oakonell.findx.model.Stage;
 import com.oakonell.utils.StringUtils;
 
-public class CustomLevel extends Level implements ICustomLevel{
+public class CustomLevel extends Level implements ICustomLevel {
 	private long dbId;
 	private int sequence;
 	private boolean isImported;
@@ -28,7 +28,7 @@ public class CustomLevel extends Level implements ICustomLevel{
 	protected String getRatingTableId() {
 		return dbId + "";
 	}
-	
+
 	public long getDbId() {
 		return dbId;
 	}
@@ -45,6 +45,11 @@ public class CustomLevel extends Level implements ICustomLevel{
 		return author;
 	}
 
+	@Override
+	public void setAuthor(String author) {
+		this.author = author;
+	}
+
 	public boolean savedToServer() {
 		return !StringUtils.isEmpty(serverId);
 	}
@@ -56,9 +61,10 @@ public class CustomLevel extends Level implements ICustomLevel{
 	public void setServerId(String id) {
 		this.serverId = id;
 	}
-	
+
 	@Override
 	public boolean isUnlocked() {
 		return true;
 	}
+
 }

@@ -26,8 +26,9 @@ public class CustomLevelProxy implements ICustomLevel {
 	private final String name;
 	private final String hyphenId;
 	private final boolean isImported;
-	private final String author;
 	private final int sequence;
+
+	private String author;
 	private String serverId;
 
 	public CustomLevelProxy(CustomStage stage, String id, long dbId,
@@ -147,6 +148,14 @@ public class CustomLevelProxy implements ICustomLevel {
 			getLevel().setServerId(id);
 		}
 		serverId = id;
+	}
+
+	@Override
+	public void setAuthor(String author) {
+		if (level != null) {
+			getLevel().setAuthor(author);
+		}
+		this.author = author;
 	}
 
 	// ----------

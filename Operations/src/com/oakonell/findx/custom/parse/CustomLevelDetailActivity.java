@@ -6,12 +6,14 @@ import java.util.List;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.StrictMode;
 import android.support.v4.app.NavUtils;
 import android.text.Html;
 import android.text.format.DateUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -102,6 +104,15 @@ public class CustomLevelDetailActivity extends SherlockFragmentActivity {
 		ab.setTitle("Level Detail");
 
 		levelId = getIntent().getStringExtra(LEVEL_PARSE_ID);
+		if (levelId == null) {
+			Intent intent = getIntent();
+
+			Uri uri = intent.getData();
+			levelId = uri.getQueryParameter("id");
+		}
+		if (levelId == null) {
+			// TODO give a warning that no level exists
+		}
 
 		waiting = (ProgressBar) findViewById(R.id.waiting);
 		waiting.setVisibility(View.VISIBLE);
@@ -207,8 +218,13 @@ public class CustomLevelDetailActivity extends SherlockFragmentActivity {
 					waiting.setVisibility(View.GONE);
 					updateHeader(object);
 				} else {
-					// something went wrong TODO
-					throw new RuntimeException("Error getting level", e);
+					TextView errorView = (TextView) findViewById(R.id.error_text);
+					errorView.setVisibility(View.VISIBLE);
+					errorView.setText("Error getting level- " + levelId + ": "
+							+ e.getLocalizedMessage());
+					waiting.setVisibility(View.GONE);
+					Log.e("CustomLevelDetailActivity", "Error getting level- "
+							+ levelId, e);
 				}
 			}
 		});

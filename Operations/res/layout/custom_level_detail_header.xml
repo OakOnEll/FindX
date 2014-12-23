@@ -5,6 +5,15 @@
     android:orientation="vertical" >
 
     <TextView
+        android:id="@+id/error_text"
+        android:textColor="#FF0000"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text=""
+        android:visibility="gone"
+        android:textAppearance="?android:attr/textAppearanceLarge" />
+
+    <TextView
         android:gravity="center_horizontal"
         android:id="@+id/title"
         android:layout_width="match_parent"

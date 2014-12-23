@@ -1,5 +1,6 @@
 package com.oakonell.findx.custom.model;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -26,9 +27,14 @@ public class CombinedList<E> implements List<E> {
 	}
 
 	@Override
-	public Iterator<E> iterator() {
-		// TODO Auto-generated method stub
-		return null;
+	public List<E> subList(int start, int end) {
+		List<E> result = new ArrayList<E>(end - start + 1);
+		int max = size();
+		for (int i = 0; i < max; i++) {
+			E each = get(i);
+			result.add(each);
+		}
+		return result;
 	}
 
 	@Override
@@ -54,6 +60,11 @@ public class CombinedList<E> implements List<E> {
 			size += each.size();
 		}
 		return size;
+	}
+
+	@Override
+	public Iterator<E> iterator() {
+		throw new UnsupportedOperationException();
 	}
 
 	@Override
@@ -128,11 +139,6 @@ public class CombinedList<E> implements List<E> {
 
 	@Override
 	public E set(int location, E object) {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public List<E> subList(int start, int end) {
 		throw new UnsupportedOperationException();
 	}
 
