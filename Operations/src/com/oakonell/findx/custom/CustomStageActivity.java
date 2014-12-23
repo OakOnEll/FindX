@@ -519,11 +519,13 @@ public class CustomStageActivity extends GameActivity {
 				.getString(R.string.pref_default_share_custom_level_key),
 				defaultText);
 
+		String equation = level.getEquation().toString();
+		
 		shareText = shareText.replaceAll("%a", author);
 		shareText = shareText.replaceAll(
 				"%u",
 				"http://www.oakonell.com/findx/custom_shared?id="
-						+ level.getServerId()) + "&t=" + URLEncoder.encode(title) + "&a=" + URLEncoder.encode(author);
+						+ level.getServerId()) + "&t=" + URLEncoder.encode(title) + "&a=" + URLEncoder.encode(author) + "&e=" + URLEncoder.encode(equation);
 		shareText = shareText.replaceAll("%l",
 				title + "\n " + level.getMultilineDescription() + "\n");
 
