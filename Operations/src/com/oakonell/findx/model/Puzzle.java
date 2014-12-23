@@ -14,7 +14,9 @@ import android.database.sqlite.SQLiteDatabase;
 import android.provider.BaseColumns;
 import android.widget.Toast;
 
+import com.google.android.gms.analytics.HitBuilders;
 import com.oakonell.findx.custom.model.CustomLevelDBReader;
+import com.oakonell.findx.custom.model.ICustomLevel;
 import com.oakonell.findx.data.DataBaseHelper;
 import com.oakonell.findx.model.Operation.OperationType;
 import com.oakonell.findx.model.ops.Add;
@@ -572,4 +574,17 @@ public class Puzzle {
 		return numMoves;
 	}
 
+
+	public String getTrackerStartDescription() {
+		if (getLevel() instanceof ICustomLevel) {
+			ICustomLevel custLevel = (ICustomLevel) getLevel();
+			if (custLevel.savedToServer()) {
+				return "s-" + custLevel.getServerId();
+			} else {
+				return getId();
+			}
+		} else {
+			return getId();
+		}
+	}
 }

@@ -35,6 +35,8 @@ import com.actionbarsherlock.app.SherlockDialogFragment;
 import com.google.android.gms.analytics.HitBuilders;
 import com.google.android.gms.analytics.Tracker;
 import com.oakonell.findx.PuzzleActivity.Sounds;
+import com.oakonell.findx.custom.model.CustomLevel;
+import com.oakonell.findx.custom.model.ICustomLevel;
 import com.oakonell.findx.model.Equation;
 import com.oakonell.findx.model.Expression;
 import com.oakonell.findx.model.Expression.UseParenthesis;
@@ -153,9 +155,12 @@ public class LevelSolvedDialogFragment extends SherlockDialogFragment {
 		puzzle.updateRating();
 
 		Tracker googleTracker = activity.getFindXApplication().getTracker();
-		googleTracker.send(new HitBuilders.EventBuilder().setCategory("puzzle")
+		googleTracker.send(new HitBuilders.EventBuilder()
+				.setCategory("puzzle")
 				.setAction("solved")
-				.setLabel(puzzle.getId() + puzzle.getRating()).build());
+				.setLabel(
+						puzzle.getTrackerStartDescription() + ":"
+								+ puzzle.getRating()).build());
 
 		anim_container = view.findViewById(R.id.anim_container);
 		anim_text = (TextView) view.findViewById(R.id.anim_text);

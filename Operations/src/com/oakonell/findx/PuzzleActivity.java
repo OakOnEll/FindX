@@ -134,7 +134,7 @@ public class PuzzleActivity extends GameActivity {
 			Tracker googleTracker = getFindXApplication().getTracker();
 			googleTracker.send(new HitBuilders.EventBuilder()
 					.setCategory("puzzle").setAction("start")
-					.setLabel(puzzle.getId()).build());
+					.setLabel(puzzle.getTrackerStartDescription()).build());
 
 		}
 
@@ -249,7 +249,7 @@ public class PuzzleActivity extends GameActivity {
 								.getApplication()).getTracker();
 						googleTracker.send(new HitBuilders.EventBuilder()
 								.setCategory("puzzle").setAction("giveup")
-								.setLabel(puzzle.getId()).build());
+								.setLabel(puzzle.getTrackerStartDescription()).build());
 
 						navigateUp();
 					}
@@ -538,7 +538,7 @@ public class PuzzleActivity extends GameActivity {
 	public void restart(boolean animate) {
 		Tracker googleTracker = getFindXApplication().getTracker();
 		googleTracker.send(new HitBuilders.EventBuilder().setCategory("puzzle")
-				.setAction("restart").setLabel(puzzle.getId()).build());
+				.setAction("restart").setLabel(puzzle.getTrackerStartDescription()).build());
 
 		Runnable restart = new Runnable() {
 			@Override
@@ -757,7 +757,7 @@ public class PuzzleActivity extends GameActivity {
 
 		Tracker googleTracker = getFindXApplication().getTracker();
 		googleTracker.send(new HitBuilders.EventBuilder().setCategory("puzzle")
-				.setAction("undo").setLabel(puzzle.getId()).build());
+				.setAction("undo").setLabel(puzzle.getTrackerStartDescription()).build());
 
 		soundManager.playSound(Sounds.UNDO);
 		int lastIndex = puzzle.getMoves().size() - 1;
