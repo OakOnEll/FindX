@@ -34,6 +34,7 @@ import com.oakonell.findx.model.ops.Subtract;
 import com.oakonell.findx.model.ops.Swap;
 import com.oakonell.findx.model.ops.WildCard;
 import com.oakonell.utils.StringUtils;
+import com.parse.FindCallback;
 import com.parse.ParseException;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
@@ -118,12 +119,13 @@ public class ParseLevelHelper {
 			postLevelMoves(level, theLevel.getLevelSolution()
 					.getSecondaryOperations2(), 2);
 
-			
 			GoogleAnalytics analytics = GoogleAnalytics.getInstance(context);
-			Tracker googleTracker = analytics.newTracker(R.string.ga_trackingId);
-			googleTracker.send(new HitBuilders.EventBuilder().setCategory("custom")
-					.setAction("post").setLabel(id).build());
-			
+			Tracker googleTracker = analytics
+					.newTracker(R.string.ga_trackingId);
+			googleTracker.send(new HitBuilders.EventBuilder()
+					.setCategory("custom").setAction("post").setLabel(id)
+					.build());
+
 			return id;
 		} catch (ParseException e) {
 			throw new RuntimeException("Error writing level to parse", e);
@@ -249,7 +251,7 @@ public class ParseLevelHelper {
 		Tracker googleTracker = analytics.newTracker(R.string.ga_trackingId);
 		googleTracker.send(new HitBuilders.EventBuilder().setCategory("custom")
 				.setAction("load").setLabel(level.getObjectId()).build());
-		
+
 		FractionFormat format = new FractionFormat();
 
 		Equation startEquation = readEquation(level);
@@ -426,14 +428,48 @@ public class ParseLevelHelper {
 		return new Expression(x2Ccoeff, xCcoeff, scalar);
 	}
 
+	interface OnRatingLoaded {
+		void ratingLoaded(ParseObject rating);
+	}
+
+	public static void getMyRatingComment(ParseObject proxiedParseLevel,
+			final OnRatingLoaded onRatingLoaded) {
+		ParseQuery<ParseObject> myCommentQuery = new ParseQuery<ParseObject>(
+				ParseLevelRating.classname);
+		myCommentQuery.whereEqualTo(ParseLevelRating.level_field,
+				proxiedParseLevel);
+		myCommentQuery.whereEqualTo(ParseLevelRating.createdBy_field,
+				ParseUser.getCurrentUser());
+		myCommentQuery.findInBackground(new FindCallback<ParseObject>() {
+			@Override
+			public void done(List<ParseObject> comments, ParseException e) {
+				if (e != null) {
+					// TODO error
+					throw new RuntimeException("Error loading my comment", e);
+				}
+				if (comments.isEmpty()) {
+					return;
+				}
+				if (comments.size() > 1) {
+					throw new RuntimeException(
+							"Error- more than 1 of my comments for this level!");
+				}
+				ParseObject myParseComment = comments.get(0);
+				onRatingLoaded.ratingLoaded(myParseComment);
+			}
+		});
+	}
+
 	public static void addOrModifyRatingComment(final ParseObject parseLevel,
 			final ParseObject existingParseComment, final float rating,
-			final String comment, final Runnable continuation) {
+			final String comment, final OnRatingLoaded continuation) {
 		AsyncTask<Void, Void, Void> task = new AsyncTask<Void, Void, Void>() {
+
+			private ParseObject parseComment;
 
 			@Override
 			protected Void doInBackground(Void... params) {
-				ParseObject parseComment = existingParseComment;
+				parseComment = existingParseComment;
 				if (parseComment == null) {
 					parseComment = new ParseObject(ParseLevelRating.classname);
 					parseLevel.increment(ParseCustomLevel.total_ratings_field,
@@ -471,7 +507,7 @@ public class ParseLevelHelper {
 			@Override
 			protected void onPostExecute(Void result) {
 				if (continuation != null) {
-					continuation.run();
+					continuation.ratingLoaded(parseComment);
 				}
 			}
 

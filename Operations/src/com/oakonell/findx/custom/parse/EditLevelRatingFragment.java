@@ -13,17 +13,28 @@ import android.widget.EditText;
 import android.widget.RatingBar;
 
 import com.oakonell.findx.R;
+import com.oakonell.findx.custom.parse.ParseLevelHelper.OnRatingLoaded;
 import com.oakonell.findx.custom.parse.ParseLevelHelper.ParseLevelRating;
 import com.parse.ParseObject;
 
 public class EditLevelRatingFragment extends DialogFragment {
 	private ParseObject myParseComment;
 	private ParseObject level;
-	private Runnable continuation;
+	private OnRatingResult continuation;
+
+	interface OnRatingResult {
+		public void rated(ParseObject rating);
+	}
 
 	public void initialize(ParseObject myRating, ParseObject level,
-			Runnable continuation) {
+			OnRatingResult continuation) {
 		this.myParseComment = myRating;
+		// if (myParseComment == null) {
+		// myParseComment = new ParseObject(ParseLevelRating.classname);
+		// myParseComment.put(ParseLevelRating.level_field, level);
+		// myParseComment.put(ParseLevelRating.createdBy_field,
+		// ParseUser.getCurrentUser());
+		// }
 		this.level = level;
 		this.continuation = continuation;
 	}
@@ -44,13 +55,15 @@ public class EditLevelRatingFragment extends DialogFragment {
 				.findViewById(R.id.current_ratingBar);
 		final EditText commentView = (EditText) view.findViewById(R.id.comment);
 
-		float rating = (float) myParseComment
-				.getDouble(ParseLevelRating.rating_field);
-		String comment = myParseComment
-				.getString(ParseLevelRating.comment_field);
+		if (myParseComment != null) {
+			float rating = (float) myParseComment
+					.getDouble(ParseLevelRating.rating_field);
+			String comment = myParseComment
+					.getString(ParseLevelRating.comment_field);
 
-		commentView.setText(comment);
-		myRatingBar.setRating(rating);
+			commentView.setText(comment);
+			myRatingBar.setRating(rating);
+		}
 
 		Button button = (Button) view.findViewById(R.id.submit);
 		button.setOnClickListener(new OnClickListener() {
@@ -61,31 +74,16 @@ public class EditLevelRatingFragment extends DialogFragment {
 				final float newRating = myRatingBar.getRating();
 				final String newComment = commentView.getText().toString();
 
-				AsyncTask<Void, Void, Void> task = new AsyncTask<Void, Void, Void>() {
-					boolean success;
-
-					@Override
-					protected Void doInBackground(Void... params) {
-						ParseLevelHelper.addOrModifyRatingComment(level,
-								myParseComment, newRating, newComment, null);
-						success = true;
-						return null;
-					}
-
-					@Override
-					protected void onPostExecute(Void result) {
-						progDialog.dismiss();
-						if (success) {
-							dismiss();
-							if (continuation != null) {
-								continuation.run();
+				ParseLevelHelper.addOrModifyRatingComment(level,
+						myParseComment, newRating, newComment,
+						new OnRatingLoaded() {
+							@Override
+							public void ratingLoaded(ParseObject rating) {
+								dismiss();
+								continuation.rated(rating);
+								progDialog.dismiss();
 							}
-							return;
-						}
-					}
-
-				};
-				task.execute();
+						});
 			}
 		});
 

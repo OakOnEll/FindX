@@ -15,8 +15,10 @@ import android.text.Html;
 import android.text.format.DateUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.View.OnTouchListener;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -39,7 +41,9 @@ import com.oakonell.findx.R;
 import com.oakonell.findx.custom.model.CustomLevelBuilder;
 import com.oakonell.findx.custom.model.CustomLevelDBReader;
 import com.oakonell.findx.custom.model.ICustomLevel;
+import com.oakonell.findx.custom.parse.EditLevelRatingFragment.OnRatingResult;
 import com.oakonell.findx.custom.parse.ParseConnectivity.ParseUserExtra;
+import com.oakonell.findx.custom.parse.ParseLevelHelper.OnRatingLoaded;
 import com.oakonell.findx.custom.parse.ParseLevelHelper.ParseCustomLevel;
 import com.oakonell.findx.custom.parse.ParseLevelHelper.ParseLevelOperation;
 import com.oakonell.findx.custom.parse.ParseLevelHelper.ParseLevelRating;
@@ -148,13 +152,28 @@ public class CustomLevelDetailActivity extends SherlockFragmentActivity {
 		editRating.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				editRating(currentUserRatingView);
+				editRating();
 			}
 		});
 		myCommentView = (TextView) currentUserRatingView
 				.findViewById(R.id.comment);
 		myRatingBar = (RatingBar) currentUserRatingView
 				.findViewById(R.id.current_ratingBar);
+		myRatingBar.setOnTouchListener(new OnTouchListener() {
+			@Override
+			public boolean onTouch(View v, MotionEvent event) {
+				if (event.getAction() == MotionEvent.ACTION_UP) {
+					editRating();
+				}
+				return true;
+			}
+		});
+		myRatingBar.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				editRating();
+			}
+		});
 
 		mainAdapter.addView(currentUserRatingView);
 
@@ -167,11 +186,13 @@ public class CustomLevelDetailActivity extends SherlockFragmentActivity {
 
 	}
 
-	protected void editRating(View currentUserRatingView) {
+	protected void editRating() {
 		EditLevelRatingFragment frag = new EditLevelRatingFragment();
-		frag.initialize(myParseComment, level, new Runnable() {
+		frag.initialize(myParseComment, level, new OnRatingResult() {
 			@Override
-			public void run() {
+			public void rated(ParseObject rating) {
+				myParseComment = rating;
+				updateMyRatingInfo();
 				updateHeader(level);
 				// TODO release the my comment progress
 				Toast.makeText(CustomLevelDetailActivity.this,
@@ -200,6 +221,16 @@ public class CustomLevelDetailActivity extends SherlockFragmentActivity {
 		// Toast.LENGTH_SHORT).show();
 		// }
 		// });
+	}
+
+	private void updateMyRatingInfo() {
+		float rating = (float) myParseComment
+				.getDouble(ParseLevelRating.rating_field);
+		String comment = myParseComment
+				.getString(ParseLevelRating.comment_field);
+
+		myCommentView.setText(comment);
+		myRatingBar.setRating(rating);
 	}
 
 	@Override
@@ -256,36 +287,17 @@ public class CustomLevelDetailActivity extends SherlockFragmentActivity {
 		ParseUser currentUser = ParseUser.getCurrentUser();
 
 		// load my comment
-		ParseQuery<ParseObject> myCommentQuery = new ParseQuery<ParseObject>(
-				ParseLevelRating.classname);
-		myCommentQuery.whereEqualTo(ParseLevelRating.level_field,
-				proxiedParseLevel);
-		myCommentQuery.whereEqualTo(ParseLevelRating.createdBy_field,
-				currentUser);
-		myCommentQuery.findInBackground(new FindCallback<ParseObject>() {
-			@Override
-			public void done(List<ParseObject> comments, ParseException e) {
-				if (e != null) {
-					// TODO error
-					throw new RuntimeException("Error loading my comment", e);
-				}
-				if (comments.isEmpty()) {
-					return;
-				}
-				if (comments.size() > 1) {
-					throw new RuntimeException(
-							"Error- more than 1 of my comments for this level!");
-				}
-				myParseComment = comments.get(0);
-				float rating = (float) myParseComment
-						.getDouble(ParseLevelRating.rating_field);
-				String comment = myParseComment
-						.getString(ParseLevelRating.comment_field);
+		ParseLevelHelper.getMyRatingComment(proxiedParseLevel,
+				new OnRatingLoaded() {
+					@Override
+					public void ratingLoaded(ParseObject myRating) {
+						if (myRating == null)
+							return;
+						myParseComment = myRating;
+						updateMyRatingInfo();
 
-				myCommentView.setText(comment);
-				myRatingBar.setRating(rating);
-			}
-		});
+					}
+				});
 
 		// load all but my comment
 		ParseQuery<ParseObject> otherCommentQuery = new ParseQuery<ParseObject>(
@@ -303,6 +315,7 @@ public class CustomLevelDetailActivity extends SherlockFragmentActivity {
 					throw new RuntimeException("Error getting other comments",
 							e);
 				}
+				comments.clear();
 				comments.addAll(theComments);
 				commentsAdapter.notifyDataSetChanged();
 			}
