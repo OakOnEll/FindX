@@ -23,7 +23,7 @@ public class FindXApp extends Application {
 		}
 		GoogleAnalytics analytics = GoogleAnalytics.getInstance(this);
 		analytics.getLogger().setLogLevel(Logger.LogLevel.VERBOSE);
-		tracker = analytics.newTracker(getString(R.string.ga_trackingId));
+		tracker = analytics.newTracker(getString(R.xml.analytics));
 		return tracker;
 
 	}

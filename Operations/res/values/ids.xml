@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-        <string name="app_id" translatable="false">354565813329</string>
-        <string name="ga_trackingId" translatable="false">UA-41757713-3</string>
-        
+
+    <string name="app_id" translatable="false">354565813329</string>
+    <string name="an_achievement_unlocked" translatable="false">achievement_unlocked</string>
+
 </resources>
