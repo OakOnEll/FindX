@@ -4,7 +4,7 @@
     android:id="@+id/selectLevel"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
-    android:background="@raw/math_operations"
+    android:background="@drawable/math_operations"
     android:orientation="vertical" >
 
     <RelativeLayout

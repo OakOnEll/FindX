@@ -3,7 +3,7 @@
     android:id="@+id/selectLevel"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
-    android:orientation="vertical" android:background="@raw/golden_ratio">
+    android:orientation="vertical" android:background="@drawable/golden_ratio">
 
     <TextView
         android:id="@+id/stage_label"
@@ -11,7 +11,9 @@
         android:layout_gravity="center_horizontal"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Journey-Man" />
+        android:text="Journey-Man"
+        android:textColor="#FFF000"
+        android:background="@drawable/readable_text_background" />
 
     <GridView
         android:id="@+id/level_select"

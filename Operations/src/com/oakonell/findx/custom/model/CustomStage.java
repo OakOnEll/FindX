@@ -13,7 +13,7 @@ import com.oakonell.findx.model.Stage;
 public class CustomStage extends Stage {
 
 	public CustomStage(String id, int titleId) {
-		super(id, titleId, R.raw.minuet_in_g_loop, null);
+		super(id, titleId, R.raw.minuet_in_g_loop, R.drawable.pythagorias, null);
 	}
 
 	public void reorderFromTo(ICustomLevel movedLevel, ICustomLevel myLevel) {

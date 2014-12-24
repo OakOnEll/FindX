@@ -6,15 +6,17 @@ import java.util.List;
 
 public class Stage {
     private final int bgMusicId;
+    private final int bgImageResId;
     private final String id;
     private final int titleId;
     private final List<ILevel> levels = Collections.synchronizedList(new ArrayList<ILevel>());
     private final Stage previousStage;
 
-    public Stage(String id, int titleId, int bgMusicRes, Stage previousStage) {
+    public Stage(String id, int titleId, int bgMusicRes, int bgImage, Stage previousStage) {
         this.id = id;
         this.titleId = titleId;
         bgMusicId = bgMusicRes;
+        bgImageResId = bgImage;
         this.previousStage = previousStage;
     }
 
@@ -78,4 +80,8 @@ public class Stage {
         List<ILevel> prevLevels = previousStage.getLevels();
         return prevLevels.get(prevLevels.size() - 1).isUnlocked();
     }
+
+	public int getBackgroundDrawableResourceId() {
+		return bgImageResId;
+	}
 }

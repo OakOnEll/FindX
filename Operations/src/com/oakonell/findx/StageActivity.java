@@ -80,6 +80,9 @@ public class StageActivity extends GameActivity {
 			stage = Levels.getStage(stageId);
 		}
 
+		View mainView = findViewById(R.id.selectLevel);
+		mainView.setBackgroundResource(stage.getBackgroundDrawableResourceId());
+		
 		TextView label = (TextView) findViewById(R.id.stage_label);
 		label.setText(stage.getTitleId());
 
