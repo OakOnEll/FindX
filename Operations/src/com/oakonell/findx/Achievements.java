@@ -72,17 +72,20 @@ public class Achievements {
 				if (numMoves < 5 * minMoves)
 					return;
 			} else if (minMoves < 10) {
-				if (numMoves < 2 * minMoves)
+				if (numMoves < 3 * minMoves)
 					return;
 			} else {
 				if (numMoves - minMoves < 5)
 					return;
 			}
 
-			if (minMoves < 6) {
+			if (!isPending()) {
+				// if it can be solved in numMovesToSolve, then we're not lost
+				// yet
+				int numMovesToSolve = 6;
 				EquationSolver solver = new EquationSolver();
 				Solution solve = solver.solve(puzzle.getCurrentEquation(),
-						puzzle.getOperations(), 6, null);
+						puzzle.getOperations(), numMovesToSolve, null);
 				if (solve != null)
 					return;
 			}

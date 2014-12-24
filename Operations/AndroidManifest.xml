@@ -32,8 +32,8 @@
 
         <activity
             android:name=".ChooseStageActivity"
-            android:label="@string/app_name" 
-            android:screenOrientation="portrait">
+            android:label="@string/app_name"
+            android:screenOrientation="portrait" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -44,8 +44,8 @@
             android:name=".StageActivity"
             android:label="@string/app_name"
             android:launchMode="singleTop"
-            android:screenOrientation="portrait"
-            android:parentActivityName="com.oakonell.findx.ChooseStageActivity" >
+            android:parentActivityName="com.oakonell.findx.ChooseStageActivity"
+            android:screenOrientation="portrait" >
 
             <!-- Parent activity meta-data to support 4.0 and lower -->
             <meta-data
@@ -64,8 +64,8 @@
         <activity
             android:name=".custom.CustomStageActivity"
             android:launchMode="singleTop"
-            android:screenOrientation="portrait"
-            android:parentActivityName="com.oakonell.findx.ChooseStageActivity" >
+            android:parentActivityName="com.oakonell.findx.ChooseStageActivity"
+            android:screenOrientation="portrait" >
 
             <!-- Parent activity meta-data to support 4.0 and lower -->
             <meta-data
@@ -94,9 +94,8 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.oakonell.findx.custom.CustomStageActivity" />
         </activity>
-        <activity android:name="com.oakonell.findx.custom.parse.CustomLevelDetailActivity" 
-            >
-                        <intent-filter>
+        <activity android:name="com.oakonell.findx.custom.parse.CustomLevelDetailActivity" >
+            <intent-filter>
                 <action android:name="android.intent.action.VIEW" >
                 </action>
 
@@ -111,7 +110,6 @@
                     android:scheme="http" >
                 </data>
             </intent-filter>
-            
         </activity>
         <activity android:name=".settings.AboutFindXActivity" >
         </activity>
@@ -123,17 +121,26 @@
             android:name=".custom.SharedLevelActivity"
             android:noHistory="true" >
             <intent-filter>
-                <action android:name="android.intent.action.VIEW" >
-                </action>
+                <action android:name="android.intent.action.VIEW" />
 
-                <category android:name="android.intent.category.DEFAULT" >
-                </category>
-                <category android:name="android.intent.category.BROWSABLE" >
-                </category>
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
 
                 <data
                     android:host="www.oakonell.com"
                     android:pathPrefix="/findx/share/"
+                    android:scheme="http" >
+                </data>
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data
+                    android:host="www.oakonell.com"
+                    android:pathPrefix="/findx/custom"
                     android:scheme="http" >
                 </data>
             </intent-filter>

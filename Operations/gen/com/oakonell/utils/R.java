@@ -8,10 +8,10 @@ package com.oakonell.utils;
 
 public final class R {
 	public static final class anim {
-		public static final int slide_in_left = 0x7f040000;
-		public static final int slide_in_right = 0x7f040001;
-		public static final int slide_out_left = 0x7f040002;
-		public static final int slide_out_right = 0x7f040003;
+		public static final int slide_in_left = 0x7f040001;
+		public static final int slide_in_right = 0x7f040002;
+		public static final int slide_out_left = 0x7f040003;
+		public static final int slide_out_right = 0x7f040004;
 	}
 	public static final class array {
 		public static final int copy_for_face_book = 0x7f0e0000;
@@ -268,7 +268,7 @@ public final class R {
 		public static final int abs__textfield_searchview_right_holo_dark = 0x7f02006d;
 		public static final int abs__textfield_searchview_right_holo_light = 0x7f02006e;
 		public static final int abs__toast_frame = 0x7f02006f;
-		public static final int icon = 0x7f020095;
+		public static final int icon = 0x7f020098;
 	}
 	public static final class id {
 		public static final int about_description = 0x7f0b0027;
@@ -312,29 +312,29 @@ public final class R {
 		public static final int abs__title = 0x7f0b0033;
 		public static final int abs__up = 0x7f0b001d;
 		public static final int app_name_id = 0x7f0b0024;
-		public static final int decrement = 0x7f0b00c4;
+		public static final int decrement = 0x7f0b00c6;
 		public static final int disableHome = 0x7f0b001b;
 		public static final int edit_query = 0x7f0b003e;
 		public static final int homeAsUp = 0x7f0b0018;
-		public static final int icon = 0x7f0b00e2;
-		public static final int icon_image = 0x7f0b0090;
-		public static final int increment = 0x7f0b00c3;
-		public static final int label = 0x7f0b0071;
+		public static final int icon = 0x7f0b00e4;
+		public static final int icon_image = 0x7f0b0092;
+		public static final int increment = 0x7f0b00c5;
+		public static final int label = 0x7f0b0072;
 		public static final int linearLayout1 = 0x7f0b0022;
 		public static final int listMode = 0x7f0b0014;
 		public static final int no_button = 0x7f0b0056;
 		public static final int normal = 0x7f0b0001;
-		public static final int rate_bar = 0x7f0b008a;
-		public static final int rate_no_thanks = 0x7f0b008d;
-		public static final int rate_redirect_comment = 0x7f0b008b;
-		public static final int rate_remind_later = 0x7f0b008c;
-		public static final int rate_text = 0x7f0b0089;
+		public static final int rate_bar = 0x7f0b008c;
+		public static final int rate_no_thanks = 0x7f0b008f;
+		public static final int rate_redirect_comment = 0x7f0b008d;
+		public static final int rate_remind_later = 0x7f0b008e;
+		public static final int rate_text = 0x7f0b008b;
 		public static final int remember_checkbox = 0x7f0b0057;
 		public static final int showCustom = 0x7f0b001a;
 		public static final int showHome = 0x7f0b0017;
 		public static final int showTitle = 0x7f0b0019;
 		public static final int tabMode = 0x7f0b0015;
-		public static final int text = 0x7f0b00c2;
+		public static final int text = 0x7f0b00c4;
 		public static final int textView1 = 0x7f0b0054;
 		public static final int urlId = 0x7f0b0026;
 		public static final int useLogo = 0x7f0b0016;

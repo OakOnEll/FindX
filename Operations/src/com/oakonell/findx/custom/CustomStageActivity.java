@@ -7,6 +7,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.commons.math3.fraction.Fraction;
 import org.w3c.dom.Document;
@@ -61,6 +62,7 @@ import com.oakonell.findx.custom.model.CustomLevelDBReader;
 import com.oakonell.findx.custom.model.CustomLevelDBWriter;
 import com.oakonell.findx.custom.model.CustomStage;
 import com.oakonell.findx.custom.model.ICustomLevel;
+import com.oakonell.findx.custom.parse.CustomLevelDetailActivity;
 import com.oakonell.findx.custom.parse.CustomLevelSearchActivity;
 import com.oakonell.findx.custom.parse.ParseConnectivity;
 import com.oakonell.findx.custom.parse.ParseConnectivity.ParseUserExtra;
@@ -349,127 +351,8 @@ public class CustomStageActivity extends GameActivity {
 			builder.load(level.getDbId());
 
 			String title = builder.getTitle();
-			List<Operation> operations = builder.getOperations();
-			List<IMove> moves = builder.getMoves();
 
-			DocumentBuilderFactory factory = DocumentBuilderFactory
-					.newInstance();
-			DocumentBuilder docBuilder = factory.newDocumentBuilder();
-			final Document doc = docBuilder.newDocument();
-			Element root = doc.createElement("l");
-			doc.appendChild(root);
-			Element titleNode = doc.createElement("t");
-			XMLUtils.setTextContent(titleNode, title);
-			root.appendChild(titleNode);
-
-			Element authorNode = doc.createElement("a");
-			XMLUtils.setTextContent(authorNode, author);
-			root.appendChild(authorNode);
-
-			for (Operation each : operations) {
-				final Element op = doc.createElement("o");
-				root.appendChild(op);
-				Element typeNode = doc.createElement("t");
-				op.appendChild(typeNode);
-				XMLUtils.setTextContent(typeNode, each.type().toString());
-				OperationVisitor visitor = new OperationVisitor() {
-
-					@Override
-					public void visitWild(WildCard wild) {
-						Element typeNode = doc.createElement("wt");
-						op.appendChild(typeNode);
-						XMLUtils.setTextContent(typeNode, wild.getActual()
-								.type().toString());
-						wild.getActual().accept(this);
-					}
-
-					@Override
-					public void visitSwap(Swap swap) {
-					}
-
-					@Override
-					public void visitSquare(Square square) {
-					}
-
-					@Override
-					public void visitSquareRoot(SquareRoot squareRoot) {
-					}
-
-					@Override
-					public void visitFactor(Factor factor) {
-						Expression expression = factor.getExpression();
-						appendExpression(expression);
-					}
-
-					@Override
-					public void visitDefactor(Defactor defactor) {
-						Expression expression = defactor.getExpression();
-						appendExpression(expression);
-					}
-
-					@Override
-					public void visitSubtract(Subtract sub) {
-						Expression expression = sub.getExpression();
-						appendExpression(expression);
-					}
-
-					private void appendExpression(Expression expression) {
-						Element x2 = doc.createElement("x2");
-						Element x = doc.createElement("x");
-						Element constant = doc.createElement("c");
-						op.appendChild(x2);
-						op.appendChild(x);
-						op.appendChild(constant);
-						XMLUtils.setTextContent(x2, expression
-								.getX2Coefficient().toString());
-						XMLUtils.setTextContent(x, expression.getXCoefficient()
-								.toString());
-						XMLUtils.setTextContent(constant, expression
-								.getConstant().toString());
-					}
-
-					@Override
-					public void visitAdd(Add add) {
-						Expression expression = add.getExpression();
-						appendExpression(expression);
-					}
-
-					@Override
-					public void visitMultiply(Multiply multiply) {
-						Fraction factor = multiply.getFactor();
-						appendFraction(factor);
-					}
-
-					@Override
-					public void visitDivide(Divide divide) {
-						Fraction factor = divide.getFactor();
-						appendFraction(factor);
-					}
-
-					private void appendFraction(Fraction factor) {
-						Element constant = doc.createElement("c");
-						op.appendChild(constant);
-						XMLUtils.setTextContent(constant, factor.toString());
-					}
-
-				};
-				each.accept(visitor);
-			}
-			List<IMove> subList = moves.subList(1, moves.size());
-			for (IMove iEach : subList) {
-				// TODO
-				if (!(iEach instanceof Move)) {
-					continue;
-				}
-				Move each = (Move) iEach;
-				int opIndex = operations.indexOf(each.getOperation());
-				Element op = doc.createElement("m");
-				root.appendChild(op);
-				XMLUtils.setTextContent(op, Integer.toString(opIndex));
-			}
-			Element sol = doc.createElement("s");
-			root.appendChild(sol);
-			XMLUtils.setTextContent(sol, builder.getSolution().toString());
+			Document doc = builder.asXMLDoc(title, author);
 
 			String xmlString = XMLUtils.xmlDocumentToString(doc);
 			byte[] bytes = Utils.compress(xmlString);
@@ -485,8 +368,12 @@ public class CustomStageActivity extends GameActivity {
 					defaultText);
 
 			shareText = shareText.replaceAll("%a", author);
-			shareText = shareText.replaceAll("%u",
-					"http://www.oakonell.com/findx/share/" + encodedString);
+			shareText = shareText.replaceAll(
+					"%u",
+					"http://www.oakonell.com/findx/custom?level="
+							+ encodedString + "&title="
+							+ URLEncoder.encode(title) + "&author="
+							+ URLEncoder.encode(author) + "&equation=" + URLEncoder.encode(builder.getCurrentStartEquation().toString()));
 			shareText = shareText.replaceAll("%l",
 					title + "\n " + level.getMultilineDescription() + "\n");
 
@@ -520,12 +407,18 @@ public class CustomStageActivity extends GameActivity {
 				defaultText);
 
 		String equation = level.getEquation().toString();
-		
+
 		shareText = shareText.replaceAll("%a", author);
 		shareText = shareText.replaceAll(
 				"%u",
 				"http://www.oakonell.com/findx/custom_shared?id="
-						+ level.getServerId()) + "&t=" + URLEncoder.encode(title) + "&a=" + URLEncoder.encode(author) + "&e=" + URLEncoder.encode(equation);
+						+ level.getServerId())
+				+ "&t="
+				+ URLEncoder.encode(title)
+				+ "&a="
+				+ URLEncoder.encode(author)
+				+ "&e="
+				+ URLEncoder.encode(equation);
 		shareText = shareText.replaceAll("%l",
 				title + "\n " + level.getMultilineDescription() + "\n");
 
@@ -747,6 +640,20 @@ public class CustomStageActivity extends GameActivity {
 
 	private void addMenuItems(final ICustomLevel level,
 			List<LevelMenuItem> menuItems) {
+		if (level.savedToServer()) {
+			menuItems.add(new LevelMenuItem("Info", new ItemExecute() {
+				@Override
+				public void execute(CustomStageActivity activity,
+						ArrayAdapter<ILevel> adapter) {
+					Intent levelIntent = new Intent(CustomStageActivity.this,
+							CustomLevelDetailActivity.class);
+					levelIntent.putExtra(
+							CustomLevelDetailActivity.LEVEL_PARSE_ID,
+							level.getServerId());
+					startActivity(levelIntent);
+				}
+			}));
+		}
 		menuItems.add(new LevelMenuItem("Delete", new ItemExecute() {
 			@Override
 			public void execute(CustomStageActivity activity,
@@ -863,7 +770,8 @@ public class CustomStageActivity extends GameActivity {
 						ParseUserExtra.nickname_field);
 				builder.setAuthor(author);
 				CustomLevelDBWriter writer = new CustomLevelDBWriter();
-				writer.write(getFindXApplication(),CustomStageActivity.this, builder);
+				writer.write(getFindXApplication(), CustomStageActivity.this,
+						builder);
 
 				theLevel.setServerId(id);
 				theLevel.setAuthor(author);

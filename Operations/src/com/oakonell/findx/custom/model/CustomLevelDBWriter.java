@@ -4,7 +4,6 @@ import java.util.List;
 
 import org.apache.commons.math3.fraction.Fraction;
 
-import android.app.Application;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;

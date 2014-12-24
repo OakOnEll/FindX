@@ -3,39 +3,41 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical" >
-
+
     <TextView
         android:id="@+id/textView4"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/import_title"
         android:textAppearance="?android:attr/textAppearanceLarge" />
-
+
     <TextView
         android:id="@+id/author"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Author"
         android:textAppearance="?android:attr/textAppearanceLarge" />
-
+
     <EditText
         android:id="@+id/title"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
         android:text="Large Text"
-        android:textAppearance="?android:attr/textAppearanceLarge" android:layout_gravity="center_horizontal"/>
+        android:textAppearance="?android:attr/textAppearanceLarge" />
 
     <LinearLayout
         android:id="@+id/linearLayout2"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" >
-
+
         <TextView
             android:id="@+id/textView3"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:paddingRight="8sp"
             android:text="@string/equation"
-            android:textAppearance="?android:attr/textAppearanceLarge" android:paddingRight="8sp"/>
+            android:textAppearance="?android:attr/textAppearanceLarge" />
 
         <TextView
             android:id="@+id/equation"
@@ -43,20 +45,20 @@
             android:layout_height="wrap_content"
             android:text="Large Text"
             android:textAppearance="?android:attr/textAppearanceLarge" />
-
     </LinearLayout>
 
     <LinearLayout
         android:id="@+id/linearLayout1"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" >
-
+
         <TextView
             android:id="@+id/textView2"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:paddingRight="8sp"
             android:text="@string/num_moves"
-            android:textAppearance="?android:attr/textAppearanceLarge" android:paddingRight="8sp"/>
+            android:textAppearance="?android:attr/textAppearanceLarge" />
 
         <TextView
             android:id="@+id/num_moves"
@@ -64,56 +66,76 @@
             android:layout_height="wrap_content"
             android:text="Large Text"
             android:textAppearance="?android:attr/textAppearanceLarge" />
-
     </LinearLayout>
-
+
     <TextView
         android:id="@+id/textView1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
         android:text="@string/operations"
-        android:textAppearance="?android:attr/textAppearanceLarge" android:layout_gravity="center_horizontal"/>
-
+        android:textAppearance="?android:attr/textAppearanceLarge" />
+
     <TextView
         android:id="@+id/op1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Large Text"
         android:textAppearance="?android:attr/textAppearanceLarge" />
-
+
     <TextView
         android:id="@+id/op2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Large Text"
-        android:textAppearance="?android:attr/textAppearanceLarge" android:visibility="gone"/>
-
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:visibility="gone" />
+
     <TextView
         android:id="@+id/op3"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Large Text"
-        android:textAppearance="?android:attr/textAppearanceLarge" android:visibility="gone"/>
-
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:visibility="gone" />
+
     <TextView
         android:id="@+id/op4"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Large Text"
-        android:textAppearance="?android:attr/textAppearanceLarge" android:visibility="gone"/>
-
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:visibility="gone" />
+
     <TextView
         android:id="@+id/op5"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Large Text"
-        android:textAppearance="?android:attr/textAppearanceLarge" android:visibility="gone"/>
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:visibility="gone" />
 
-    
+    <TextView
+        android:id="@+id/op6"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Large Text"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:visibility="gone" />
+
     <Button
         android:id="@+id/import_level"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/import_level" android:layout_gravity="center_horizontal"/>
+        android:layout_gravity="center_horizontal"
+        android:text="@string/import_level" />
+
+    <TextView
+        android:id="@+id/error_text"
+        android:textColor="#FF0000"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text=""
+        android:textAppearance="?android:attr/textAppearanceLarge" />
 
 </LinearLayout>
