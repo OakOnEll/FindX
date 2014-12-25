@@ -105,8 +105,6 @@ public class CustomStageActivity extends GameActivity {
 	private DragController mDragController;
 	private DragLayer mDragLayer;
 
-	private Runnable onSignIn;
-
 	private static final class ViewHolder {
 
 		protected TextView id;
@@ -371,9 +369,14 @@ public class CustomStageActivity extends GameActivity {
 			shareText = shareText.replaceAll(
 					"%u",
 					"http://www.oakonell.com/findx/custom?level="
-							+ encodedString + "&title="
-							+ URLEncoder.encode(title) + "&author="
-							+ URLEncoder.encode(author) + "&equation=" + URLEncoder.encode(builder.getCurrentStartEquation().toString()));
+							+ encodedString
+							+ "&title="
+							+ URLEncoder.encode(title)
+							+ "&author="
+							+ URLEncoder.encode(author)
+							+ "&equation="
+							+ URLEncoder.encode(builder
+									.getCurrentStartEquation().toString()));
 			shareText = shareText.replaceAll("%l",
 					title + "\n " + level.getMultilineDescription() + "\n");
 
@@ -699,12 +702,12 @@ public class CustomStageActivity extends GameActivity {
 	private void postLevel(final ICustomLevel theLevel) {
 		ParseUser parseUser = ParseUser.getCurrentUser();
 		if (parseUser == null) {
-			onSignIn = new Runnable() {
+			setOnSignIn(new Runnable() {
 				@Override
 				public void run() {
 					postLevel(theLevel);
 				}
-			};
+			});
 			getGameHelper().beginUserInitiatedSignIn();
 			return;
 		}
@@ -847,19 +850,5 @@ public class CustomStageActivity extends GameActivity {
 		}
 
 		return MenuHelper.onOptionsItemSelected(this, item);
-	}
-
-	@Override
-	public void onSignInSucceeded() {
-		super.onSignInSucceeded();
-		if (onSignIn != null) {
-			onSignIn.run();
-		}
-	}
-
-	@Override
-	public void onSignInFailed() {
-		super.onSignInFailed();
-		onSignIn = null;
 	}
 }

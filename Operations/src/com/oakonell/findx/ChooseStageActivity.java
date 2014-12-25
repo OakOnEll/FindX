@@ -1,6 +1,5 @@
 package com.oakonell.findx;
 
-import android.app.Application;
 import android.content.Context;
 import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
@@ -15,7 +14,6 @@ import android.widget.Button;
 import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.actionbarsherlock.app.ActionBar;
 import com.actionbarsherlock.view.MenuInflater;
@@ -38,7 +36,6 @@ public class ChooseStageActivity extends GameActivity implements
 
 	private View signOutView;
 	private View signInView;
-	protected Runnable onSignIn;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -110,14 +107,14 @@ public class ChooseStageActivity extends GameActivity implements
 							.getAchievementsIntent(getGameHelper()
 									.getApiClient()), RC_UNUSED);
 				} else {
-					onSignIn = new Runnable() {
+					setOnSignIn(new Runnable() {
 						@Override
 						public void run() {
 							startActivityForResult(Games.Achievements
 									.getAchievementsIntent(getGameHelper()
 											.getApiClient()), RC_UNUSED);
 						}
-					};
+					});
 					getGameHelper().beginUserInitiatedSignIn();
 				}
 			}
@@ -269,30 +266,14 @@ public class ChooseStageActivity extends GameActivity implements
 
 	@Override
 	public void onSignInFailed() {
-		onSignIn = null;
 		super.onSignInFailed();
 		showLogin();
 	}
 
 	@Override
 	public void onSignInSucceeded() {
+		super.onSignInSucceeded();
 		showLogout();
-
-		ParseConnectivity.connect(this, getGameHelper());
-
-		FindXApp app = getFindXApplication();
-		Intent settingsIntent = Games.getSettingsIntent(getApiClient());
-		app.setSettingsIntent(settingsIntent);
-
-		Achievements achievements = app.getAchievements();
-		if (achievements.hasPending()) {
-			achievements.pushToGoogle(this);
-		}
-
-		if (onSignIn != null) {
-			onSignIn.run();
-		}
-
 	}
 
 	private void showLogin() {
@@ -332,6 +313,5 @@ public class ChooseStageActivity extends GameActivity implements
 	public Context getContext() {
 		return this;
 	}
-
 
 }

@@ -8,9 +8,9 @@ import java.util.Map;
 import org.apache.commons.math3.fraction.Fraction;
 import org.apache.commons.math3.fraction.FractionFormat;
 
-import android.app.Application;
 import android.content.Context;
 import android.os.AsyncTask;
+import android.util.Log;
 
 import com.google.android.gms.analytics.HitBuilders;
 import com.google.android.gms.analytics.Tracker;
@@ -71,6 +71,8 @@ public class ParseLevelHelper {
 		// prefix for standard ExpressionField columns for the start equation
 		final String lhs_expr_prefix = "lhs_";
 		final String rhs_expr_prefix = "rhs_";
+
+		final String download_counter = "downloads";
 
 	}
 
@@ -250,6 +252,15 @@ public class ParseLevelHelper {
 		Tracker googleTracker = app.getTracker();
 		googleTracker.send(new HitBuilders.EventBuilder().setCategory("custom")
 				.setAction("load").setLabel(level.getObjectId()).build());
+
+		level.increment(ParseCustomLevel.download_counter);
+		try {
+			level.save();
+		} catch (ParseException e1) {
+			googleTracker.send(new HitBuilders.EventBuilder().setCategory("custom")
+					.setAction("incDownloadsErr").setLabel(level.getObjectId()).build());
+			Log.e("ParseLevelHelper", "Unable to increment download count", e1);
+		}
 
 		FractionFormat format = new FractionFormat();
 
@@ -447,6 +458,7 @@ public class ParseLevelHelper {
 					throw new RuntimeException("Error loading my comment", e);
 				}
 				if (comments.isEmpty()) {
+					onRatingLoaded.ratingLoaded(null);
 					return;
 				}
 				if (comments.size() > 1) {

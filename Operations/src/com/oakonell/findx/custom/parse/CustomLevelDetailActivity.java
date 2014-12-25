@@ -29,7 +29,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.actionbarsherlock.app.ActionBar;
-import com.actionbarsherlock.app.SherlockFragmentActivity;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuInflater;
 import com.actionbarsherlock.view.MenuItem;
@@ -37,6 +36,7 @@ import com.commonsware.cwac.merge.MergeAdapter;
 import com.google.android.gms.analytics.GoogleAnalytics;
 import com.oakonell.findx.BuildConfig;
 import com.oakonell.findx.FindXApp;
+import com.oakonell.findx.GameActivity;
 import com.oakonell.findx.PuzzleActivity;
 import com.oakonell.findx.R;
 import com.oakonell.findx.custom.model.CustomLevelBuilder;
@@ -58,7 +58,7 @@ import com.parse.ParseObject;
 import com.parse.ParseQuery;
 import com.parse.ParseUser;
 
-public class CustomLevelDetailActivity extends SherlockFragmentActivity {
+public class CustomLevelDetailActivity extends GameActivity {
 	public static final String LEVEL_PARSE_ID = "levelParseId";
 	private MergeAdapter mainAdapter = new MergeAdapter();
 
@@ -83,6 +83,7 @@ public class CustomLevelDetailActivity extends SherlockFragmentActivity {
 	private View currentUserRatingView;
 	private TextView myCommentView;
 	private RatingBar myRatingBar;
+	private TextView downloads;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -129,6 +130,7 @@ public class CustomLevelDetailActivity extends SherlockFragmentActivity {
 				null);
 		title = (TextView) headerView.findViewById(R.id.title);
 		author = (TextView) headerView.findViewById(R.id.author);
+		downloads = (TextView) headerView.findViewById(R.id.downloads);
 		equation = (TextView) headerView.findViewById(R.id.equation);
 		solvable_desription = (TextView) headerView
 				.findViewById(R.id.solvable_desription);
@@ -188,6 +190,39 @@ public class CustomLevelDetailActivity extends SherlockFragmentActivity {
 	}
 
 	protected void editRating() {
+		ParseUser parseUser = ParseUser.getCurrentUser();
+		if (parseUser == null) {
+			setOnSignIn(new Runnable() {
+				@Override
+				public void run() {
+					ParseObject proxiedParseLevel = ParseObject
+							.createWithoutData(ParseCustomLevel.classname,
+									levelId);
+					loadMyComment(proxiedParseLevel, new Runnable() {
+						@Override
+						public void run() {
+							editRating();
+						}
+					});
+				}
+			});
+			getGameHelper().beginUserInitiatedSignIn();
+			return;
+		}
+		if (StringUtils.isEmpty(parseUser
+				.getString(ParseUserExtra.nickname_field))) {
+			Runnable continuation = new Runnable() {
+				@Override
+				public void run() {
+					editRating();
+				}
+			};
+			ParseConnectivity.createUniqueNickname(this, continuation);
+			return;
+		}
+
+		// need to log in to edit a rating
+
 		EditLevelRatingFragment frag = new EditLevelRatingFragment();
 		frag.initialize(myParseComment, level, new OnRatingResult() {
 			@Override
@@ -239,6 +274,10 @@ public class CustomLevelDetailActivity extends SherlockFragmentActivity {
 		super.onStart();
 		GoogleAnalytics.getInstance(this).reportActivityStart(this);
 
+		loadLevelDetails();
+	}
+
+	private void loadLevelDetails() {
 		// find the level
 		ParseQuery<ParseObject> levelQuery = ParseQuery
 				.getQuery(ParseCustomLevel.classname);
@@ -275,30 +314,21 @@ public class CustomLevelDetailActivity extends SherlockFragmentActivity {
 					throw new RuntimeException(
 							"Error getting level operations", e);
 				} else {
+					operations.clear();
 					for (ParseObject opObject : list) {
 						Operation op = ParseLevelHelper
 								.loadOperationFrom(opObject);
 
 						operations.add(op);
-						operationsAdapter.notifyDataSetChanged();
 					}
+					operationsAdapter.notifyDataSetChanged();
 				}
 			}
 		});
 		ParseUser currentUser = ParseUser.getCurrentUser();
 
 		// load my comment
-		ParseLevelHelper.getMyRatingComment(proxiedParseLevel,
-				new OnRatingLoaded() {
-					@Override
-					public void ratingLoaded(ParseObject myRating) {
-						if (myRating == null)
-							return;
-						myParseComment = myRating;
-						updateMyRatingInfo();
-
-					}
-				});
+		loadMyComment(proxiedParseLevel, null);
 
 		// load all but my comment
 		ParseQuery<ParseObject> otherCommentQuery = new ParseQuery<ParseObject>(
@@ -323,11 +353,30 @@ public class CustomLevelDetailActivity extends SherlockFragmentActivity {
 		});
 	}
 
+	private void loadMyComment(ParseObject proxiedParseLevel,
+			final Runnable continuation) {
+		ParseLevelHelper.getMyRatingComment(proxiedParseLevel,
+				new OnRatingLoaded() {
+					@Override
+					public void ratingLoaded(ParseObject myRating) {
+						if (myRating != null) {
+							myParseComment = myRating;
+							updateMyRatingInfo();
+						}
+						if (continuation != null) {
+							continuation.run();
+						}
+					}
+				});
+	}
+
 	protected void updateHeader(ParseObject object) {
 		String equationString = ParseLevelHelper.readEquation(object)
 				.toString();
 		int numMoves = object
 				.getInt(ParseLevelHelper.ParseCustomLevel.num_moves_field);
+		int numDownloads = object
+				.getInt(ParseLevelHelper.ParseCustomLevel.download_counter);
 		String authorName = object.getParseUser(
 				ParseLevelHelper.ParseCustomLevel.createdBy_field).getString(
 				ParseUserExtra.nickname_field);
@@ -348,6 +397,12 @@ public class CustomLevelDetailActivity extends SherlockFragmentActivity {
 
 		title.setText(titleString);
 		author.setText("Created by " + authorName + " on " + createdString);
+		if (numDownloads == 1) {
+			downloads.setText(numDownloads + " download");
+		} else {
+			downloads.setText(numDownloads + " downloads");
+		}
+
 		equation.setText(Html.fromHtml(equationString));
 		solvable_desription.setText(solvableDescriptionString);
 
