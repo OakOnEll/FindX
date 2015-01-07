@@ -243,23 +243,6 @@ public class DataBaseHelper extends SQLiteOpenHelper {
 	}
 
 	protected void updateOpIds(SQLiteDatabase db) {
-		// CUSTOM_LEVEL_OPERATIONS_TABLE_NAME
-		// public static final String CUSTOM_LEVEL_ID = "level_id";
-		// public static final String TYPE = "type";
-		// public static final String WILD_TYPE = "wild_type";
-		// public static final String SEQ_NUM = "sequence";
-
-		// CUSTOM_LEVEL_MOVES_TABLE_NAME ="custom_level_moves";
-		// public static class CustomLevelMovesTable {
-		// public static final String CUSTOM_LEVEL_ID = "level_id";
-		// public static final String MOVE_TYPE = "move_type";
-		// public static final String SEQ_NUM = "sequence";
-		// public static final String OPERATION_ID = "op_id";
-		// }
-
-		// TODO this almost worked misnumbered them, lost the seq=0 entries?
-		// Was worried that it may end up seeing a sequence as an id for
-		// later updates
 		String sql = "update " + CUSTOM_LEVEL_MOVES_TABLE_NAME + " "
 				+ " set op_id = (select o."
 				+ CustomLevelOperationsTable.SEQ_NUM + " from "
@@ -268,60 +251,5 @@ public class DataBaseHelper extends SQLiteOpenHelper {
 				+ CustomLevelMovesTable.OPERATION_ID + ")";
 		Log.i(DataBaseHelper.class.getName(), sql);
 		db.execSQL(sql);
-
-		// in progress, iterative approach
-		// Cursor query = db.query(CUSTOM_LEVEL_MOVES_TABLE_NAME,
-		// new String[] { BaseColumns._ID,
-		// CustomLevelMovesTable.OPERATION_ID }, null, null,
-		// null, null, null);
-		// try {
-		// if (query.moveToFirst()) {
-		// while (!query.isAfterLast() ){
-		// updateOperationIdsWithSequence(db, query);
-		// query.moveToNext();
-		// }
-		// }
-		// } finally {
-		// query.close();
-		// }
-
-		// This avoids seeing a sequence as an id
-		// but didn't work at all- all moves were lost
-		// String createTableString = "CREATE TABLE temp_move_op " + " ("
-		// + BaseColumns._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
-		// + " move_id INTEGER, "
-		// // + " original_op_id INTEGER, "
-		// + " new_op_id INTEGER;";
-		// db.execSQL(createTableString);
-		// db.execSQL("insert INTO temp_move_op (move_id, new_op_id) "
-		// + "select m." + BaseColumns._ID + ",   o."
-		// + CustomLevelOperationsTable.SEQ_NUM + " from "
-		// + CUSTOM_LEVEL_MOVES_TABLE_NAME + " m, "
-		// + CUSTOM_LEVEL_OPERATIONS_TABLE_NAME + " o WHERE m."
-		// + CustomLevelMovesTable.OPERATION_ID + " = o."
-		// + BaseColumns._ID + ";");
-		//
-		// db.execSQL("update "
-		// + CUSTOM_LEVEL_MOVES_TABLE_NAME
-		// + " m "
-		// +
-		// " set op_id = (select o.new_op_id from temp_move_op  o where o.move_id = m"
-		// + BaseColumns._ID + ");");
-		//
-		// db.execSQL("drop table temp_move_op; ");
 	}
-
-	// private void updateOperationIdsWithSequence(SQLiteDatabase db, Cursor
-	// query) {
-	// String opIdStr = query.getString(1);
-	// Cursor op = db.query(CUSTOM_LEVEL_MOVES_TABLE_NAME, new
-	// String[]{CustomLevelMovesTable.SEQ_NUM}, BaseColumns._ID + " = ?", new
-	// String[]{opIdStr}, null, null, null);
-	// if (!op.moveToFirst()) {
-	// throw new RuntimeException("Unable to find operation with Id " +
-	// opIdStr);
-	// }
-	// long sequence = op.getLong(0);
-	// db.update(table, values, whereClause, whereArgs)
-	// }
 }
