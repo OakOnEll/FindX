@@ -4,19 +4,9 @@
  * aapt tool from the resource data it found.  It
  * should not be modified by hand.
  */
-package com.oakonell.utils;
+package com.actionbarsherlock;
 
 public final class R {
-	public static final class anim {
-		public static final int slide_in_left = 0x7f040001;
-		public static final int slide_in_right = 0x7f040002;
-		public static final int slide_out_left = 0x7f040003;
-		public static final int slide_out_right = 0x7f040004;
-	}
-	public static final class array {
-		public static final int copy_for_face_book = 0x7f0e0000;
-		public static final int copy_for_face_book_description = 0x7f0e0001;
-	}
 	public static final class attr {
 		public static final int actionBarDivider = 0x7f01002e;
 		public static final int actionBarItemBackground = 0x7f01002f;
@@ -54,7 +44,6 @@ public final class R {
 		public static final int dropDownListViewStyle = 0x7f01005c;
 		public static final int dropdownListPreferredItemHeight = 0x7f01005e;
 		public static final int expandActivityOverflowButtonDrawable = 0x7f01007f;
-		public static final int formattedSummary = 0x7f010082;
 		public static final int headerBackground = 0x7f010079;
 		public static final int height = 0x7f010024;
 		public static final int homeAsUpIndicator = 0x7f01005b;
@@ -268,10 +257,8 @@ public final class R {
 		public static final int abs__textfield_searchview_right_holo_dark = 0x7f02006d;
 		public static final int abs__textfield_searchview_right_holo_light = 0x7f02006e;
 		public static final int abs__toast_frame = 0x7f02006f;
-		public static final int icon = 0x7f02009b;
 	}
 	public static final class id {
-		public static final int about_description = 0x7f0b0027;
 		public static final int abs__action_bar = 0x7f0b0038;
 		public static final int abs__action_bar_container = 0x7f0b0037;
 		public static final int abs__action_bar_subtitle = 0x7f0b0029;
@@ -311,36 +298,17 @@ public final class R {
 		public static final int abs__textButton = 0x7f0b002b;
 		public static final int abs__title = 0x7f0b0033;
 		public static final int abs__up = 0x7f0b001d;
-		public static final int app_name_id = 0x7f0b0024;
-		public static final int decrement = 0x7f0b00c7;
 		public static final int disableHome = 0x7f0b001b;
 		public static final int edit_query = 0x7f0b003e;
 		public static final int homeAsUp = 0x7f0b0018;
-		public static final int icon = 0x7f0b00e5;
-		public static final int icon_image = 0x7f0b0093;
-		public static final int increment = 0x7f0b00c6;
-		public static final int label = 0x7f0b0072;
-		public static final int linearLayout1 = 0x7f0b0022;
 		public static final int listMode = 0x7f0b0014;
-		public static final int no_button = 0x7f0b0056;
 		public static final int normal = 0x7f0b0001;
-		public static final int rate_bar = 0x7f0b008d;
-		public static final int rate_no_thanks = 0x7f0b0090;
-		public static final int rate_redirect_comment = 0x7f0b008e;
-		public static final int rate_remind_later = 0x7f0b008f;
-		public static final int rate_text = 0x7f0b008c;
-		public static final int remember_checkbox = 0x7f0b0057;
 		public static final int showCustom = 0x7f0b001a;
 		public static final int showHome = 0x7f0b0017;
 		public static final int showTitle = 0x7f0b0019;
 		public static final int tabMode = 0x7f0b0015;
-		public static final int text = 0x7f0b00c5;
-		public static final int textView1 = 0x7f0b0054;
-		public static final int urlId = 0x7f0b0026;
 		public static final int useLogo = 0x7f0b0016;
-		public static final int version = 0x7f0b0025;
 		public static final int wrap_content = 0x7f0b000d;
-		public static final int yes_button = 0x7f0b0055;
 	}
 	public static final class integer {
 		public static final int abs__max_action_buttons = 0x7f0c0001;
@@ -367,16 +335,10 @@ public final class R {
 		public static final int abs__search_dropdown_item_icons_2line = 0x7f030013;
 		public static final int abs__search_view = 0x7f030014;
 		public static final int abs__simple_dropdown_hint = 0x7f030015;
-		public static final int copy_for_facebook_dlg = 0x7f030018;
-		public static final int dialog_app_rater = 0x7f030022;
-		public static final int generic_about_activity = 0x7f030024;
-		public static final int number_picker = 0x7f03002a;
-		public static final int share_row = 0x7f030032;
 		public static final int sherlock_spinner_dropdown_item = 0x7f030033;
 		public static final int sherlock_spinner_item = 0x7f030034;
 	}
 	public static final class string {
-		public static final int about_title = 0x7f080049;
 		public static final int abs__action_bar_home_description = 0x7f080022;
 		public static final int abs__action_bar_up_description = 0x7f080023;
 		public static final int abs__action_menu_overflow_description = 0x7f080024;
@@ -390,35 +352,6 @@ public final class R {
 		public static final int abs__searchview_description_voice = 0x7f08002e;
 		public static final int abs__shareactionprovider_share_with = 0x7f080028;
 		public static final int abs__shareactionprovider_share_with_application = 0x7f080029;
-		public static final int connectionProblem = 0x7f080038;
-		public static final int copied_to_clipboard = 0x7f08003c;
-		public static final int copySubjectToClipboardAsWorkAroundForFacebookAppBug = 0x7f08003b;
-		public static final int httpError = 0x7f080037;
-		public static final int no = 0x7f08003e;
-		public static final int num_picker_add_sign = 0x7f08004b;
-		public static final int num_picker_minus_sign = 0x7f08004c;
-		public static final int pref_about = 0x7f080034;
-		public static final int pref_about_key = 0x7f080030;
-		public static final int pref_changes = 0x7f080035;
-		public static final int pref_changes_key = 0x7f080031;
-		public static final int pref_confirm_reset_preferences = 0x7f080036;
-		public static final int pref_copy_for_face_book = 0x7f080040;
-		public static final int pref_copy_for_face_book_key = 0x7f080032;
-		public static final int pref_rate_app = 0x7f080048;
-		public static final int pref_rate_app_key = 0x7f080047;
-		public static final int pref_reset_preferences = 0x7f080033;
-		public static final int pref_reset_preferences_key = 0x7f08002f;
-		public static final int rate_app = 0x7f080041;
-		public static final int rate_no_thanks = 0x7f080044;
-		public static final int rate_redirects_to_market = 0x7f080046;
-		public static final int rate_remind_later = 0x7f080043;
-		public static final int rate_text = 0x7f080042;
-		public static final int rate_unknown_app_title = 0x7f080045;
-		public static final int remember_this_choice = 0x7f08003f;
-		public static final int settings = 0x7f08004a;
-		public static final int share = 0x7f080039;
-		public static final int shareVia = 0x7f08003a;
-		public static final int yes = 0x7f08003d;
 	}
 	public static final class style {
 		public static final int Sherlock___TextAppearance_Small = 0x7f090059;
@@ -663,7 +596,5 @@ public final class R {
 		public static final int SherlockTheme_windowSplitActionBar = 62;
 		public static final int[] SherlockView = { 0x010100da };
 		public static final int SherlockView_android_focusable = 0;
-		public static final int[] ValueDisplayingEditTextPreference = { 0x7f010082 };
-		public static final int ValueDisplayingEditTextPreference_formattedSummary = 0;
 	}
 }
